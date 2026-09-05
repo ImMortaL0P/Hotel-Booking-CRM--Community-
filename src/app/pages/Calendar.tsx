@@ -114,7 +114,7 @@ export function Calendar() {
 
           {/* Rooms Grid */}
           <div className="divide-y divide-[#e6dfd8]">
-            {['Standard', 'Deluxe Double', 'AC Deluxe', 'Family Suite'].map((category) => {
+            {['Deluxe Double', 'Family Suite'].map((category) => {
               const catRooms = rooms.filter(r => r.category === category);
               
               return (

@@ -25,7 +25,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate }:
   const [state, setState] = useState('');
 
   // Room details
-  const [roomType, setRoomType] = useState<RoomCategory>('Standard');
+  const [roomType, setRoomType] = useState<RoomCategory>('Deluxe Double');
   const [selectedRoomId, setSelectedRoomId] = useState(defaultRoomId || '');
   const [checkInDate, setCheckInDate] = useState(defaultDate || '2026-09-05');
   const [checkOutDate, setCheckOutDate] = useState('2026-09-07');
@@ -236,14 +236,12 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate }:
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Room Category *</label>
-                <select 
+                <select
                   value={roomType}
                   onChange={e => setRoomType(e.target.value as RoomCategory)}
                   className="w-full text-sm px-3 py-2 border border-[#e6dfd8] rounded-md focus:ring-1 focus:ring-[#7B1E22]"
                 >
-                  <option value="Standard">Standard (₹1,200/night)</option>
-                  <option value="Deluxe">Deluxe (₹1,500/night)</option>
-                  <option value="AC Deluxe">AC Deluxe (₹2,000/night)</option>
+                  <option value="Deluxe Double">Deluxe Double (₹1,500/night)</option>
                   <option value="Family Suite">Family Suite (₹3,000/night)</option>
                 </select>
               </div>

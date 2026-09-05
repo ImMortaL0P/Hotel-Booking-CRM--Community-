@@ -8,7 +8,7 @@ export type User = {
   avatar?: string;
 };
 
-export type RoomCategory = 'Standard' | 'Deluxe' | 'Family Suite' | 'AC Deluxe';
+export type RoomCategory = 'Deluxe Double' | 'Family Suite';
 
 export type RoomStatus = 'Available' | 'Occupied' | 'Maintenance' | 'Cleaning';
 

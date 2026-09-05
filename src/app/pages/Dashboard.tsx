@@ -49,7 +49,7 @@ export function Dashboard() {
   const totalPendingAmount = pendingBookings.reduce((sum, b) => sum + b.balance, 0);
 
   // Chart data: Room Occupancy by Type
-  const categories = ['Standard', 'Deluxe', 'AC Deluxe', 'Family Suite'] as const;
+  const categories = ['Deluxe Double', 'Family Suite'] as const;
   const chartData = categories.map(cat => {
     const catRooms = rooms.filter(r => r.category === cat);
     const occupied = catRooms.filter(r => r.status === 'Occupied').length;
