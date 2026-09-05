@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
+import { HashRouter, Routes, Route, Navigate } from 'react-router';
 import { useData } from './data/DataContext';
 import { StaffSignIn } from './pages/StaffSignIn';
 import { AppShell } from './components/AppShell';
@@ -16,15 +16,15 @@ export default function App() {
 
   if (!user) {
     return (
-      <BrowserRouter>
+      <HashRouter basename={import.meta.env.BASE_URL}>
         <StaffSignIn />
         <Toaster />
-      </BrowserRouter>
+      </HashRouter>
     );
   }
 
   return (
-    <BrowserRouter>
+    <HashRouter basename={import.meta.env.BASE_URL}>
       <AppShell>
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -38,6 +38,6 @@ export default function App() {
         </Routes>
       </AppShell>
       <Toaster />
-    </BrowserRouter>
+    </HashRouter>
   );
 }
