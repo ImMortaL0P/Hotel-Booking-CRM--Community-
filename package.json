@@ -9,7 +9,9 @@
     "dev:client": "vite",
     "dev:server": "cd server && npm run dev",
     "dev:full": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
-    "seed": "cd server && npm run seed"
+    "seed": "cd server && npm run seed",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
@@ -74,6 +76,7 @@
     "@tailwindcss/vite": "4.1.12",
     "@vitejs/plugin-react": "4.7.0",
     "concurrently": "^10.0.5",
+    "gh-pages": "^6.3.0",
     "tailwindcss": "4.1.12",
     "vite": "6.3.5"
   },
@@ -81,5 +84,6 @@
     "overrides": {
       "vite": "6.3.5"
     }
-  }
+  },
+  "homepage": "https://ImMortaL0P.github.io/Hotel-Booking-CRM--Community-"
 }

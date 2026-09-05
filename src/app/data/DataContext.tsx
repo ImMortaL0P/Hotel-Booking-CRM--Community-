@@ -40,7 +40,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/initialize')
+    fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/initialize`)
       .then(res => res.json())
       .then(data => {
         setRooms(data.rooms || []);
@@ -75,7 +75,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const updateRoomStatus = (roomId: string, status: Room['status']) => {
     // Optimistic
     setRooms(prev => prev.map(r => r.id === roomId ? { ...r, status } : r));
-    fetch(`/api/rooms/${roomId}`, {
+    fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/rooms/${roomId}`, {
        method: 'PUT',
        headers: {'Content-Type': 'application/json'},
        body: JSON.stringify({ status })
@@ -84,7 +84,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const addGuest = (guest: Guest) => {
     setGuests(prev => [guest, ...prev]);
-    fetch(`/api/guests`, {
+    fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/guests`, {
        method: 'POST',
        headers: {'Content-Type': 'application/json'},
        body: JSON.stringify(guest)
@@ -93,7 +93,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   
   const updateGuest = (guest: Guest) => {
     setGuests(prev => prev.map(g => g.id === guest.id ? guest : g));
-    fetch(`/api/guests/${guest.id}`, {
+    fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/guests/${guest.id}`, {
        method: 'PUT',
        headers: {'Content-Type': 'application/json'},
        body: JSON.stringify(guest)
@@ -102,7 +102,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const addBooking = (booking: Booking) => {
     setBookings(prev => [booking, ...prev]);
-    fetch(`/api/bookings`, {
+    fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/bookings`, {
        method: 'POST',
        headers: {'Content-Type': 'application/json'},
        body: JSON.stringify(booking)
@@ -111,7 +111,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const updateBooking = (booking: Booking) => {
     setBookings(prev => prev.map(b => b.id === booking.id ? booking : b));
-    fetch(`/api/bookings/${booking.id}`, {
+    fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/bookings/${booking.id}`, {
        method: 'PUT',
        headers: {'Content-Type': 'application/json'},
        body: JSON.stringify(booking)
@@ -120,12 +120,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   
   const deleteBooking = (bookingId: string) => {
     setBookings(prev => prev.filter(b => b.id !== bookingId));
-    fetch(`/api/bookings/${bookingId}`, { method: 'DELETE' }).catch(console.error);
+    fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/bookings/${bookingId}`, { method: 'DELETE' }).catch(console.error);
   };
 
   const addPayment = (payment: PaymentTransaction) => {
     setPayments(prev => [payment, ...prev]);
-    fetch(`/api/payments`, {
+    fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/payments`, {
        method: 'POST',
        headers: {'Content-Type': 'application/json'},
        body: JSON.stringify(payment)
@@ -148,7 +148,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const addComm = (comm: CommRecord) => {
     setComms(prev => [comm, ...prev]);
-    fetch(`/api/comms`, {
+    fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/comms`, {
        method: 'POST',
        headers: {'Content-Type': 'application/json'},
        body: JSON.stringify(comm)
