@@ -1,8 +1,13 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { connectDB } from './db.js';
 import apiRoutes from './routes/api.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 const PORT = process.env.PORT || 5000;
@@ -17,12 +22,17 @@ app.use(express.json());
 // Routes
 app.use('/api', apiRoutes);
 
-app.get("/", (req, res) => {
-  res.json({ message: "ShardaCRM API is successfully running on Render! \uD83D\uDE80", docs: "/api/health" });
-});
-
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', msg: 'ShardaCRM Backend is running' });
+});
+
+// Serve static frontend files continuously in production
+const distPath = path.join(__dirname, '../dist');
+app.use(express.static(distPath));
+
+// Fallback to index.html for React Router
+app.get("*", (req, res) => {
+  res.sendFile(path.join(distPath, 'index.html'));
 });
 
 // Start Server

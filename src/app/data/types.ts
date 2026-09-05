@@ -40,7 +40,7 @@ export interface Guest {
   avatarInitial: string;
 }
 
-export type BookingStatus = 'Confirmed' | 'Pending' | 'Checked-In' | 'Checked-Out' | 'Cancelled';
+export type BookingStatus = 'Booked' | 'Confirmed' | 'Checked-In' | 'Checked-Out';
 
 export interface Booking {
   id: string;      // SP-2026-###

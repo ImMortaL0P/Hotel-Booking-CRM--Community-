@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
+    "render-build": "npm install && vite build && cd server && npm install",
+    "start": "cd server && npm start",
     "dev": "npm run dev:full",
     "dev:client": "vite",
     "dev:server": "cd server && npm run dev",

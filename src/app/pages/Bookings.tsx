@@ -12,7 +12,7 @@ export function Bookings() {
   const [isNewBookingOpen, setIsNewBookingOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
-  const tabs: (BookingStatus | 'All')[] = ['All', 'Confirmed', 'Pending', 'Checked-In', 'Checked-Out', 'Cancelled'];
+  const tabs: (BookingStatus | 'All')[] = ['All', 'Booked', 'Confirmed', 'Checked-In', 'Checked-Out'];
 
   const filteredBookings = bookings.filter(b => {
     if (activeTab !== 'All' && b.status !== activeTab) return false;
@@ -35,9 +35,8 @@ export function Bookings() {
     switch (s) {
       case 'Checked-In': return 'bg-blue-100 text-blue-700';
       case 'Confirmed': return 'bg-green-100 text-green-700';
-      case 'Pending': return 'bg-amber-100 text-amber-700';
+      case 'Booked': return 'bg-amber-100 text-amber-700';
       case 'Checked-Out': return 'bg-gray-100 text-gray-700';
-      case 'Cancelled': return 'bg-red-100 text-red-700';
       default: return 'bg-gray-100 text-gray-700';
     }
   };
@@ -47,8 +46,6 @@ export function Bookings() {
       updateBooking({ ...b, status: 'Checked-In' });
     } else if (action === 'Check-out') {
       updateBooking({ ...b, status: 'Checked-Out' });
-    } else if (action === 'Cancel') {
-      updateBooking({ ...b, status: 'Cancelled' });
     } else if (action === 'Record Payment') {
       // Very basic prompt-based flow: 
       const amount = parseFloat(window.prompt('Enter amount to collect:', String(b.balance)) || '0');
@@ -182,7 +179,6 @@ export function Bookings() {
                            {b.status === 'Confirmed' && <button onClick={(e) => { e.stopPropagation(); handleAction(b,'Check-in'); }} className="w-full text-left px-3 py-2 text-sm text-green-700 hover:bg-green-50 rounded">Check In</button>}
                            {b.status === 'Checked-In' && <button onClick={(e) => { e.stopPropagation(); handleAction(b,'Check-out'); }} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Check Out</button>}
                            {b.balance > 0 && <button onClick={(e) => { e.stopPropagation(); handleAction(b,'Record Payment'); }} className="w-full text-left px-3 py-2 text-sm text-[#7B1E22] hover:bg-[#FAF6F0] rounded">Record Payment</button>}
-                           {b.status !== 'Cancelled' && b.status !== 'Checked-Out' && <button onClick={(e) => { e.stopPropagation(); handleAction(b,'Cancel'); }} className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded">Cancel Booking</button>}
                         </div>
                       </div>
                     </div>

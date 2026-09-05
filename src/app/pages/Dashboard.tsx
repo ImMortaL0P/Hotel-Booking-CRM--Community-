@@ -65,7 +65,7 @@ export function Dashboard() {
 
   // Upcoming Arrivals
   const upcomingArrivals = bookings
-    .filter(b => b.status === 'Confirmed' || b.status === 'Pending')
+    .filter(b => b.status === 'Confirmed' || b.status === 'Booked')
     .slice(0, 4);
 
   return (
@@ -242,7 +242,7 @@ export function Dashboard() {
                         <span className={`text-xs px-2 py-0.5 rounded font-medium ${
                           b.status === 'Checked-In' ? 'bg-blue-100 text-blue-700' :
                           b.status === 'Confirmed' ? 'bg-green-100 text-green-700' :
-                          b.status === 'Pending' ? 'bg-amber-100 text-amber-700' :
+                          b.status === 'Booked' ? 'bg-amber-100 text-amber-700' :
                           'bg-gray-100 text-gray-700'
                         }`}>
                           {b.status}

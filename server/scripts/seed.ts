@@ -24,6 +24,10 @@ const seed = async () => {
 
     const validRoomIds = ['rm-101', 'rm-102', 'rm-103'];
 
+    // Map old 'Pending' or 'Cancelled' statuses to valid ones before validation
+    await Booking.updateMany({ status: 'Pending' }, { $set: { status: 'Booked' } });
+    await Booking.deleteMany({ status: 'Cancelled' });
+
     // Remove individual excess rooms manually
     for (let i = 104; i <= 404; i++) {
         await Room.findByIdAndDelete(`rm-${i}`);

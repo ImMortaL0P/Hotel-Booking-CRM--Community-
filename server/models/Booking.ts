@@ -14,7 +14,7 @@ const bookingSchema = new mongoose.Schema({
   total: { type: Number, required: true },
   paid: { type: Number, required: true, default: 0 },
   balance: { type: Number, required: true },
-  status: { type: String, required: true, enum: ['Confirmed', 'Pending', 'Checked-In', 'Checked-Out', 'Cancelled'] },
+  status: { type: String, required: true, enum: ['Booked', 'Confirmed', 'Checked-In', 'Checked-Out'] },
   createdAt: { type: String, required: true },
   notes: { type: String }
 }, {

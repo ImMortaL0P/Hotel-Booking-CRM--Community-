@@ -287,7 +287,7 @@ export const INITAL_BOOKINGS: Booking[] = [
     "total": 6720,
     "paid": 2000,
     "balance": 4720,
-    "status": "Pending",
+    "status": "Booked",
     "createdAt": "2026-08-25",
     "notes": ""
   },
@@ -305,7 +305,7 @@ export const INITAL_BOOKINGS: Booking[] = [
     "total": 1344,
     "paid": 0,
     "balance": 1344,
-    "status": "Pending",
+    "status": "Booked",
     "createdAt": "2026-08-25",
     "notes": ""
   },

@@ -14,7 +14,7 @@ export function Payments() {
   const todaysCollections = payments.filter(p => new Date(p.date).toDateString() === todayStr && p.status === 'Success').reduce((sum, p) => sum + p.amount, 0);
   const thisMonthCollections = payments.filter(p => p.status === 'Success').reduce((sum, p) => sum + p.amount, 0); // Mock all for now as this month
   
-  const pendingCollections = bookings.filter(b => b.status !== 'Cancelled').reduce((sum, b) => {
+  const pendingCollections = bookings.reduce((sum, b) => {
     const paid = payments.filter(p => p.bookingId === b.id && p.status === 'Success').reduce((s, p) => s + p.amount, 0);
     const balance = b.total - paid;
     return balance > 0 ? sum + balance : sum;

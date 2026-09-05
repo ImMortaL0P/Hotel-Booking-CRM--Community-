@@ -31,7 +31,7 @@ export function Calendar() {
     let occupied = 0;
     rooms.forEach(room => {
       const isOccupied = bookings.some(b => {
-        if (b.roomId !== room.id || b.status === 'Cancelled') return false;
+        if (b.roomId !== room.id) return false;
         // Check if day.date String is between checkIn and checkOut (exclusive of checkout date itself usually for occupancy, but let's do inclusive of night of)
         const checkIn = new Date(b.checkIn).getTime();
         const checkOut = new Date(b.checkOut).getTime();
@@ -126,7 +126,7 @@ export function Calendar() {
                   
                   {catRooms.map(room => {
                     // Check bookings for this room
-                    const roomBookings = bookings.filter(b => b.roomId === room.id && b.status !== 'Cancelled');
+                    const roomBookings = bookings.filter(b => b.roomId === room.id);
                     
                     return (
                       <div key={room.id} className="flex relative hover:bg-gray-50 group">
@@ -170,7 +170,7 @@ export function Calendar() {
                             const leftPos = startIdx * 40;
                             const width = duration * 40;
                             
-                            const bgColor = booking.status === 'Pending' ? 'bg-amber-500 hover:bg-amber-600' : 
+                            const bgColor = booking.status === 'Booked' ? 'bg-amber-500 hover:bg-amber-600' : 
                                            booking.status === 'Checked-Out' ? 'bg-gray-400 hover:bg-gray-500' : 
                                            'bg-[#7B1E22] hover:bg-[#8C1D24]';
 
