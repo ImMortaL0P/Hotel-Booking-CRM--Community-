@@ -24,8 +24,10 @@ app.get('/api/health', (req, res) => {
 // Start Server
 if (process.env.NODE_ENV !== 'test') {
   connectDB().then(() => {
-    app.listen(PORT, () => {
+    // Listen on all network interfaces (0.0.0.0) so it's accessible over network
+    app.listen(PORT as number, '0.0.0.0', () => {
       console.log(`Server running on port ${PORT}`);
+      console.log(`Accessible on your local network/internet if exposed`);
     });
   });
 }

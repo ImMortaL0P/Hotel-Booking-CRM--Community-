@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const roomSchema = new mongoose.Schema({
   _id: { type: String, required: true },
   number: { type: String, required: true },
-  category: { type: String, required: true, enum: ['Standard', 'Deluxe Double', 'AC Deluxe', 'Family Suite'] },
+  category: { type: String, required: true, enum: ['Standard', 'Deluxe', 'AC Deluxe', 'Family Suite'] },
   status: { type: String, required: true, enum: ['Available', 'Occupied', 'Maintenance', 'Cleaning'] },
   tariff: { type: Number, required: true },
   floor: { type: Number, required: true },

@@ -5,160 +5,24 @@ export const INITAL_ROOMS: Room[] = [
   {
     "id": "rm-101",
     "number": "101",
-    "category": "Standard",
+    "category": "Deluxe",
     "floor": 1,
     "status": "Available",
-    "tariff": 1200
+    "tariff": 1500
   },
   {
     "id": "rm-102",
     "number": "102",
-    "category": "Standard",
+    "category": "Deluxe",
     "floor": 1,
     "status": "Available",
-    "tariff": 1200
+    "tariff": 1500
   },
   {
     "id": "rm-103",
     "number": "103",
-    "category": "Standard",
+    "category": "Family Suite",
     "floor": 1,
-    "status": "Available",
-    "tariff": 1200
-  },
-  {
-    "id": "rm-104",
-    "number": "104",
-    "category": "Standard",
-    "floor": 1,
-    "status": "Available",
-    "tariff": 1200
-  },
-  {
-    "id": "rm-105",
-    "number": "105",
-    "category": "Standard",
-    "floor": 1,
-    "status": "Available",
-    "tariff": 1200
-  },
-  {
-    "id": "rm-201",
-    "number": "201",
-    "category": "Deluxe",
-    "floor": 2,
-    "status": "Available",
-    "tariff": 1500
-  },
-  {
-    "id": "rm-202",
-    "number": "202",
-    "category": "Deluxe",
-    "floor": 2,
-    "status": "Available",
-    "tariff": 1500
-  },
-  {
-    "id": "rm-203",
-    "number": "203",
-    "category": "Deluxe",
-    "floor": 2,
-    "status": "Available",
-    "tariff": 1500
-  },
-  {
-    "id": "rm-204",
-    "number": "204",
-    "category": "Deluxe",
-    "floor": 2,
-    "status": "Available",
-    "tariff": 1500
-  },
-  {
-    "id": "rm-205",
-    "number": "205",
-    "category": "Deluxe",
-    "floor": 2,
-    "status": "Available",
-    "tariff": 1500
-  },
-  {
-    "id": "rm-206",
-    "number": "206",
-    "category": "Deluxe",
-    "floor": 2,
-    "status": "Available",
-    "tariff": 1500
-  },
-  {
-    "id": "rm-207",
-    "number": "207",
-    "category": "Deluxe",
-    "floor": 2,
-    "status": "Available",
-    "tariff": 1500
-  },
-  {
-    "id": "rm-301",
-    "number": "301",
-    "category": "AC Deluxe",
-    "floor": 3,
-    "status": "Available",
-    "tariff": 2000
-  },
-  {
-    "id": "rm-302",
-    "number": "302",
-    "category": "AC Deluxe",
-    "floor": 3,
-    "status": "Available",
-    "tariff": 2000
-  },
-  {
-    "id": "rm-303",
-    "number": "303",
-    "category": "AC Deluxe",
-    "floor": 3,
-    "status": "Available",
-    "tariff": 2000
-  },
-  {
-    "id": "rm-304",
-    "number": "304",
-    "category": "AC Deluxe",
-    "floor": 3,
-    "status": "Available",
-    "tariff": 2000
-  },
-  {
-    "id": "rm-401",
-    "number": "401",
-    "category": "Family Suite",
-    "floor": 4,
-    "status": "Available",
-    "tariff": 3000
-  },
-  {
-    "id": "rm-402",
-    "number": "402",
-    "category": "Family Suite",
-    "floor": 4,
-    "status": "Available",
-    "tariff": 3000
-  },
-  {
-    "id": "rm-403",
-    "number": "403",
-    "category": "Family Suite",
-    "floor": 4,
-    "status": "Available",
-    "tariff": 3000
-  },
-  {
-    "id": "rm-404",
-    "number": "404",
-    "category": "Family Suite",
-    "floor": 4,
     "status": "Available",
     "tariff": 3000
   }

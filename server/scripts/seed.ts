@@ -9,32 +9,52 @@ import { CommRecord } from '../models/CommRecord.js';
 
 import {
   INITAL_ROOMS,
-  INITIAL_GUESTS,
-  INITIAL_BOOKINGS,
-  INITIAL_PAYMENTS,
-  INITIAL_COMMS
-} from '../../src/app/data/seedData';
+  INITAL_GUESTS,
+  INITAL_BOOKINGS,
+  INITAL_PAYMENTS,
+  INITAL_COMMS
+} from '../../src/app/data/seedData.ts';
 
 dotenv.config();
 
 const seed = async () => {
   try {
     await connectDB();
-    console.log('Clearing existing data...');
-    await Room.deleteMany();
-    await Guest.deleteMany();
-    await Booking.deleteMany();
-    await Payment.deleteMany();
-    await CommRecord.deleteMany();
+    console.log('Upserting seed data to prevent destructive drops...');
 
-    console.log('Inserting seed data...');
-    await Room.insertMany(INITAL_ROOMS.map(x => ({...x, _id: x.id})));
-    await Guest.insertMany(INITIAL_GUESTS.map(x => ({...x, _id: x.id})));
-    await Booking.insertMany(INITIAL_BOOKINGS.map(x => ({...x, _id: x.id})));
-    await Payment.insertMany(INITIAL_PAYMENTS.map(x => ({...x, _id: x.id})));
-    await CommRecord.insertMany(INITIAL_COMMS.map(x => ({...x, _id: x.id})));
+    const validRoomIds = ['rm-101', 'rm-102', 'rm-103'];
 
-    console.log('Database Seeding Completed Successfully! ✅');
+    // Remove individual excess rooms manually
+    for (let i = 104; i <= 404; i++) {
+        await Room.findByIdAndDelete(`rm-${i}`);
+    }
+
+    for (const room of INITAL_ROOMS) {
+      await Room.findByIdAndUpdate(room.id, { ...room, _id: room.id }, { upsert: true, new: true, setDefaultsOnInsert: true });
+    }
+
+    for (const guest of INITAL_GUESTS) {
+      await Guest.findByIdAndUpdate(guest.id, { ...guest, _id: guest.id }, { upsert: true, new: true, setDefaultsOnInsert: true });
+    }
+
+    const validBookings = INITAL_BOOKINGS.filter(b => validRoomIds.includes(b.roomId));
+
+    for (const booking of validBookings) {
+      await Booking.findByIdAndUpdate(booking.id, { ...booking, _id: booking.id }, { upsert: true, new: true, setDefaultsOnInsert: true });
+    }
+
+    const validBookingIds = validBookings.map(b => b.id);
+    const validPayments = INITAL_PAYMENTS.filter(p => validBookingIds.includes(p.bookingId));
+
+    for (const payment of validPayments) {
+      await Payment.findByIdAndUpdate(payment.id, { ...payment, _id: payment.id }, { upsert: true, new: true, setDefaultsOnInsert: true });
+    }
+
+    for (const comm of INITAL_COMMS) {
+      await CommRecord.findByIdAndUpdate(comm.id, { ...comm, _id: comm.id }, { upsert: true, new: true, setDefaultsOnInsert: true });
+    }
+
+    console.log('Database Seeding/Upsert Completed Successfully! ✅');
     process.exit(0);
   } catch (error) {
     console.error('Seeding failed:', error);

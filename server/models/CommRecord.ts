@@ -2,10 +2,9 @@ import mongoose from 'mongoose';
 
 const commSchema = new mongoose.Schema({
   _id: { type: String, required: true },
+  guestId: { type: String, required: true },
   channel: { type: String, required: true, enum: ['WhatsApp', 'SMS', 'Email'] },
-  recipientId: { type: String, required: true },
-  templateName: { type: String, required: true },
-  content: { type: String, required: true },
+  template: { type: String, required: true },
   timestamp: { type: String, required: true },
   status: { type: String, required: true, enum: ['Delivered', 'Sent', 'Failed', 'Scheduled'] }
 }, {
