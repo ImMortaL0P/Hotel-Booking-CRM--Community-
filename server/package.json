@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx watch index.ts",
     "seed": "tsx scripts/seed.ts",
-    "start": "tsx index.ts"
+    "start": "tsx index.ts",
+    "build": "echo 'No build required for server, using tsx directly'"
   },
   "dependencies": {
     "cors": "^2.8.5",
