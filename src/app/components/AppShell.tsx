@@ -4,6 +4,7 @@ import { LayoutDashboard, BookOpenText, Users, BedDouble, CalendarDays, MessageS
 import { useData } from '../data/DataContext';
 import { cn } from '../lib/utils';
 import { format } from 'date-fns';
+import logoUrl from '../../assets/logo.png';
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, logout, bookings, payments } = useData();
@@ -51,14 +52,14 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="p-4 border-b border-[#e6dfd8] flex items-center justify-between shrink-0">
           {!collapsed ? (
             <div className="flex items-center gap-3 overflow-hidden">
-              <img src="/logo.png" alt="Logo" className="w-8 h-8 rounded shrink-0 object-cover" />
+              <img src={logoUrl} alt="Logo" className="w-8 h-8 rounded shrink-0 object-cover" />
               <div className="truncate">
                 <h2 className="font-bold text-[#2d1b1c] truncate">Sharda Palace</h2>
                 <p className="text-xs text-gray-500 truncate">Deoghar, Jharkhand</p>
               </div>
             </div>
           ) : (
-            <img src="/logo.png" alt="Logo" className="w-8 h-8 rounded shrink-0 object-cover mx-auto" />
+            <img src={logoUrl} alt="Logo" className="w-8 h-8 rounded shrink-0 object-cover mx-auto" />
           )}
           
           <button 

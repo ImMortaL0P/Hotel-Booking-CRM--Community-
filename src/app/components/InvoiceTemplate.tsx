@@ -1,5 +1,6 @@
 import React from 'react';
 import { format } from 'date-fns';
+import logoUrl from '../../assets/logo.png';
 
 export interface InvoiceItem {
   id: number;
@@ -46,7 +47,7 @@ export const InvoiceTemplate = ({ data }: { data: InvoiceDataProps }) => {
       {/* Header */}
       <div className="flex justify-between items-start mb-8 border-b-2 border-gray-100 pb-4">
         <div className="flex flex-col items-center">
-          <img src="/logo.png" alt="Sharda Palace" className="h-16 w-auto object-contain mb-2" />
+          <img src={logoUrl} alt="Sharda Palace" className="h-16 w-auto object-contain mb-2" />
           <h2 className="text-[#654321] font-bold tracking-widest text-lg font-serif">SHARDA PALACE</h2>
           <p className="text-[#a68a6d] text-xs uppercase tracking-wider mt-1">Comfort Near Faith</p>
         </div>
