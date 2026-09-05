@@ -16,7 +16,7 @@ export default function App() {
 
   if (!user) {
     return (
-      <HashRouter basename={import.meta.env.BASE_URL}>
+      <HashRouter >
         <StaffSignIn />
         <Toaster />
       </HashRouter>
@@ -24,7 +24,7 @@ export default function App() {
   }
 
   return (
-    <HashRouter basename={import.meta.env.BASE_URL}>
+    <HashRouter >
       <AppShell>
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
