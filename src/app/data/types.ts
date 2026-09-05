@@ -1,0 +1,85 @@
+export type Role = 'manager' | 'front-desk';
+
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  avatar?: string;
+};
+
+export type RoomCategory = 'Standard' | 'Deluxe' | 'Family Suite' | 'AC Deluxe';
+
+export type RoomStatus = 'Available' | 'Occupied' | 'Maintenance' | 'Cleaning';
+
+export interface Room {
+  id: string;
+  number: string;
+  category: RoomCategory;
+  floor: number;
+  status: RoomStatus;
+  tariff: number;
+}
+
+export type IDProofType = 'Aadhaar' | 'Voter ID' | 'PAN' | 'Driving Licence' | 'Passport';
+
+export interface Guest {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  city: string;
+  state: string;
+  idProofType: IDProofType;
+  idProofNumber: string;
+  totalStays: number;
+  lastStay: string;
+  totalSpent: number;
+  isVIP: boolean;
+  notes?: string;
+  avatarInitial: string;
+}
+
+export type BookingStatus = 'Confirmed' | 'Pending' | 'Checked-In' | 'Checked-Out' | 'Cancelled';
+
+export interface Booking {
+  id: string;      // SP-2026-###
+  guestId: string;
+  roomId: string;
+  checkIn: string; // YYYY-MM-DD
+  checkOut: string;
+  adults: number;
+  children: number;
+  nights: number;
+  subtotal: number;
+  gst: number;     // 12%
+  total: number;
+  paid: number;
+  balance: number;
+  status: BookingStatus;
+  createdAt: string;
+  notes?: string;
+}
+
+export type PaymentMode = 'Cash' | 'UPI' | 'Card' | 'Bank Transfer';
+
+export interface PaymentTransaction {
+  id: string;      // RCPT-###
+  bookingId: string;
+  guestId: string;
+  date: string;    // YYYY-MM-DD
+  mode: PaymentMode;
+  amount: number;
+  status: 'Completed' | 'Pending' | 'Refunded';
+}
+
+export type CommsChannel = 'Email' | 'WhatsApp' | 'SMS';
+
+export interface CommRecord {
+  id: string;
+  guestId: string;
+  channel: CommsChannel;
+  template: string;
+  timestamp: string; // ISO or human string
+  status: 'Delivered' | 'Sent' | 'Failed';
+}
