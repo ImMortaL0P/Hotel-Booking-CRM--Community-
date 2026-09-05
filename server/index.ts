@@ -17,6 +17,10 @@ app.use(express.json());
 // Routes
 app.use('/api', apiRoutes);
 
+app.get("/", (req, res) => {
+  res.json({ message: "ShardaCRM API is successfully running on Render! \uD83D\uDE80", docs: "/api/health" });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', msg: 'ShardaCRM Backend is running' });
 });
