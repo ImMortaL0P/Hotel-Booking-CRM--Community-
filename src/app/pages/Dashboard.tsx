@@ -123,7 +123,7 @@ export function Dashboard() {
           <div className="flex justify-between items-start">
             <div>
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Occupied Rooms</span>
-              <div className="text-3xl font-bold text-[#2d1b1c] mt-2">{occupiedRooms}/20</div>
+              <div className="text-3xl font-bold text-[#2d1b1c] mt-2">{occupiedRooms}/{rooms.length}</div>
             </div>
             <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-md">
               {occupancyPercent}%

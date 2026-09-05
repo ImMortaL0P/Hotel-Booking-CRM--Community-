@@ -82,7 +82,7 @@ export function StaffSignIn() {
 
             <div className="flex items-center gap-4">
               <Bed className="w-6 h-6 shrink-0" />
-              <p>20 rooms · 4 room categories</p>
+              <p>3 rooms · 2 room categories</p>
             </div>
           </div>
         </div>
