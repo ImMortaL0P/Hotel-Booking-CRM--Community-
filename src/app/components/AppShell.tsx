@@ -52,14 +52,14 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="p-4 border-b border-[#e6dfd8] flex items-center justify-between shrink-0">
           {!collapsed ? (
             <div className="flex items-center gap-3 overflow-hidden">
-              <img src={logoUrl} alt="Logo" className="w-8 h-8 rounded shrink-0 object-cover" />
+              <img src={logoUrl} alt="Logo" className="w-12 h-12 rounded shrink-0 object-contain" />
               <div className="truncate">
                 <h2 className="font-bold text-[#2d1b1c] truncate">Sharda Palace</h2>
                 <p className="text-xs text-gray-500 truncate">Deoghar, Jharkhand</p>
               </div>
             </div>
           ) : (
-            <img src={logoUrl} alt="Logo" className="w-8 h-8 rounded shrink-0 object-cover mx-auto" />
+            <img src={logoUrl} alt="Logo" className="w-12 h-12 rounded shrink-0 object-contain mx-auto" />
           )}
           
           <button 

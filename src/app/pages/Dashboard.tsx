@@ -19,6 +19,7 @@ import {
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { NewBookingModal } from '../components/NewBookingModal';
 import { useNavigate } from 'react-router';
+import logoUrl from '../../assets/logo.png';
 
 export function Dashboard() {
   const { user, bookings, rooms, guests, comms } = useData();
@@ -72,13 +73,16 @@ export function Dashboard() {
     <div className="space-y-6">
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[#2d1b1c]">
-            {getGreeting()}, {user?.name.split(' ')[0]} 🙏
-          </h1>
-          <p className="text-sm text-gray-500">
-            Wednesday, 02 Sept 26 · Sharda Palace, Deoghar
-          </p>
+        <div className="flex items-center gap-4">
+          <img src={logoUrl} alt="Sharda Palace" className="w-16 h-16 object-contain hidden md:block" />
+          <div>
+            <h1 className="text-2xl font-bold text-[#2d1b1c]">
+              {getGreeting()}, {user?.name.split(' ')[0]} 🙏
+            </h1>
+            <p className="text-sm text-gray-500">
+              Wednesday, 02 Sept 26 · Sharda Palace, Deoghar
+            </p>
+          </div>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}

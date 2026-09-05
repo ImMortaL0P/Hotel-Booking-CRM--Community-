@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Eye, EyeOff, MapPin, Phone, Clock, Bed, UserCircle, Briefcase } from 'lucide-react';
 import { useData } from '../data/DataContext';
 import { Role } from '../data/types';
+import logoUrl from '../../assets/logo.png';
 
 export function StaffSignIn() {
   const { login } = useData();
@@ -51,9 +52,7 @@ export function StaffSignIn() {
         </div>
 
         <div className="relative z-10">
-          <div className="w-16 h-16 bg-[#FAF6F0] text-[#7B1E22] flex items-center justify-center text-2xl font-bold rounded-xl mb-8">
-            SP
-          </div>
+          <img src={logoUrl} alt="Sharda Palace Logo" className="h-28 w-auto object-contain mb-8 bg-white/20 p-2 rounded-xl backdrop-blur-sm shadow-md" />
           <div className="inline-block px-3 py-1 bg-white/10 rounded-full text-sm font-medium mb-6">
             Hospitality Management System
           </div>
