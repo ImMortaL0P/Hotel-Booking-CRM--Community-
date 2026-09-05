@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Room, Guest, Booking, PaymentTransaction, CommRecord, User } from './types';
+import { Room, Guest, Booking, PaymentTransaction, CommRecord, User, ActivityLog, StandaloneInvoice } from './types';
 
 interface DataContextType {
   user: User | null;
@@ -25,6 +25,9 @@ interface DataContextType {
   addComm: (comm: CommRecord) => void;
   
   isLoading: boolean;
+  logs: ActivityLog[];
+  invoices: StandaloneInvoice[];
+  addInvoice: (invoice: StandaloneInvoice) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -37,6 +40,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [payments, setPayments] = useState<PaymentTransaction[]>([]);
   const [comms, setComms] = useState<CommRecord[]>([]);
+  const [logs, setLogs] = useState<ActivityLog[]>([]);
+  const [invoices, setInvoices] = useState<StandaloneInvoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -48,6 +53,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         setBookings(data.bookings || []);
         setPayments(data.payments || []);
         setComms(data.comms || []);
+        setLogs(data.logs || []);
+        setInvoices(data.invoices || []);
         setIsLoading(false);
       })
       .catch(err => {
@@ -72,12 +79,21 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const login = (userData: User) => setUser(userData);
   const logout = () => setUser(null);
 
+  // Helper to add user headers
+  const getHeaders = () => {
+    return {
+      'Content-Type': 'application/json',
+      'x-user-id': user?.id || 'system',
+      'x-user-name': user?.name || 'System Auto'
+    };
+  };
+
   const updateRoomStatus = (roomId: string, status: Room['status']) => {
     // Optimistic
     setRooms(prev => prev.map(r => r.id === roomId ? { ...r, status } : r));
     fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/rooms/${roomId}`, {
        method: 'PUT',
-       headers: {'Content-Type': 'application/json'},
+       headers: getHeaders(),
        body: JSON.stringify({ status })
     }).catch(console.error);
   };
@@ -86,16 +102,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setGuests(prev => [guest, ...prev]);
     fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/guests`, {
        method: 'POST',
-       headers: {'Content-Type': 'application/json'},
+       headers: getHeaders(),
        body: JSON.stringify(guest)
     }).catch(console.error);
   };
-  
+
   const updateGuest = (guest: Guest) => {
     setGuests(prev => prev.map(g => g.id === guest.id ? guest : g));
     fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/guests/${guest.id}`, {
        method: 'PUT',
-       headers: {'Content-Type': 'application/json'},
+       headers: getHeaders(),
        body: JSON.stringify(guest)
     }).catch(console.error);
   };
@@ -104,7 +120,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setBookings(prev => [booking, ...prev]);
     fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/bookings`, {
        method: 'POST',
-       headers: {'Content-Type': 'application/json'},
+       headers: getHeaders(),
        body: JSON.stringify(booking)
     }).catch(console.error);
   };
@@ -113,31 +129,32 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setBookings(prev => prev.map(b => b.id === booking.id ? booking : b));
     fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/bookings/${booking.id}`, {
        method: 'PUT',
-       headers: {'Content-Type': 'application/json'},
+       headers: getHeaders(),
        body: JSON.stringify(booking)
     }).catch(console.error);
   };
-  
+
   const deleteBooking = (bookingId: string) => {
     setBookings(prev => prev.filter(b => b.id !== bookingId));
-    fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/bookings/${bookingId}`, { method: 'DELETE' }).catch(console.error);
+    fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/bookings/${bookingId}`, {
+      method: 'DELETE',
+      headers: getHeaders()
+    }).catch(console.error);
   };
 
   const addPayment = (payment: PaymentTransaction) => {
     setPayments(prev => [payment, ...prev]);
     fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/payments`, {
        method: 'POST',
-       headers: {'Content-Type': 'application/json'},
+       headers: getHeaders(),
        body: JSON.stringify(payment)
     }).then(() => {
-      // Refresh logic since payment affects bookings & guests
-      // Realistically we can just optimistic update here too.
       const booking = bookings.find(b => b.id === payment.bookingId);
       if (booking) {
         const newPaid = booking.paid + payment.amount;
         const newBalance = booking.total - newPaid;
         updateBooking({ ...booking, paid: newPaid, balance: newBalance });
-        
+
         const guest = guests.find(g => g.id === payment.guestId);
         if (guest) {
           updateGuest({ ...guest, totalSpent: guest.totalSpent + payment.amount });
@@ -146,11 +163,21 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }).catch(console.error);
   };
 
+  
+  const addInvoice = (invoice: StandaloneInvoice) => {
+    setInvoices(prev => [invoice, ...prev]);
+    fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/invoices`, {
+       method: 'POST',
+       headers: getHeaders(),
+       body: JSON.stringify(invoice)
+    }).catch(console.error);
+  };
+
   const addComm = (comm: CommRecord) => {
     setComms(prev => [comm, ...prev]);
     fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/comms`, {
        method: 'POST',
-       headers: {'Content-Type': 'application/json'},
+       headers: getHeaders(),
        body: JSON.stringify(comm)
     }).catch(console.error);
   };
@@ -162,7 +189,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       guests, addGuest, updateGuest,
       bookings, addBooking, updateBooking, deleteBooking,
       payments, addPayment,
-      comms, addComm,
+      comms, addComm, logs, invoices, addInvoice,
       isLoading
     }}>
       {isLoading ? (

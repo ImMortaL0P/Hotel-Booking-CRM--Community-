@@ -9,6 +9,9 @@ import { Rooms } from './pages/Rooms';
 import { Calendar } from './pages/Calendar';
 import { Communications } from './pages/Communications';
 import { Payments } from './pages/Payments';
+import { Checkout } from './pages/Checkout';
+import { InvoiceGenerator } from './pages/InvoiceGenerator';
+import { Logs } from './pages/Logs';
 import { Toaster } from 'sonner';
 
 export default function App() {
@@ -35,6 +38,9 @@ export default function App() {
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/communications" element={<Communications />} />
           <Route path="/payments" element={<Payments />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/invoices" element={<InvoiceGenerator />} />
+          <Route path="/logs" element={<Logs />} />
         </Routes>
       </AppShell>
       <Toaster />

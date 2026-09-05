@@ -1,6 +1,6 @@
 import { ReactNode, useState } from 'react';
 import { NavLink, useLocation } from 'react-router';
-import { LayoutDashboard, BookOpenText, Users, BedDouble, CalendarDays, MessageSquare, CreditCard, LogOut, ChevronLeft, ChevronRight, Building } from 'lucide-react';
+import { LayoutDashboard, BookOpenText, Users, BedDouble, CalendarDays, MessageSquare, CreditCard, LogOut, ChevronLeft, ChevronRight, Building, FileText, Receipt, History } from 'lucide-react';
 import { useData } from '../data/DataContext';
 import { cn } from '../lib/utils';
 import { format } from 'date-fns';
@@ -51,14 +51,14 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="p-4 border-b border-[#e6dfd8] flex items-center justify-between shrink-0">
           {!collapsed ? (
             <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-8 h-8 rounded shrink-0 bg-[#7B1E22] text-white flex items-center justify-center font-bold text-sm">SP</div>
+              <img src="/logo.png" alt="Logo" className="w-8 h-8 rounded shrink-0 object-cover" />
               <div className="truncate">
                 <h2 className="font-bold text-[#2d1b1c] truncate">Sharda Palace</h2>
                 <p className="text-xs text-gray-500 truncate">Deoghar, Jharkhand</p>
               </div>
             </div>
           ) : (
-            <div className="w-8 h-8 rounded shrink-0 bg-[#7B1E22] text-white flex items-center justify-center font-bold text-lg mx-auto">SP</div>
+            <img src="/logo.png" alt="Logo" className="w-8 h-8 rounded shrink-0 object-cover mx-auto" />
           )}
           
           <button 
@@ -81,6 +81,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           {user?.role === 'manager' && (
             <NavItem to="/payments" icon={CreditCard} label="Payments" badge={pendingPayments} />
           )}
+          <NavItem to="/checkout" icon={Receipt} label="Checkout & Bill" />
+          <NavItem to="/invoices" icon={FileText} label="Custom Invoice" />
+          <NavItem to="/logs" icon={History} label="Activity Logs" />
           
           {!collapsed && (
             <div className="mt-8 p-4 bg-[#FAF6F0] rounded-xl border border-[#e6dfd8]">

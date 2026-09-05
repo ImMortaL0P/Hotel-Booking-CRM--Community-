@@ -1,4 +1,5 @@
 import express from 'express';
+import { saveInvoiceFile } from '../controllers/invoiceArchiveController.js';
 import {
   initializeData,
   updateRoom,
@@ -8,7 +9,8 @@ import {
   updateBooking,
   deleteBooking,
   addPayment,
-  addComm
+  addComm,
+  addInvoice
 } from '../controllers/dataController.js';
 
 const router = express.Router();
@@ -33,4 +35,10 @@ router.post('/payments', addPayment);
 // Comms
 router.post('/comms', addComm);
 
+// Invoices
+router.post('/invoices', addInvoice);
+
 export default router;
+
+// Save invoice file (HTML to github folder)
+router.post('/save-invoice-file', saveInvoiceFile);

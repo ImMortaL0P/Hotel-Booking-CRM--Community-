@@ -83,3 +83,24 @@ export interface CommRecord {
   timestamp: string; // ISO or human string
   status: 'Delivered' | 'Sent' | 'Failed';
 }
+
+export interface ActivityLog {
+  id: string;
+  action: string;
+  details: string;
+  userId: string;
+  userName: string;
+  timestamp: string;
+}
+
+export interface StandaloneInvoice {
+  id: string;
+  customerName: string;
+  phone: string;
+  date: string;
+  time: string;
+  items: { description: string; amount: number }[];
+  subtotal: number;
+  gst: number;
+  total: number;
+}
