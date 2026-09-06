@@ -58,9 +58,10 @@ export function Calendar() {
           </div>
         </div>
         <div className="flex items-center gap-4 text-xs font-semibold text-gray-600 bg-white px-4 py-2 rounded-lg border border-[#e6dfd8]">
-          <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-[#7B1E22] rounded-sm"></div> Confirmed/Checked-In</div>
+          <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-green-500 rounded-sm"></div> Checked-In</div>
+          <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-blue-500 rounded-sm"></div> Confirmed</div>
           <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-amber-500 rounded-sm"></div> Booked (Pending)</div>
-          <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-gray-400 rounded-sm"></div> Checked-Out</div>
+          <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-gray-500 rounded-sm"></div> Checked-Out</div>
         </div>
       </div>
 
@@ -186,8 +187,9 @@ export function Calendar() {
                             const width = durationHours * hourWidth;
 
                             const bgColor = booking.status === 'Booked' ? 'bg-amber-500 hover:bg-amber-600' :
-                                           booking.status === 'Checked-Out' ? 'bg-gray-500 hover:bg-gray-600' :
-                                           'bg-[#7B1E22] hover:bg-[#8C1D24]';
+                                           booking.status === 'Confirmed' ? 'bg-blue-500 hover:bg-blue-600' :
+                                           booking.status === 'Checked-In' ? 'bg-green-500 hover:bg-green-600' :
+                                           'bg-gray-500 hover:bg-gray-600'; // Checked-Out
 
                             return (
                               <div
