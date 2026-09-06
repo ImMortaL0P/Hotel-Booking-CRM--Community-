@@ -34,8 +34,8 @@ export function Bookings() {
 
   const getStatusColor = (s: string) => {
     switch (s) {
-      case 'Checked-In': return 'bg-blue-100 text-blue-700';
-      case 'Confirmed': return 'bg-green-100 text-green-700';
+      case 'Checked-In': return 'bg-green-100 text-green-700';
+      case 'Confirmed': return 'bg-blue-100 text-blue-700';
       case 'Booked': return 'bg-amber-100 text-amber-700';
       case 'Checked-Out': return 'bg-gray-100 text-gray-700';
       default: return 'bg-gray-100 text-gray-700';
