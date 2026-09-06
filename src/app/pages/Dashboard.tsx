@@ -19,7 +19,8 @@ import {
   Activity,
   Server,
   Database,
-  Globe
+  Globe,
+  Search
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { NewBookingModal } from '../components/NewBookingModal';
