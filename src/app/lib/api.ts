@@ -16,7 +16,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   let toastId = null;
   const slowWarning = setTimeout(() => {
     toastId = toast.loading('Waking up the server (this may take up to 60+ seconds)...');
-  }, 2500);
+  }, 8000);
 
   try {
     const response = await fetch(url, {
