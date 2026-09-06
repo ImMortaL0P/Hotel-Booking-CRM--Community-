@@ -46,7 +46,7 @@ export const saveDocument = async (req: Request, res: Response): Promise<void> =
             res.status(409).json({ success: false, message: 'A document with this ID already exists.' });
             return;
         }
-        res.status(500).json({ success: false, message: 'Failed to process document remotely' });
+        res.status(500).json({ success: false, message: 'Failed to process document remotely', error: error.message || String(error) });
     }
 };
 
