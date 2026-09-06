@@ -145,7 +145,7 @@ export function Bookings() {
                     <p className="text-xs text-gray-500">{guest?.phone}</p>
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-gray-900">Rm {room?.number}</p>
+                    <p className="text-gray-900">Room {room?.number}</p>
                     <p className="text-xs text-gray-500">{room?.category}</p>
                   </td>
                   <td className="px-4 py-3">

@@ -120,7 +120,7 @@ export function Calendar() {
                         {/* Room label sticky left */}
                         <div className="w-[180px] shrink-0 p-4 border-r border-[#e6dfd8] bg-white sticky left-0 z-20 flex flex-col justify-center group-hover:bg-orange-50/30 transition-colors shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] h-[100px]">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="font-bold text-lg text-[#7B1E22]">Rm {room.number}</span>
+                            <span className="font-bold text-lg text-[#7B1E22]">Room {room.number}</span>
                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${room.status === 'Available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                               {room.status}
                             </span>

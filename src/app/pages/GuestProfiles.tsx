@@ -245,7 +245,7 @@ export function GuestProfiles() {
                         <div key={b.id} className="flex justify-between items-center text-sm border-l-2 border-[#7B1E22] pl-3 py-1">
                            <div>
                              <p className="font-semibold text-gray-900">{formatDate(b.checkIn)} — {b.nights} nights</p>
-                             <p className="text-xs text-gray-500">Rm {room?.number} ({room?.category}) · {b.id}</p>
+                             <p className="text-xs text-gray-500">Room {room?.number} ({room?.category}) · {b.id}</p>
                            </div>
                            <div className="text-right">
                              <p className="font-bold">{formatCurrency(b.total)}</p>

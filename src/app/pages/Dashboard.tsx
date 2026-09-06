@@ -189,7 +189,7 @@ export function Dashboard() {
                     <div>
                       <p className="text-sm font-semibold text-[#2d1b1c]">{guest?.name}</p>
                       <p className="text-xs text-gray-500">
-                        Rm {room?.number} · {b.nights} nights ({b.adults}A {b.children}C)
+                        Room {room?.number} · {b.nights} nights ({b.adults}A {b.children}C)
                       </p>
                     </div>
                   </div>

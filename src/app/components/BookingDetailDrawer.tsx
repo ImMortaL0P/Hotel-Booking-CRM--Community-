@@ -80,7 +80,7 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
 
             <div className="grid grid-cols-2 gap-y-3 text-sm">
               <div className="text-gray-500">Room</div>
-              <div className="text-right font-medium">Rm {room?.number} ({room?.category})</div>
+              <div className="text-right font-medium">Room {room?.number} ({room?.category})</div>
 
               <div className="text-gray-500">Check-in</div>
               <div className="text-right font-medium">
