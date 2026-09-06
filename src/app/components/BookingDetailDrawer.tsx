@@ -42,16 +42,16 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
   return (
     <div className="fixed inset-0 z-[100] flex justify-end">
       <div className="absolute inset-0 bg-black/30" onClick={onClose}></div>
-      <div className="relative w-full max-w-lg bg-[#FAF6F0] h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
-        <div className="p-4 border-b border-[#e6dfd8] bg-white flex items-center justify-between shrink-0">
-          <h2 className="text-xl font-bold text-[#7B1E22]">{booking.id}</h2>
+      <div className="relative w-full max-w-lg bg-background h-full shadow-sm flex flex-col animate-in slide-in-from-right duration-300">
+        <div className="p-4 border-b border-border bg-card flex items-center justify-between shrink-0">
+          <h2 className="text-xl font-bold text-primary">{booking.id}</h2>
           <button onClick={onClose} className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          <div className="flex items-center gap-4 p-4 bg-white rounded-xl shadow-sm border border-[#e6dfd8]">
+          <div className="flex items-center gap-4 p-4 bg-card rounded-lg shadow-sm border border-border">
             <div className="w-12 h-12 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center text-xl font-bold">
               {guest?.avatarInitial || 'G'}
             </div>
@@ -61,7 +61,7 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
             </div>
           </div>
 
-          <div className="p-4 bg-white rounded-xl shadow-sm border border-[#e6dfd8]">
+          <div className="p-4 bg-card rounded-lg shadow-sm border border-border">
             <div className="flex justify-between items-center border-b border-gray-100 pb-3 mb-3">
               <h4 className="font-semibold flex items-center gap-2">
                 <FileText className="w-4 h-4" /> Stay Summary
@@ -69,7 +69,7 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
               <select
                 value={booking.status}
                 onChange={(e) => handleStatusChange(e.target.value as Booking['status'])}
-                className="text-sm border border-[#e6dfd8] rounded-md px-2 py-1 bg-white focus:outline-none focus:border-[#7B1E22] font-semibold"
+                className="text-sm border border-border rounded-md px-2 py-1 bg-card focus:outline-none focus:border-primary font-semibold"
               >
                 <option value="Booked">Booked (Pending)</option>
                 <option value="Confirmed">Confirmed</option>
@@ -97,7 +97,7 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
             </div>
           </div>
 
-          <div className="p-4 bg-white rounded-xl shadow-sm border border-[#e6dfd8]">
+          <div className="p-4 bg-card rounded-lg shadow-sm border border-border">
             <h4 className="font-semibold mb-3 flex items-center gap-2 border-b border-gray-100 pb-2">
               <CreditCard className="w-4 h-4" /> Folio
             </h4>
@@ -127,7 +127,7 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
             {booking.balance > 0 && (
               <button
                 onClick={handleRecordPayment}
-                className="mt-4 w-full bg-[#7B1E22] hover:bg-[#8C1D24] text-white py-2 rounded font-medium transition"
+                className="mt-4 w-full bg-primary hover:opacity-90 text-primary-foreground py-2 rounded font-medium transition"
               >
                 Record Payment
               </button>

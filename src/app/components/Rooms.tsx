@@ -76,7 +76,7 @@ export function Rooms() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-green-300">
+        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-sm hover:-translate-y-2 hover:border-green-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -84,13 +84,13 @@ export function Rooms() {
                 <p className="text-gray-900 group-hover:text-green-900 transition-colors">{stats.available} rooms</p>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-500 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                <Bed className="w-6 h-6 text-green-600 group-hover:text-white transition-colors" />
+                <Bed className="w-6 h-6 text-green-600 group-hover:text-primary-foreground transition-colors" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-blue-300">
+        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-sm hover:-translate-y-2 hover:border-blue-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -98,13 +98,13 @@ export function Rooms() {
                 <p className="text-gray-900 group-hover:text-blue-900 transition-colors">{stats.occupied} rooms</p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-500 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                <Bed className="w-6 h-6 text-blue-600 group-hover:text-white transition-colors" />
+                <Bed className="w-6 h-6 text-blue-600 group-hover:text-primary-foreground transition-colors" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-yellow-300">
+        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-sm hover:-translate-y-2 hover:border-yellow-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -112,13 +112,13 @@ export function Rooms() {
                 <p className="text-gray-900 group-hover:text-yellow-900 transition-colors">{stats.cleaning} rooms</p>
               </div>
               <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center group-hover:bg-yellow-500 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                <Bed className="w-6 h-6 text-yellow-600 group-hover:text-white transition-colors" />
+                <Bed className="w-6 h-6 text-yellow-600 group-hover:text-primary-foreground transition-colors" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-orange-300">
+        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-sm hover:-translate-y-2 hover:border-orange-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -126,7 +126,7 @@ export function Rooms() {
                 <p className="text-gray-900 group-hover:text-orange-900 transition-colors">{stats.maintenance} rooms</p>
               </div>
               <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center group-hover:bg-orange-500 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                <Bed className="w-6 h-6 text-orange-600 group-hover:text-white transition-colors" />
+                <Bed className="w-6 h-6 text-orange-600 group-hover:text-primary-foreground transition-colors" />
               </div>
             </div>
           </CardContent>
@@ -165,7 +165,7 @@ export function Rooms() {
       {/* Rooms Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredRooms.map((room) => (
-          <Card key={room.id} className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:border-purple-300">
+          <Card key={room.id} className="group cursor-pointer transition-all duration-300 hover:shadow-sm hover:scale-[1.02] hover:border-purple-300">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="group-hover:text-purple-700 transition-colors">Room {room.roomNumber}</CardTitle>

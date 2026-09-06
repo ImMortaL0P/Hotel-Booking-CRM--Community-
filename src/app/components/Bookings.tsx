@@ -186,7 +186,7 @@ export function Bookings() {
       </div>
 
       {/* Bookings List */}
-      <Card className="transition-all duration-300 hover:shadow-xl">
+      <Card className="transition-all duration-300 hover:shadow-sm">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full">

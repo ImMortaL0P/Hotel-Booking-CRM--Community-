@@ -85,41 +85,40 @@ export function Payments() {
 
       {/* 4 Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
-        <div className="bg-card p-5 rounded-xl border border-border flex flex-col justify-between">
+        <div className="bg-card p-5 rounded-lg border border-border border-l-4 border-l-green-600 flex flex-col justify-between">
           <div className="flex justify-between items-start mb-2">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Collected This Month</span>
-            <div className="w-8 h-8 bg-green-50 text-green-600 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 text-green-600 flex items-center justify-center">
               <Wallet className="w-4 h-4" />
             </div>
           </div>
           <div className="text-3xl font-bold text-foreground">{formatCurrency(thisMonthCollections)}</div>
         </div>
 
-        <div className="bg-card p-5 rounded-xl border border-red-200 flex flex-col justify-between shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-16 h-16 bg-red-50 rounded-bl-full -z-10"></div>
+        <div className="bg-card p-5 rounded-lg border border-border border-l-4 border-l-red-600 flex flex-col justify-between shadow-sm relative overflow-hidden">
           <div className="flex justify-between items-start mb-2 relative z-0">
             <span className="text-xs font-semibold text-red-700 uppercase tracking-wider">Pending Collections</span>
-            <div className="w-8 h-8 bg-red-50 text-red-600 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 text-red-600 flex items-center justify-center">
               <AlertCircle className="w-4 h-4" />
             </div>
           </div>
           <div className="text-3xl font-bold text-red-700 relative z-0">{formatCurrency(pendingCollections)}</div>
         </div>
 
-        <div className="bg-card p-5 rounded-xl border border-border flex flex-col justify-between">
+        <div className="bg-card p-5 rounded-lg border border-border border-l-4 border-l-blue-600 flex flex-col justify-between">
           <div className="flex justify-between items-start mb-2">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Today's Collections</span>
-            <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 text-blue-600 flex items-center justify-center">
               <IndianRupee className="w-4 h-4" />
             </div>
           </div>
           <div className="text-3xl font-bold text-foreground">{formatCurrency(todaysCollections)}</div>
         </div>
 
-        <div className="bg-card p-5 rounded-xl border border-border flex flex-col justify-between">
+        <div className="bg-card p-5 rounded-lg border border-border border-l-4 border-l-gray-400 flex flex-col justify-between">
           <div className="flex justify-between items-start mb-2">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Refunds Issued</span>
-            <div className="w-8 h-8 bg-muted text-foreground/80 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 text-foreground/80 flex items-center justify-center">
               <ArrowUpRight className="w-4 h-4" />
             </div>
           </div>
@@ -139,7 +138,7 @@ export function Payments() {
             placeholder="Search Receipt or Booking ID"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-1.5 border border-border rounded focus:outline-none focus:border-[#7B1E22] text-sm"
+            className="w-full pl-9 pr-4 py-1.5 border border-border rounded focus:outline-none focus:border-primary text-sm"
           />
         </div>
       </div>
@@ -221,7 +220,7 @@ export function Payments() {
                   <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-foreground bg-card border border-gray-300 rounded hover:bg-muted/50">
                     <Printer className="w-4 h-4"/> Print
                   </button>
-                  <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-primary bg-card border border-[#7B1E22] rounded hover:bg-red-50">
+                  <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-primary bg-card border border-primary rounded hover:bg-red-50">
                     <Download className="w-4 h-4"/> PDF
                   </button>
                   <button onClick={() => setSelectedReceipt(null)} className="p-1.5 hover:bg-gray-200 rounded-full ml-4">
@@ -238,7 +237,7 @@ export function Payments() {
                   <p className="text-sm text-foreground/80 font-medium mt-1">Ph: +91 79707 35251 | GSTIN: 20XXXXX1234X1ZX</p>
                 </div>
 
-                <div className="flex justify-between items-end border-b-2 border-[#7B1E22] pb-4 mb-6">
+                <div className="flex justify-between items-end border-b-2 border-primary pb-4 mb-6">
                   <div>
                     <h2 className="text-xl font-bold text-foreground tracking-wide uppercase">Payment Receipt</h2>
                     <p className="text-muted-foreground font-medium mt-1 text-sm">Receipt No: <strong>{selectedReceipt.id}</strong></p>

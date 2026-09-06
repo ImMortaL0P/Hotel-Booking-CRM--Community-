@@ -76,25 +76,25 @@ export function Communications() {
     <div className="space-y-6 h-full flex flex-col">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#2d1b1c]">Communications</h1>
+          <h1 className="text-2xl font-bold text-foreground">Communications</h1>
           <p className="text-sm text-gray-500">Manage guest messaging via WhatsApp, SMS, and Email.</p>
         </div>
         <button 
           onClick={() => setActiveTab('Compose')}
-          className="bg-[#7B1E22] text-white px-4 py-2 rounded-md font-semibold flex items-center justify-center gap-2 hover:bg-[#8C1D24] transition-colors"
+          className="bg-primary text-primary-foreground px-4 py-2 rounded-md font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-colors"
         >
           <Send className="w-4 h-4" /> New Message
         </button>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 p-1 bg-white border border-[#e6dfd8] rounded-lg shrink-0 overflow-x-auto w-max">
+      <div className="flex gap-2 p-1 bg-card border border-border rounded-lg shrink-0 overflow-x-auto w-max">
         {(['History', 'Compose', 'Templates'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeTab === tab ? 'bg-[#FAF6F0] text-[#7B1E22]' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              activeTab === tab ? 'bg-background text-primary' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
             }`}
           >
             {tab === 'History' && <History className="w-4 h-4" />}
@@ -106,18 +106,18 @@ export function Communications() {
       </div>
 
       {activeTab === 'History' && (
-        <div className="bg-white border text-sm border-[#e6dfd8] rounded-xl overflow-hidden flex-1 flex flex-col">
-          <div className="p-4 border-b border-[#e6dfd8] bg-[#FAF6F0] flex justify-between items-center">
-            <h2 className="font-bold text-[#2d1b1c]">Message History</h2>
+        <div className="bg-card border text-sm border-border rounded-lg overflow-hidden flex-1 flex flex-col">
+          <div className="p-4 border-b border-border bg-background flex justify-between items-center">
+            <h2 className="font-bold text-foreground">Message History</h2>
             <div className="relative w-64">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input type="text" placeholder="Search logs..." className="w-full pl-9 pr-4 py-1.5 border border-[#e6dfd8] rounded focus:outline-none focus:border-[#7B1E22] text-sm" />
+              <input type="text" placeholder="Search logs..." className="w-full pl-9 pr-4 py-1.5 border border-border rounded focus:outline-none focus:border-primary text-sm" />
             </div>
           </div>
           <div className="flex-1 overflow-auto">
             <table className="w-full text-left whitespace-nowrap">
-              <thead className="bg-[#FAF6F0] sticky top-0">
-                <tr className="border-b border-[#e6dfd8] text-xs font-semibold text-gray-600 uppercase">
+              <thead className="bg-background sticky top-0">
+                <tr className="border-b border-border text-xs font-semibold text-gray-600 uppercase">
                   <th className="px-4 py-3">Channel</th>
                   <th className="px-4 py-3">Guest / Segment</th>
                   <th className="px-4 py-3">Template</th>
@@ -163,8 +163,8 @@ export function Communications() {
 
       {activeTab === 'Compose' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 h-0 overflow-y-auto pb-6">
-          <div className="bg-white p-6 rounded-xl border border-[#e6dfd8] space-y-6">
-            <h2 className="font-bold text-lg text-[#7B1E22] border-b border-[#e6dfd8] pb-2">Compose Message</h2>
+          <div className="bg-card p-6 rounded-lg border border-border space-y-6">
+            <h2 className="font-bold text-lg text-primary border-b border-border pb-2">Compose Message</h2>
             
             <div className="space-y-4">
               <div>
@@ -175,7 +175,7 @@ export function Communications() {
                       key={ch}
                       onClick={() => setChannel(ch)}
                       className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center gap-2 border font-medium transition-colors
-                        ${channel === ch ? 'bg-[#FAF6F0] border-[#7B1E22] text-[#7B1E22]' : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'}`}
+                        ${channel === ch ? 'bg-background border-primary text-primary' : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'}`}
                     >
                       {channelIcon[ch]} {ch}
                     </button>
@@ -190,7 +190,7 @@ export function Communications() {
                     <button
                       key={tgt}
                       onClick={() => setRecipientFilter(tgt)}
-                      className={`py-2 px-2 text-sm rounded border font-medium ${recipientFilter === tgt ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-white border-[#e6dfd8] text-gray-600'}`}
+                      className={`py-2 px-2 text-sm rounded border font-medium ${recipientFilter === tgt ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-card border-border text-gray-600'}`}
                     >
                       {tgt}
                     </button>
@@ -201,7 +201,7 @@ export function Communications() {
                   <select 
                     value={selectedGuestId} 
                     onChange={e => setSelectedGuestId(e.target.value)}
-                    className="w-full border border-[#e6dfd8] rounded-md p-2 focus:ring-[#7B1E22] focus:border-[#7B1E22]"
+                    className="w-full border border-border rounded-md p-2 focus:ring-primary focus:border-primary"
                   >
                     <option value="">-- Select Guest --</option>
                     {guests.map(g => (
@@ -221,7 +221,7 @@ export function Communications() {
                 <select 
                   value={selectedTemplate}
                   onChange={e => setSelectedTemplate(e.target.value)}
-                  className="w-full border border-[#e6dfd8] rounded-md p-2 mb-2 focus:ring-[#7B1E22] focus:border-[#7B1E22]"
+                  className="w-full border border-border rounded-md p-2 mb-2 focus:ring-primary focus:border-primary"
                 >
                   {Object.keys(templates).map(k => (
                     <option key={k} value={k}>{k}</option>
@@ -231,26 +231,26 @@ export function Communications() {
               
               <button 
                 onClick={handleSend}
-                className="w-full bg-[#7B1E22] text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-[#8C1D24] shadow-md transition-colors mt-6"
+                className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:opacity-90 shadow-md transition-colors mt-6"
               >
                 <Send className="w-5 h-5" /> Send Message
               </button>
             </div>
           </div>
 
-          <div className="bg-[#FAF6F0] p-6 rounded-xl border border-[#e6dfd8] flex flex-col justify-between">
+          <div className="bg-background p-6 rounded-lg border border-border flex flex-col justify-between">
              <div>
-               <h2 className="font-bold text-lg text-[#7B1E22] border-b border-white pb-2 mb-4">Live Preview</h2>
-               <div className="bg-white p-4 rounded-xl border border-[#e6dfd8] shadow-sm text-gray-800 leading-relaxed relative">
+               <h2 className="font-bold text-lg text-primary border-b border-white pb-2 mb-4">Live Preview</h2>
+               <div className="bg-card p-4 rounded-lg border border-border shadow-sm text-gray-800 leading-relaxed relative">
                  {/* Tail for preview bubble based on channel */}
-                 <div className="absolute top-4 -left-2 w-4 h-4 bg-white border-l border-b border-[#e6dfd8] rotate-45"></div>
+                 <div className="absolute top-4 -left-2 w-4 h-4 bg-card border-l border-b border-border rotate-45"></div>
                  {getPreviewText()}
                </div>
              </div>
              
-             <div className="mt-8 text-sm text-gray-500 bg-white/50 p-4 rounded border border-gray-100">
+             <div className="mt-8 text-sm text-gray-500 bg-card/50 p-4 rounded border border-gray-100">
                <p className="font-semibold text-gray-700 mb-1">Available Merge Tags:</p>
-               <div className="flex flex-wrap gap-2 font-mono text-xs text-[#7B1E22]">
+               <div className="flex flex-wrap gap-2 font-mono text-xs text-primary">
                  <span className="bg-red-50 px-1 py-0.5 rounded px-2">{`{{guest_name}}`}</span>
                  <span className="bg-red-50 px-1 py-0.5 rounded px-2">{`{{room}}`}</span>
                  <span className="bg-red-50 px-1 py-0.5 rounded px-2">{`{{check_in}}`}</span>
@@ -262,16 +262,16 @@ export function Communications() {
       )}
 
       {activeTab === 'Templates' && (
-        <div className="bg-white p-6 rounded-xl border border-[#e6dfd8] flex-1 overflow-y-auto">
-          <h2 className="font-bold text-lg text-[#7B1E22] border-b border-[#e6dfd8] pb-2 mb-6">Message Templates</h2>
+        <div className="bg-card p-6 rounded-lg border border-border flex-1 overflow-y-auto">
+          <h2 className="font-bold text-lg text-primary border-b border-border pb-2 mb-6">Message Templates</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(templates).map(([name, text]) => (
-              <div key={name} className="border border-[#e6dfd8] rounded-xl p-4 flex flex-col hover:border-[#7B1E22] transition-colors">
+              <div key={name} className="border border-border rounded-lg p-4 flex flex-col hover:border-primary transition-colors">
                 <div className="font-bold text-gray-900 mb-2 truncate">{name}</div>
-                <div className="text-sm text-gray-600 bg-[#FAF6F0] p-3 rounded-md flex-1 whitespace-pre-wrap font-sans">
+                <div className="text-sm text-gray-600 bg-background p-3 rounded-md flex-1 whitespace-pre-wrap font-sans">
                   {text}
                 </div>
-                <button className="mt-4 text-xs font-semibold text-[#7B1E22] self-start uppercase tracking-wider hover:underline">
+                <button className="mt-4 text-xs font-semibold text-primary self-start uppercase tracking-wider hover:underline">
                   Edit Template
                 </button>
               </div>

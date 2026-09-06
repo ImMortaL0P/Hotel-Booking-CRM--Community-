@@ -52,7 +52,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           transition={{ duration: 0.5, delay: 0.1 }}
         >
           <Card 
-            className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-green-300"
+            className="group cursor-pointer transition-all duration-300 hover:shadow-sm hover:-translate-y-2 hover:border-green-300"
             onClick={() => onNavigate('reports')}
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -72,7 +72,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <Card 
-            className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-blue-300"
+            className="group cursor-pointer transition-all duration-300 hover:shadow-sm hover:-translate-y-2 hover:border-blue-300"
             onClick={() => onNavigate('bookings')}
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -92,7 +92,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Card 
-            className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-purple-300"
+            className="group cursor-pointer transition-all duration-300 hover:shadow-sm hover:-translate-y-2 hover:border-purple-300"
             onClick={() => onNavigate('customers')}
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -112,7 +112,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           transition={{ duration: 0.5, delay: 0.4 }}
         >
           <Card 
-            className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-orange-300"
+            className="group cursor-pointer transition-all duration-300 hover:shadow-sm hover:-translate-y-2 hover:border-orange-300"
             onClick={() => onNavigate('rooms')}
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -134,7 +134,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
         >
-          <Card className="transition-all duration-300 hover:shadow-xl hover:scale-[1.02]">
+          <Card className="transition-all duration-300 hover:shadow-sm hover:scale-[1.02]">
             <CardHeader>
               <CardTitle>Revenue Trend</CardTitle>
             </CardHeader>
@@ -217,7 +217,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
         >
-          <Card className="transition-all duration-300 hover:shadow-xl hover:scale-[1.02]">
+          <Card className="transition-all duration-300 hover:shadow-sm hover:scale-[1.02]">
             <CardHeader>
               <CardTitle>Bookings by Room Type</CardTitle>
             </CardHeader>
@@ -279,7 +279,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.7 }}
       >
-        <Card className="transition-all duration-300 hover:shadow-xl">
+        <Card className="transition-all duration-300 hover:shadow-sm">
           <CardHeader>
             <CardTitle>Recent Bookings</CardTitle>
           </CardHeader>

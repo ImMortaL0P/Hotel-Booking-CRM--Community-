@@ -17,10 +17,10 @@ const InvoiceGenerator = lazy(() => import('./pages/InvoiceGenerator').then(m =>
 const Logs = lazy(() => import('./pages/Logs').then(m => ({ default: m.Logs })));
 
 const LoadingFallback = () => (
-  <div className="h-full flex items-center justify-center bg-[#FAF6F0]">
+  <div className="h-full flex items-center justify-center bg-background">
     <div className="relative">
-      <div className="w-12 h-12 border-4 border-[#e6dfd8] rounded-full"></div>
-      <div className="w-12 h-12 border-4 border-transparent border-t-[#7B1E22] rounded-full animate-spin absolute inset-0"></div>
+      <div className="w-12 h-12 border-4 border-border rounded-full"></div>
+      <div className="w-12 h-12 border-4 border-transparent border-t-primary rounded-full animate-spin absolute inset-0"></div>
     </div>
   </div>
 );

@@ -95,7 +95,7 @@ export function Dashboard() {
       {/* 4 Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1 */}
-        <div className="bg-card p-5 rounded-xl border border-border flex flex-col justify-between">
+        <div className="bg-card p-5 rounded-lg border border-border flex flex-col justify-between">
           <div>
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Today's Check-ins</span>
             <div className="text-3xl font-bold text-card-foreground mt-2">{todayCheckIns.length}</div>
@@ -107,7 +107,7 @@ export function Dashboard() {
         </div>
 
         {/* Card 2 */}
-        <div className="bg-card p-5 rounded-xl border border-border flex flex-col justify-between">
+        <div className="bg-card p-5 rounded-lg border border-border flex flex-col justify-between">
           <div>
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Today's Check-outs</span>
             <div className="text-3xl font-bold text-card-foreground mt-2">{todayCheckOuts.length}</div>
@@ -119,7 +119,7 @@ export function Dashboard() {
         </div>
 
         {/* Card 3 */}
-        <div className="bg-card p-5 rounded-xl border border-border flex flex-col justify-between">
+        <div className="bg-card p-5 rounded-lg border border-border flex flex-col justify-between">
           <div className="flex justify-between items-start">
             <div>
               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Occupied Rooms</span>
@@ -135,7 +135,7 @@ export function Dashboard() {
         </div>
 
         {/* Card 4 - Tinted Red */}
-        <div className="bg-destructive/10 p-5 rounded-xl border border-destructive/20 flex flex-col justify-between">
+        <div className="bg-card p-5 rounded-lg border-l-4 border-l-destructive border-y border-r border-border flex flex-col justify-between">
           <div>
             <span className="text-xs font-semibold text-destructive uppercase tracking-wider">Pending Collections</span>
             <div className="text-3xl font-bold text-destructive mt-2">{formatCurrency(totalPendingAmount)}</div>
@@ -149,7 +149,7 @@ export function Dashboard() {
       {/* Grid: Occupancy Chart + Upcoming Arrivals */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Grouped Bar Chart */}
-        <div className="lg:col-span-2 bg-card p-6 rounded-xl border border-border">
+        <div className="lg:col-span-2 bg-card p-6 rounded-lg border border-border">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <h2 className="text-base font-bold text-card-foreground">Room Occupancy by Type</h2>
@@ -165,7 +165,7 @@ export function Dashboard() {
                 <YAxis fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} domain={[0, 2]} ticks={[0, 1, 2]} />
                 <Tooltip cursor={{ fill: 'rgba(0,0,0,0.02)' }} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
-                <Bar dataKey="Occupied" fill="#7B1E22" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Occupied" fill="var(--primary)" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="Available" fill="#10b981" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="Maintenance" fill="#f59e0b" radius={[4, 4, 0, 0]} />
               </BarChart>
@@ -174,7 +174,7 @@ export function Dashboard() {
         </div>
 
         {/* Right 1 Col: Upcoming Arrivals */}
-        <div className="bg-card p-6 rounded-xl border border-border">
+        <div className="bg-card p-6 rounded-lg border border-border">
           <h2 className="text-base font-bold text-card-foreground mb-4">Upcoming Arrivals</h2>
           <div className="space-y-4">
             {upcomingArrivals.map(b => {
@@ -206,7 +206,7 @@ export function Dashboard() {
       {/* Grid: Recent Bookings + Recent Comms */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Recent Bookings Table */}
-        <div className="lg:col-span-2 bg-card p-6 rounded-xl border border-border">
+        <div className="lg:col-span-2 bg-card p-6 rounded-lg border border-border">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-bold text-card-foreground">Recent Bookings</h2>
             <button 
@@ -261,7 +261,7 @@ export function Dashboard() {
         </div>
 
         {/* Right 1 Col: Recent Comms */}
-        <div className="bg-card p-6 rounded-xl border border-border">
+        <div className="bg-card p-6 rounded-lg border border-border">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-bold text-card-foreground">Recent Comms</h2>
             <button 
@@ -296,7 +296,7 @@ export function Dashboard() {
 
       {/* Manager Quick Actions Row */}
       {['manager', 'owner', 'superadmin'].includes(user?.role || '') && (
-        <div className="bg-card p-5 rounded-xl border border-border">
+        <div className="bg-card p-5 rounded-lg border border-border">
           <h2 className="text-sm font-bold text-card-foreground mb-3 uppercase tracking-wider">Manager Quick Actions</h2>
           <div className="flex flex-wrap gap-3">
             <button 

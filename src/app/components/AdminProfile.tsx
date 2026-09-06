@@ -74,17 +74,17 @@ export function AdminProfile({ onBack }: AdminProfileProps) {
       </div>
 
       {/* Profile Overview Card */}
-      <Card className="mb-8 transition-all duration-300 hover:shadow-xl">
+      <Card className="mb-8 transition-all duration-300 hover:shadow-sm">
         <CardContent className="p-8">
           <div className="flex items-start gap-8">
             <div className="relative group">
-              <Avatar className="w-32 h-32 border-4 border-white shadow-lg">
+              <Avatar className="w-32 h-32 border-4 border-white shadow-sm">
                 <AvatarImage src={currentUser.avatar} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-3xl">
+                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-primary-foreground text-3xl">
                   {currentUser.name.split(' ').map(n => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>
-              <button className="absolute bottom-0 right-0 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+              <button className="absolute bottom-0 right-0 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-primary-foreground shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
                 <Camera className="w-5 h-5" />
               </button>
             </div>
@@ -163,7 +163,7 @@ export function AdminProfile({ onBack }: AdminProfileProps) {
 
         {/* Personal Info Tab */}
         <TabsContent value="personal">
-          <Card className="transition-all duration-300 hover:shadow-xl">
+          <Card className="transition-all duration-300 hover:shadow-sm">
             <CardHeader>
               <CardTitle>Personal Information</CardTitle>
             </CardHeader>
@@ -237,7 +237,7 @@ export function AdminProfile({ onBack }: AdminProfileProps) {
         {/* Security Tab */}
         <TabsContent value="security">
           <div className="space-y-6">
-            <Card className="transition-all duration-300 hover:shadow-xl">
+            <Card className="transition-all duration-300 hover:shadow-sm">
               <CardHeader>
                 <CardTitle>Change Password</CardTitle>
               </CardHeader>
@@ -261,7 +261,7 @@ export function AdminProfile({ onBack }: AdminProfileProps) {
               </CardContent>
             </Card>
 
-            <Card className="transition-all duration-300 hover:shadow-xl">
+            <Card className="transition-all duration-300 hover:shadow-sm">
               <CardHeader>
                 <CardTitle>Two-Factor Authentication</CardTitle>
               </CardHeader>
@@ -276,7 +276,7 @@ export function AdminProfile({ onBack }: AdminProfileProps) {
               </CardContent>
             </Card>
 
-            <Card className="transition-all duration-300 hover:shadow-xl">
+            <Card className="transition-all duration-300 hover:shadow-sm">
               <CardHeader>
                 <CardTitle>Active Sessions</CardTitle>
               </CardHeader>
@@ -307,7 +307,7 @@ export function AdminProfile({ onBack }: AdminProfileProps) {
         {/* Preferences Tab */}
         <TabsContent value="preferences">
           <div className="space-y-6">
-            <Card className="transition-all duration-300 hover:shadow-xl">
+            <Card className="transition-all duration-300 hover:shadow-sm">
               <CardHeader>
                 <CardTitle>Notification Preferences</CardTitle>
               </CardHeader>
@@ -345,7 +345,7 @@ export function AdminProfile({ onBack }: AdminProfileProps) {
               </CardContent>
             </Card>
 
-            <Card className="transition-all duration-300 hover:shadow-xl">
+            <Card className="transition-all duration-300 hover:shadow-sm">
               <CardHeader>
                 <CardTitle>Display Settings</CardTitle>
               </CardHeader>
@@ -403,7 +403,7 @@ export function AdminProfile({ onBack }: AdminProfileProps) {
 
         {/* Activity Log Tab */}
         <TabsContent value="activity">
-          <Card className="transition-all duration-300 hover:shadow-xl">
+          <Card className="transition-all duration-300 hover:shadow-sm">
             <CardHeader>
               <CardTitle>Recent Activity</CardTitle>
             </CardHeader>

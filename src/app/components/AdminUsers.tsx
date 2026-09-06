@@ -155,7 +155,7 @@ export function AdminUsers() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-blue-300">
+        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-sm hover:-translate-y-2 hover:border-blue-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -163,13 +163,13 @@ export function AdminUsers() {
                 <p className="text-gray-900 group-hover:text-blue-900 transition-colors">{stats.total}</p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-500 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                <UserCog className="w-6 h-6 text-blue-600 group-hover:text-white transition-colors" />
+                <UserCog className="w-6 h-6 text-blue-600 group-hover:text-primary-foreground transition-colors" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-green-300">
+        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-sm hover:-translate-y-2 hover:border-green-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -177,13 +177,13 @@ export function AdminUsers() {
                 <p className="text-gray-900 group-hover:text-green-900 transition-colors">{stats.active}</p>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-500 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                <UserCog className="w-6 h-6 text-green-600 group-hover:text-white transition-colors" />
+                <UserCog className="w-6 h-6 text-green-600 group-hover:text-primary-foreground transition-colors" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-red-300">
+        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-sm hover:-translate-y-2 hover:border-red-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -191,13 +191,13 @@ export function AdminUsers() {
                 <p className="text-gray-900 group-hover:text-red-900 transition-colors">{stats.inactive}</p>
               </div>
               <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-500 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                <UserCog className="w-6 h-6 text-red-600 group-hover:text-white transition-colors" />
+                <UserCog className="w-6 h-6 text-red-600 group-hover:text-primary-foreground transition-colors" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-purple-300">
+        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-sm hover:-translate-y-2 hover:border-purple-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -205,7 +205,7 @@ export function AdminUsers() {
                 <p className="text-gray-900 group-hover:text-purple-900 transition-colors">{stats.admins}</p>
               </div>
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-500 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                <Shield className="w-6 h-6 text-purple-600 group-hover:text-white transition-colors" />
+                <Shield className="w-6 h-6 text-purple-600 group-hover:text-primary-foreground transition-colors" />
               </div>
             </div>
           </CardContent>
@@ -240,11 +240,11 @@ export function AdminUsers() {
       {/* Users Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {filteredUsers.map((user) => (
-          <Card key={user.id} className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:border-blue-300">
+          <Card key={user.id} className="group cursor-pointer transition-all duration-300 hover:shadow-sm hover:scale-[1.02] hover:border-blue-300">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-primary-foreground group-hover:scale-110 transition-transform duration-300">
                     {user.name.split(' ').map(n => n[0]).join('')}
                   </div>
                   <div>
@@ -289,7 +289,7 @@ export function AdminUsers() {
                   {user.permissions.map((permission) => (
                     <div
                       key={permission}
-                      className="px-2 py-1 bg-white border border-gray-200 rounded text-gray-700"
+                      className="px-2 py-1 bg-card border border-gray-200 rounded text-gray-700"
                     >
                       {permission}
                     </div>
@@ -340,7 +340,7 @@ export function AdminUsers() {
           {selectedUser && (
             <div className="space-y-4">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-primary-foreground">
                   {selectedUser.name.split(' ').map(n => n[0]).join('')}
                 </div>
                 <div>

@@ -183,11 +183,11 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden my-8">
+      <div className="bg-card rounded-lg shadow-sm w-full max-w-2xl overflow-hidden my-8">
         {/* Header */}
-        <div className="p-6 bg-[#FAF6F0] border-b border-[#e6dfd8] flex items-center justify-between">
+        <div className="p-6 bg-background border-b border-border flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-[#2d1b1c]">New Booking</h2>
+            <h2 className="text-xl font-bold text-foreground">New Booking</h2>
             <p className="text-xs text-gray-500">Create a new guest booking at Sharda Palace</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
@@ -198,7 +198,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
         <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
           {/* 1. Guest Information */}
           <div>
-            <h3 className="text-sm font-semibold text-[#7B1E22] flex items-center gap-2 mb-3">
+            <h3 className="text-sm font-semibold text-primary flex items-center gap-2 mb-3">
               <User className="w-4 h-4" /> 1. Guest Information
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -210,7 +210,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                   value={guestName}
                   onChange={e => setGuestName(e.target.value)}
                   placeholder="e.g. Amit Singh"
-                  className="w-full text-sm px-3 py-2 border border-[#e6dfd8] rounded-md focus:ring-1 focus:ring-[#7B1E22]"
+                  className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary"
                 />
               </div>
               <div>
@@ -221,7 +221,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
                   placeholder="+91 98765 43210"
-                  className="w-full text-sm px-3 py-2 border border-[#e6dfd8] rounded-md focus:ring-1 focus:ring-[#7B1E22]"
+                  className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary"
                 />
               </div>
               <div>
@@ -229,7 +229,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                 <select 
                   value={idProofType}
                   onChange={e => setIdProofType(e.target.value as IDProofType)}
-                  className="w-full text-sm px-3 py-2 border border-[#e6dfd8] rounded-md focus:ring-1 focus:ring-[#7B1E22]"
+                  className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary"
                 >
                   <option value="Aadhaar">Aadhaar Card</option>
                   <option value="Voter ID">Voter ID</option>
@@ -246,7 +246,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                   value={idProofNumber}
                   onChange={e => setIdProofNumber(e.target.value)}
                   placeholder="Enter ID number"
-                  className="w-full text-sm px-3 py-2 border border-[#e6dfd8] rounded-md focus:ring-1 focus:ring-[#7B1E22]"
+                  className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary"
                 />
               </div>
               <div className="md:col-span-2">
@@ -256,7 +256,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="guest@example.com"
-                  className="w-full text-sm px-3 py-2 border border-[#e6dfd8] rounded-md focus:ring-1 focus:ring-[#7B1E22]"
+                  className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary"
                 />
               </div>
             </div>
@@ -264,7 +264,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
 
           {/* 2. Room & Stay Details */}
           <div>
-            <h3 className="text-sm font-semibold text-[#7B1E22] flex items-center gap-2 mb-3">
+            <h3 className="text-sm font-semibold text-primary flex items-center gap-2 mb-3">
               <Calendar className="w-4 h-4" /> 2. Room & Stay Details
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -273,7 +273,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                 <select
                   value={roomType}
                   onChange={e => setRoomType(e.target.value as RoomCategory)}
-                  className="w-full text-sm px-3 py-2 border border-[#e6dfd8] rounded-md focus:ring-1 focus:ring-[#7B1E22]"
+                  className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary"
                 >
                   <option value="Deluxe Double">Deluxe Double (₹1,500/night)</option>
                   <option value="Family Suite">Family Suite (₹3,000/night)</option>
@@ -284,7 +284,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                 <select 
                   value={selectedRoomId}
                   onChange={e => setSelectedRoomId(e.target.value)}
-                  className="w-full text-sm px-3 py-2 border border-[#e6dfd8] rounded-md focus:ring-1 focus:ring-[#7B1E22]"
+                  className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary"
                 >
                   {availableRooms.map(r => (
                     <option key={r.id} value={r.id}>
@@ -300,7 +300,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                   required
                   value={checkInDate}
                   onChange={e => setCheckInDate(e.target.value)}
-                  className="w-full text-sm px-3 py-2 border border-[#e6dfd8] rounded-md focus:ring-1 focus:ring-[#7B1E22]"
+                  className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary"
                 />
               </div>
               <div>
@@ -310,7 +310,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                   required
                   value={checkOutDate}
                   onChange={e => setCheckOutDate(e.target.value)}
-                  className="w-full text-sm px-3 py-2 border border-[#e6dfd8] rounded-md focus:ring-1 focus:ring-[#7B1E22]"
+                  className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary"
                 />
               </div>
               <div>
@@ -321,7 +321,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                   max="6"
                   value={adults}
                   onChange={e => setAdults(parseInt(e.target.value) || 1)}
-                  className="w-full text-sm px-3 py-2 border border-[#e6dfd8] rounded-md focus:ring-1 focus:ring-[#7B1E22]"
+                  className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary"
                 />
               </div>
               <div>
@@ -332,7 +332,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                   max="4"
                   value={children}
                   onChange={e => setChildren(parseInt(e.target.value) || 0)}
-                  className="w-full text-sm px-3 py-2 border border-[#e6dfd8] rounded-md focus:ring-1 focus:ring-[#7B1E22]"
+                  className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary"
                 />
               </div>
             </div>
@@ -340,12 +340,12 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
 
           {/* 3. Payment & Live Pricing Summary */}
           <div>
-            <h3 className="text-sm font-semibold text-[#7B1E22] flex items-center gap-2 mb-3">
+            <h3 className="text-sm font-semibold text-primary flex items-center gap-2 mb-3">
               <CreditCard className="w-4 h-4" /> 3. Payment Details
             </h3>
             
             {/* Live Pricing Summary Box */}
-            <div className="bg-[#FAF6F0] p-4 rounded-lg border border-[#e6dfd8] mb-4 space-y-1.5 text-xs">
+            <div className="bg-background p-4 rounded-lg border border-border mb-4 space-y-1.5 text-xs">
               <div className="flex justify-between">
                 <span className="text-gray-600">Nights:</span>
                 <span className="font-semibold text-gray-800">{nights} night(s)</span>
@@ -358,9 +358,9 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                 <span className="text-gray-600">GST (12%):</span>
                 <span className="font-semibold text-gray-800">{formatCurrency(gst)}</span>
               </div>
-              <div className="flex justify-between text-sm font-bold pt-2 border-t border-[#e6dfd8]">
-                <span className="text-[#7B1E22]">Total Amount:</span>
-                <span className="text-[#7B1E22]">{formatCurrency(total)}</span>
+              <div className="flex justify-between text-sm font-bold pt-2 border-t border-border">
+                <span className="text-primary">Total Amount:</span>
+                <span className="text-primary">{formatCurrency(total)}</span>
               </div>
             </div>
 
@@ -373,7 +373,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                   max={total}
                   value={advancePaid}
                   onChange={e => setAdvancePaid(parseFloat(e.target.value) || 0)}
-                  className="w-full text-sm px-3 py-2 border border-[#e6dfd8] rounded-md focus:ring-1 focus:ring-[#7B1E22]"
+                  className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary"
                 />
               </div>
               <div>
@@ -381,7 +381,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                 <select 
                   value={paymentMode}
                   onChange={e => setPaymentMode(e.target.value as PaymentMode)}
-                  className="w-full text-sm px-3 py-2 border border-[#e6dfd8] rounded-md focus:ring-1 focus:ring-[#7B1E22]"
+                  className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary"
                 >
                   <option value="UPI">UPI / GPay / PhonePe</option>
                   <option value="Cash">Cash</option>
@@ -396,24 +396,24 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
                   placeholder="e.g. Late check-in, extra bedding"
-                  className="w-full text-sm px-3 py-2 border border-[#e6dfd8] rounded-md focus:ring-1 focus:ring-[#7B1E22]"
+                  className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary"
                 />
               </div>
             </div>
           </div>
 
           {/* Footer Actions */}
-          <div className="pt-4 border-t border-[#e6dfd8] flex justify-end gap-3">
+          <div className="pt-4 border-t border-border flex justify-end gap-3">
             <button 
               type="button" 
               onClick={onClose}
-              className="px-4 py-2 text-sm border border-[#e6dfd8] rounded-md text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 text-sm border border-border rounded-md text-gray-700 hover:bg-gray-50"
             >
               Cancel
             </button>
             <button 
               type="submit"
-              className="px-6 py-2 text-sm bg-[#7B1E22] text-white rounded-md hover:bg-[#8C1D24] font-medium"
+              className="px-6 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:opacity-90 font-medium"
             >
               Confirm Booking
             </button>

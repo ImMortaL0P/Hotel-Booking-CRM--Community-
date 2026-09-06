@@ -41,28 +41,28 @@ export function StaffSignIn() {
   };
 
   return (
-    <div className="min-h-screen flex font-sans bg-[#FAF6F0]">
+    <div className="min-h-screen flex font-sans bg-background">
       {/* Left Panel: Brand / Hotel Info */}
-      <div className="hidden lg:flex w-1/2 bg-[#7B1E22] text-white flex-col justify-between p-12 relative overflow-hidden">
+      <div className="hidden lg:flex w-1/2 bg-primary text-primary-foreground flex-col justify-between p-12 relative overflow-hidden">
         {/* Logo Background with reduced opacity */}
         <div className="absolute inset-0 opacity-15 pointer-events-none flex items-center justify-center p-8">
           <img src={logoUrl} alt="" className="w-full h-full object-contain" />
         </div>
 
         <div className="relative z-10 mt-8">
-          <div className="inline-block px-3 py-1 bg-white/10 rounded-full text-sm font-medium mb-6 backdrop-blur-sm">
+          <div className="inline-block px-3 py-1 bg-card/10 rounded-full text-sm font-medium mb-6 backdrop-blur-sm">
             Hospitality Management System
           </div>
           <h1 className="text-5xl font-bold mb-4 drop-shadow-md">ShardaCRM</h1>
-          <p className="text-[#e6dfd8] text-xl mb-12 max-w-md drop-shadow-sm">
+          <p className="text-primary-foreground/80 text-xl mb-12 max-w-md drop-shadow-sm">
             Complete hotel management for bookings, guests, rooms, and communications — all in one place.
           </p>
 
-          <div className="space-y-6 text-[#e6dfd8]">
+          <div className="space-y-6 text-primary-foreground/80">
             <div className="flex items-start gap-4">
               <MapPin className="w-6 h-6 shrink-0 mt-0.5" />
               <div>
-                <p className="font-semibold text-white">Sharda Palace</p>
+                <p className="font-semibold text-primary-foreground">Sharda Palace</p>
                 <p>Main Shivganga Road, Bam Bam Baba Path,<br/>near Matri Mandir, Deoghar 814112, Jharkhand</p>
               </div>
             </div>
@@ -84,16 +84,16 @@ export function StaffSignIn() {
           </div>
         </div>
 
-        <div className="relative z-10 text-[#e6dfd8] text-sm font-medium">
+        <div className="relative z-10 text-primary-foreground/80 text-sm font-medium">
           जय बाबा बैद्यनाथ · Jai Baba Baidyanath
         </div>
       </div>
 
       {/* Right Panel: Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gradient-to-br from-[#FAF6F0] to-[#F1EAE0]">
-        <div className="w-full max-w-md bg-white p-10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#e6dfd8]/50">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gradient-to-br from-background to-muted">
+        <div className="w-full max-w-md bg-card p-10 rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-border/50">
           <div className="mb-8 text-center">
-            <h2 className="text-3xl font-bold text-[#2d1b1c] mb-2">Staff Sign In</h2>
+            <h2 className="text-3xl font-bold text-foreground mb-2">Staff Sign In</h2>
             <p className="text-gray-500">Sign in to manage hotel operations</p>
           </div>
 
@@ -106,26 +106,26 @@ export function StaffSignIn() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-[#2d1b1c] mb-1">User ID</label>
+              <label className="block text-sm font-medium text-foreground mb-1">User ID</label>
               <input
                 type="text"
                 required
                 value={userId}
                 onChange={e => setUserId(e.target.value)}
-                className="w-full px-4 py-2 bg-white border border-[#e6dfd8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7B1E22] focus:border-transparent"
+                className="w-full px-4 py-2 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="Enter your User ID"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#2d1b1c] mb-1">Password</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Password</label>
               <div className="relative">
                 <input
                   type={showPwd ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="w-full px-4 py-2 bg-white border border-[#e6dfd8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7B1E22] focus:border-transparent pr-10"
+                  className="w-full px-4 py-2 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent pr-10"
                   placeholder="••••••••"
                 />
                 <button
@@ -139,11 +139,11 @@ export function StaffSignIn() {
             </div>
 
             <div className="flex items-center">
-              <input type="checkbox" id="keep" className="w-4 h-4 rounded border-[#e6dfd8] text-[#7B1E22] focus:ring-[#7B1E22]" />
-              <label htmlFor="keep" className="ml-2 text-sm text-[#2d1b1c]">Keep me signed in</label>
+              <input type="checkbox" id="keep" className="w-4 h-4 rounded border-border text-primary focus:ring-primary" />
+              <label htmlFor="keep" className="ml-2 text-sm text-foreground">Keep me signed in</label>
             </div>
 
-            <button type="submit" className="w-full bg-[#7B1E22] text-white py-3 rounded-lg font-medium hover:bg-[#8C1D24] transition-colors mt-2">
+            <button type="submit" className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-medium hover:opacity-90 transition-colors mt-2">
               Sign Into Dashboard
             </button>
           </form>

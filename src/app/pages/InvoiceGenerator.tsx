@@ -96,27 +96,27 @@ export function InvoiceGenerator() {
       {!isGenerated ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 print:block">
            <div className="print:hidden space-y-6">
-              <div className="bg-card p-6 rounded-2xl shadow-sm border border-border">
+              <div className="bg-card p-6 rounded-lg shadow-sm border border-border">
                  <h2 className="text-lg font-bold mb-4 border-b pb-2">Customer Details</h2>
                  <div className="space-y-4">
                     <div>
                        <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Customer Name</label>
-                       <input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)} className="w-full h-10 px-3 border border-border rounded-lg focus:border-[#7B1E22] focus:ring-1 focus:ring-[#7B1E22] outline-none" />
+                       <input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)} className="w-full h-10 px-3 border border-border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                        <div>
                          <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Phone</label>
-                         <input type="text" value={phone} onChange={e => setPhone(e.target.value)} className="w-full h-10 px-3 border border-border rounded-lg focus:border-[#7B1E22] focus:ring-1 focus:ring-[#7B1E22] outline-none" />
+                         <input type="text" value={phone} onChange={e => setPhone(e.target.value)} className="w-full h-10 px-3 border border-border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none" />
                        </div>
                        <div>
                          <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Date</label>
-                         <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full h-10 px-3 border border-border rounded-lg focus:border-[#7B1E22] focus:ring-1 focus:ring-[#7B1E22] outline-none" />
+                         <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full h-10 px-3 border border-border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none" />
                        </div>
                     </div>
                  </div>
               </div>
 
-              <div className="bg-card p-6 rounded-2xl shadow-sm border border-border">
+              <div className="bg-card p-6 rounded-lg shadow-sm border border-border">
                  <div className="flex justify-between items-center border-b pb-2 mb-4">
                     <h2 className="text-lg font-bold">Billing Items</h2>
                     <button onClick={addItem} className="text-primary hover:bg-secondary p-1.5 rounded-md flex items-center gap-1 text-sm font-bold">
@@ -128,11 +128,11 @@ export function InvoiceGenerator() {
                     {items.map((item, i) => (
                        <div key={i} className="flex gap-2 items-start relative pb-4 border-b border-border/50 last:border-0 last:pb-0">
                           <div className="flex-1 space-y-3">
-                             <input type="text" placeholder="Description" value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} className="w-full h-9 px-3 text-sm border border-border rounded focus:border-[#7B1E22] outline-none" />
+                             <input type="text" placeholder="Description" value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} className="w-full h-9 px-3 text-sm border border-border rounded focus:border-primary outline-none" />
                              <div className="flex gap-2">
-                                <input type="number" placeholder="Unit Price" value={item.unitPrice || ''} onChange={e => updateItem(i, 'unitPrice', Number(e.target.value))} className="w-1/3 h-9 px-3 text-sm border border-border rounded focus:border-[#7B1E22] outline-none" />
-                                <input type="number" placeholder="Qty" value={item.qty || ''} onChange={e => updateItem(i, 'qty', Number(e.target.value))} className="w-1/4 h-9 px-3 text-sm border border-border rounded focus:border-[#7B1E22] outline-none" />
-                                <select value={item.gstPct} onChange={e => updateItem(i, 'gstPct', Number(e.target.value))} className="w-auto flex-1 h-9 px-2 text-sm border border-border rounded focus:border-[#7B1E22] outline-none">
+                                <input type="number" placeholder="Unit Price" value={item.unitPrice || ''} onChange={e => updateItem(i, 'unitPrice', Number(e.target.value))} className="w-1/3 h-9 px-3 text-sm border border-border rounded focus:border-primary outline-none" />
+                                <input type="number" placeholder="Qty" value={item.qty || ''} onChange={e => updateItem(i, 'qty', Number(e.target.value))} className="w-1/4 h-9 px-3 text-sm border border-border rounded focus:border-primary outline-none" />
+                                <select value={item.gstPct} onChange={e => updateItem(i, 'gstPct', Number(e.target.value))} className="w-auto flex-1 h-9 px-2 text-sm border border-border rounded focus:border-primary outline-none">
                                    <option value={0}>0% GST</option>
                                    <option value={5}>5% GST</option>
                                    <option value={12}>12% GST</option>
@@ -146,7 +146,7 @@ export function InvoiceGenerator() {
                  </div>
               </div>
 
-              <button onClick={handleSave} className="w-full h-12 bg-primary text-white rounded-xl font-bold hover:opacity-90 flex gap-2 items-center justify-center">
+              <button onClick={handleSave} className="w-full h-12 bg-primary text-primary-foreground rounded-lg font-bold hover:opacity-90 flex gap-2 items-center justify-center">
                  <FileText className="w-5 h-5"/> Generate & Save Record
               </button>
            </div>
@@ -157,7 +157,7 @@ export function InvoiceGenerator() {
         </div>
       ) : (
          <div className="flex-1 flex flex-col">
-          <div className="bg-green-100/50 p-6 rounded-2xl shadow-sm border border-green-200 mb-8 print:hidden flex items-center justify-between">
+          <div className="bg-green-100/50 p-6 rounded-lg shadow-sm border border-green-200 mb-8 print:hidden flex items-center justify-between">
              <div className="flex items-center gap-3 text-green-800">
                <CheckCircle className="w-8 h-8" />
                <div>
@@ -166,10 +166,10 @@ export function InvoiceGenerator() {
                </div>
              </div>
              <div className="flex gap-4">
-                <button onClick={() => { setIsGenerated(false); setItems([{ description: '', unitPrice: 0, qty: 1, discount: 0, gstPct: 12 }]); setCustomerName(''); }} className="px-5 py-2.5 border border-border text-foreground font-bold rounded-xl hover:bg-muted/50 transition-colors">
+                <button onClick={() => { setIsGenerated(false); setItems([{ description: '', unitPrice: 0, qty: 1, discount: 0, gstPct: 12 }]); setCustomerName(''); }} className="px-5 py-2.5 border border-border text-foreground font-bold rounded-lg hover:bg-muted/50 transition-colors">
                   New Invoice
                 </button>
-                <button onClick={printInvoice} className="px-5 py-2.5 bg-primary text-white font-bold rounded-xl hover:opacity-90 flex gap-2 items-center">
+                <button onClick={printInvoice} className="px-5 py-2.5 bg-primary text-primary-foreground font-bold rounded-lg hover:opacity-90 flex gap-2 items-center">
                   <Printer className="w-4 h-4" /> Print Invoice
                 </button>
              </div>

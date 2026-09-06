@@ -55,11 +55,11 @@ const LoadingScreen = () => {
   }, []);
 
   return (
-    <div className="flex h-screen items-center justify-center bg-[#FAF6F0] p-6">
-      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#e6dfd8] flex flex-col items-center">
+    <div className="flex h-screen items-center justify-center bg-background p-6">
+      <div className="w-full max-w-md bg-card p-8 rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-border flex flex-col items-center">
         <div className="relative mb-6">
-          <div className="absolute inset-0 border-4 border-[#e6dfd8] rounded-full"></div>
-          <div className="w-16 h-16 border-4 border-transparent border-t-[#7B1E22] rounded-full animate-spin"></div>
+          <div className="absolute inset-0 border-4 border-border rounded-full"></div>
+          <div className="w-16 h-16 border-4 border-transparent border-t-primary rounded-full animate-spin"></div>
         </div>
 
         <h2 className="text-xl font-bold text-[#2d1b1c] mb-1 text-center">Starting ShardaCRM</h2>

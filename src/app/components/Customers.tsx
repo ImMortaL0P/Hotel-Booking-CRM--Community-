@@ -110,11 +110,11 @@ export function Customers() {
       {/* Customers Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {filteredCustomers.map((customer) => (
-          <Card key={customer.id} className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:border-blue-300">
+          <Card key={customer.id} className="group cursor-pointer transition-all duration-300 hover:shadow-sm hover:scale-[1.02] hover:border-blue-300">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-primary-foreground group-hover:scale-110 transition-transform duration-300">
                     {customer.name.split(' ').map(n => n[0]).join('')}
                   </div>
                   <div>
@@ -194,7 +194,7 @@ export function Customers() {
           {selectedCustomer && (
             <div className="space-y-4">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-primary-foreground">
                   {selectedCustomer.name.split(' ').map(n => n[0]).join('')}
                 </div>
                 <div>

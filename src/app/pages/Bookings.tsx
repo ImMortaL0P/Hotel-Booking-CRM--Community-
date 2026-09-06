@@ -135,7 +135,7 @@ export function Bookings() {
               }`}
             >
               {tab}
-              <span className={`px-2 py-0.5 rounded-full text-xs ${activeTab === tab ? 'bg-[#7B1E22] text-white' : 'bg-muted text-muted-foreground'}`}>
+              <span className={`px-2 py-0.5 rounded-full text-xs ${activeTab === tab ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
                 {count}
               </span>
             </button>
@@ -152,7 +152,7 @@ export function Bookings() {
             placeholder="Search by guest, ID, phone..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border border-border rounded-md text-sm focus:outline-none focus:border-[#7B1E22]"
+            className="w-full pl-9 pr-4 py-2 border border-border rounded-md text-sm focus:outline-none focus:border-primary"
           />
         </div>
         <div className="text-sm text-muted-foreground">
@@ -218,7 +218,7 @@ export function Bookings() {
                       </button>
                       
                       {/* Simple hardcoded actions for demo, normally this would be a custom dropdown component */}
-                      <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible z-20 transition-all">
+                      <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-md shadow-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible z-20 transition-all">
                         <div className="p-1">
                            <button onClick={(e) => { e.stopPropagation(); setSelectedBooking(b); }} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-secondary rounded">View Details</button>
                            {b.status === 'Confirmed' && <button onClick={(e) => { e.stopPropagation(); handleAction(b,'Check-in'); }} className="w-full text-left px-3 py-2 text-sm text-green-700 hover:bg-green-50 rounded">Check In</button>}

@@ -64,14 +64,14 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="p-4 border-b border-border flex items-center justify-between shrink-0 h-[73px]">
           {!collapsed ? (
             <div className="flex items-center gap-3 overflow-hidden">
-              <img src={logoUrl} alt="Logo" className="w-10 h-10 rounded shrink-0 object-cover dark:bg-white dark:p-1" />
+              <img src={logoUrl} alt="Logo" className="w-10 h-10 rounded shrink-0 object-cover dark:bg-card dark:p-1" />
               <div className="truncate">
                 <h2 className="font-bold text-foreground truncate leading-tight">Sharda Palace</h2>
                 <p className="text-[10px] text-muted-foreground truncate">Deoghar, Jharkhand</p>
               </div>
             </div>
           ) : (
-            <img src={logoUrl} alt="Logo" className="w-10 h-10 rounded shrink-0 object-cover mx-auto dark:bg-white dark:p-1" />
+            <img src={logoUrl} alt="Logo" className="w-10 h-10 rounded shrink-0 object-cover mx-auto dark:bg-card dark:p-1" />
           )}
 
           <button
@@ -126,7 +126,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                      className="fixed inset-0 z-40"
                      onClick={() => setShowNotifications(false)}
                    ></div>
-                   <div className="absolute bottom-12 left-0 w-72 bg-popover text-popover-foreground border border-border rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-bottom-2">
+                   <div className="absolute bottom-12 left-0 w-72 bg-popover text-popover-foreground border border-border rounded-lg shadow-sm z-50 overflow-hidden animate-in fade-in slide-in-from-bottom-2">
                      <div className="p-3 border-b border-border font-semibold flex items-center justify-between">
                        Notifications
                        <span className="text-xs bg-muted px-2 py-0.5 rounded-full">{notifications.length}</span>

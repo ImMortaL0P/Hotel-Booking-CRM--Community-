@@ -51,11 +51,11 @@ export function Reports() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-green-300">
+        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-sm hover:-translate-y-2 hover:border-green-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-500 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                <DollarSign className="w-6 h-6 text-green-600 group-hover:text-white transition-colors" />
+                <DollarSign className="w-6 h-6 text-green-600 group-hover:text-primary-foreground transition-colors" />
               </div>
               <Badge className="bg-green-100 text-green-700">
                 <TrendingUp className="w-3 h-3 mr-1" />
@@ -67,11 +67,11 @@ export function Reports() {
           </CardContent>
         </Card>
 
-        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-blue-300">
+        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-sm hover:-translate-y-2 hover:border-blue-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-500 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                <TrendingUp className="w-6 h-6 text-blue-600 group-hover:text-white transition-colors" />
+                <TrendingUp className="w-6 h-6 text-blue-600 group-hover:text-primary-foreground transition-colors" />
               </div>
               <Badge className="bg-blue-100 text-blue-700">YTD</Badge>
             </div>
@@ -80,11 +80,11 @@ export function Reports() {
           </CardContent>
         </Card>
 
-        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-red-300">
+        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-sm hover:-translate-y-2 hover:border-red-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-500 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                <TrendingDown className="w-6 h-6 text-red-600 group-hover:text-white transition-colors" />
+                <TrendingDown className="w-6 h-6 text-red-600 group-hover:text-primary-foreground transition-colors" />
               </div>
               <Badge className="bg-red-100 text-red-700">YTD</Badge>
             </div>
@@ -93,11 +93,11 @@ export function Reports() {
           </CardContent>
         </Card>
 
-        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-purple-300">
+        <Card className="group cursor-pointer transition-all duration-300 hover:shadow-sm hover:-translate-y-2 hover:border-purple-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-500 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                <ArrowUpRight className="w-6 h-6 text-purple-600 group-hover:text-white transition-colors" />
+                <ArrowUpRight className="w-6 h-6 text-purple-600 group-hover:text-primary-foreground transition-colors" />
               </div>
               <Badge className="bg-purple-100 text-purple-700">YTD</Badge>
             </div>
@@ -136,7 +136,7 @@ export function Reports() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <Card className="transition-all duration-300 hover:shadow-xl">
+        <Card className="transition-all duration-300 hover:shadow-sm">
           <CardHeader>
             <CardTitle>Revenue vs Expenses</CardTitle>
           </CardHeader>
@@ -156,7 +156,7 @@ export function Reports() {
           </CardContent>
         </Card>
 
-        <Card className="transition-all duration-300 hover:shadow-xl">
+        <Card className="transition-all duration-300 hover:shadow-sm">
           <CardHeader>
             <CardTitle>Revenue by Room Type</CardTitle>
           </CardHeader>
@@ -185,7 +185,7 @@ export function Reports() {
       </div>
 
       {/* Monthly Breakdown */}
-      <Card className="mb-8 transition-all duration-300 hover:shadow-xl">
+      <Card className="mb-8 transition-all duration-300 hover:shadow-sm">
         <CardHeader>
           <CardTitle>Year-to-Date Revenue Breakdown</CardTitle>
         </CardHeader>
@@ -205,7 +205,7 @@ export function Reports() {
       </Card>
 
       {/* Revenue Sources */}
-      <Card className="transition-all duration-300 hover:shadow-xl">
+      <Card className="transition-all duration-300 hover:shadow-sm">
         <CardHeader>
           <CardTitle>Revenue Sources Comparison</CardTitle>
         </CardHeader>

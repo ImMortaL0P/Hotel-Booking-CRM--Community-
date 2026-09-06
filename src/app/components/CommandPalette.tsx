@@ -34,7 +34,7 @@ export function CommandPalette({ open, setOpen }: { open: boolean, setOpen: (o: 
         className="fixed inset-0 bg-black/50 backdrop-blur-sm"
         onClick={() => setOpen(false)}
       />
-      <div className="relative z-50 w-full max-w-[600px] overflow-hidden rounded-xl border border-border bg-popover text-popover-foreground shadow-2xl">
+      <div className="relative z-50 w-full max-w-[600px] overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-sm">
         <Command className="w-full flex flex-col bg-background" label="Global Command Menu">
           <div className="flex items-center border-b border-border px-3">
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />

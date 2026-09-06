@@ -43,9 +43,9 @@ export function GuestProfiles() {
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 bg-gradient-to-r from-primary to-amber-700 text-white px-4 py-2 bg-opacity-10 rounded-lg shadow-sm">
-            <span className="text-xs uppercase tracking-wider font-bold opacity-80">Lifetime Value</span>
-            <span className="text-lg font-bold">{formatCurrency(totalLTV)}</span>
+          <div className="flex items-center gap-2 bg-card border border-primary text-primary px-4 py-2 rounded-lg shadow-sm">
+            <span className="text-xs uppercase tracking-wider font-bold">Lifetime Value</span>
+            <span className="text-lg font-bold text-foreground">{formatCurrency(totalLTV)}</span>
           </div>
           <button
             onClick={() => {
@@ -74,39 +74,39 @@ export function GuestProfiles() {
 
       {/* 4 Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-card p-5 rounded-xl border border-border flex items-center justify-between">
+        <div className="bg-card p-5 rounded-lg border border-border border-l-4 border-l-blue-600 flex items-center justify-between">
           <div>
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Guests</span>
-            <div className="text-3xl font-bold text-[#2d1b1c] mt-1">{guests.length}</div>
+            <div className="text-3xl font-bold text-foreground mt-1">{guests.length}</div>
           </div>
-          <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center">
+          <div className="w-12 h-12 text-blue-600 flex items-center justify-center">
             <Users className="w-6 h-6" />
           </div>
         </div>
-        <div className="bg-yellow-50 p-5 rounded-xl border border-yellow-200 flex items-center justify-between">
+        <div className="bg-card p-5 rounded-lg border border-border border-l-4 border-l-yellow-600 flex items-center justify-between">
           <div>
             <span className="text-xs font-semibold text-yellow-800 uppercase tracking-wider">VIP Guests</span>
             <div className="text-3xl font-bold text-yellow-900 mt-1">{vipGuests.length}</div>
           </div>
-          <div className="w-12 h-12 bg-yellow-100 text-yellow-700 rounded-full flex items-center justify-center">
+          <div className="w-12 h-12 text-yellow-600 flex items-center justify-center">
             <Crown className="w-6 h-6" />
           </div>
         </div>
-        <div className="bg-green-50 p-5 rounded-xl border border-green-200 flex items-center justify-between">
+        <div className="bg-card p-5 rounded-lg border border-border border-l-4 border-l-green-600 flex items-center justify-between">
           <div>
             <span className="text-xs font-semibold text-green-800 uppercase tracking-wider">Repeat Visitors</span>
             <div className="text-3xl font-bold text-green-900 mt-1">{repeatGuests.length}</div>
           </div>
-          <div className="w-12 h-12 bg-green-100 text-green-700 rounded-full flex items-center justify-center">
+          <div className="w-12 h-12 text-green-600 flex items-center justify-center">
             <RotateCcw className="w-6 h-6" />
           </div>
         </div>
-        <div className="bg-purple-50 p-5 rounded-xl border border-purple-200 flex items-center justify-between">
+        <div className="bg-card p-5 rounded-lg border border-border border-l-4 border-l-purple-600 flex items-center justify-between">
           <div>
             <span className="text-xs font-semibold text-purple-800 uppercase tracking-wider">Avg Stays/Guest</span>
             <div className="text-3xl font-bold text-purple-900 mt-1">{avgStays}</div>
           </div>
-          <div className="w-12 h-12 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center">
+          <div className="w-12 h-12 text-purple-600 flex items-center justify-center">
             <TrendingUp className="w-6 h-6" />
           </div>
         </div>
@@ -136,7 +136,7 @@ export function GuestProfiles() {
             placeholder="Search by name, ID, phone, city..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border border-border rounded-md text-sm focus:outline-none focus:border-[#7B1E22]"
+            className="w-full pl-9 pr-4 py-2 border border-border rounded-md text-sm focus:outline-none focus:border-primary"
           />
         </div>
         <div className="text-sm text-muted-foreground">
@@ -205,7 +205,7 @@ export function GuestProfiles() {
       {selectedGuest && (
         <div className="fixed inset-0 z-50 flex justify-end">
           <div className="absolute inset-0 bg-black/30" onClick={() => setSelectedGuest(null)}></div>
-          <div className="relative w-full max-w-xl bg-secondary h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+          <div className="relative w-full max-w-xl bg-secondary h-full shadow-sm flex flex-col animate-in slide-in-from-right duration-300">
             <div className="p-4 border-b border-border bg-card flex items-center justify-between shrink-0">
               <h2 className="text-xl font-bold text-primary">Guest Profile</h2>
               <button onClick={() => setSelectedGuest(null)} className="p-2 bg-muted hover:bg-gray-200 rounded-full">
@@ -215,8 +215,8 @@ export function GuestProfiles() {
             
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               {/* Header profile */}
-              <div className="flex items-start gap-4 p-5 bg-card rounded-xl border border-border shadow-sm">
-                <div className="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center text-3xl font-bold">
+              <div className="flex items-start gap-4 p-5 bg-card rounded-lg border border-border shadow-sm">
+                <div className="w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-3xl font-bold">
                   {selectedGuest.avatarInitial}
                 </div>
                 <div className="flex-1">
@@ -246,18 +246,18 @@ export function GuestProfiles() {
 
               {/* LTV row */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-card p-4 rounded-xl border border-border shadow-sm">
+                <div className="bg-card p-4 rounded-lg border border-border shadow-sm">
                   <p className="text-xs font-semibold text-muted-foreground uppercase">Lifetime Spend</p>
                   <p className="text-2xl font-bold text-green-700 mt-1">{formatCurrency(selectedGuest.totalSpent)}</p>
                 </div>
-                <div className="bg-card p-4 rounded-xl border border-border shadow-sm">
+                <div className="bg-card p-4 rounded-lg border border-border shadow-sm">
                   <p className="text-xs font-semibold text-muted-foreground uppercase">Total Stays</p>
-                  <p className="text-2xl font-bold text-[#2d1b1c] mt-1">{selectedGuest.totalStays}</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">{selectedGuest.totalStays}</p>
                 </div>
               </div>
 
               {/* Stay History */}
-              <div className="bg-card p-5 rounded-xl border border-border shadow-sm">
+              <div className="bg-card p-5 rounded-lg border border-border shadow-sm">
                 <h4 className="font-bold flex items-center gap-2 mb-4 border-b border-gray-100 pb-2">
                   <Clock className="w-5 h-5 text-primary" /> Stay History
                 </h4>
@@ -267,7 +267,7 @@ export function GuestProfiles() {
                     .map(b => {
                       const room = rooms.find(r => r.id === b.roomId);
                       return (
-                        <div key={b.id} className="flex justify-between items-center text-sm border-l-2 border-[#7B1E22] pl-3 py-1">
+                        <div key={b.id} className="flex justify-between items-center text-sm border-l-2 border-primary pl-3 py-1">
                            <div>
                              <p className="font-semibold text-foreground">{formatDate(b.checkIn)} — {b.nights} nights</p>
                              <p className="text-xs text-muted-foreground">Room {room?.number} ({room?.category}) · {b.id}</p>

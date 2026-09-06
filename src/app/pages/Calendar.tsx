@@ -46,7 +46,7 @@ export function Calendar() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-card rounded-xl border border-border overflow-hidden shadow-sm">
+    <div className="flex flex-col h-full bg-card rounded-lg border border-border overflow-hidden shadow-sm">
       {/* Header */}
       <div className="p-4 border-b border-border flex items-center justify-between shrink-0 bg-secondary">
         <div className="flex items-center gap-4">
@@ -82,7 +82,7 @@ export function Calendar() {
               >
                 {/* Day Label */}
                 <div className="w-full text-center py-2 border-b border-border/50 font-bold text-foreground text-sm flex items-center justify-center gap-2">
-                  <span className={`px-2 py-0.5 rounded ${day.dateString === '2026-09-02' ? 'bg-primary text-white' : ''}`}>
+                  <span className={`px-2 py-0.5 rounded ${day.dateString === '2026-09-02' ? 'bg-primary text-primary-foreground' : ''}`}>
                     {titleDate}
                   </span>
                 </div>
@@ -99,7 +99,7 @@ export function Calendar() {
           </div>
 
           {/* Rooms Grid */}
-          <div className="divide-y divide-[#e6dfd8] bg-card">
+          <div className="divide-y divide-border bg-card">
             {['Deluxe Double', 'Family Suite'].map((category) => {
               const catRooms = rooms.filter(r => r.category === category);
               if (catRooms.length === 0) return null;
@@ -194,7 +194,7 @@ export function Calendar() {
                             return (
                               <div
                                 key={booking.id}
-                                className={`absolute top-[10px] h-[80px] ${bgColor} text-white shadow-md text-xs leading-tight p-2.5 overflow-hidden z-10 cursor-pointer transition-all group/booking border border-white/20`}
+                                className={`absolute top-[10px] h-[80px] ${bgColor} text-primary-foreground shadow-md text-xs leading-tight p-2.5 overflow-hidden z-10 cursor-pointer transition-all group/booking border border-white/20`}
                                 style={{
                                   left: `${leftPos}px`,
                                   width: `${width}px`,
@@ -219,7 +219,7 @@ export function Calendar() {
                                   </div>
 
                                   {/* Middle Row: Status and Stay details */}
-                                  <div className="flex gap-4 items-center mt-1 text-white/90">
+                                  <div className="flex gap-4 items-center mt-1 text-primary-foreground/90">
                                     <div className="flex items-center gap-1 text-[11px]">
                                       <CalendarDays className="w-3 h-3 opacity-75" />
                                       {booking.nights} Night{booking.nights > 1 ? 's' : ''}
@@ -235,7 +235,7 @@ export function Calendar() {
                                   </div>
 
                                   {/* Bottom Row: Check-in / out specific times */}
-                                  <div className="mt-auto pt-1 border-t border-white/20 flex justify-between items-center text-[10px] text-white/80">
+                                  <div className="mt-auto pt-1 border-t border-white/20 flex justify-between items-center text-[10px] text-primary-foreground/80">
                                     <div className="flex items-center gap-1 font-medium">
                                       <Clock className="w-3 h-3" />
                                       In: {new Date(checkInTime).toLocaleString('default', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'})}

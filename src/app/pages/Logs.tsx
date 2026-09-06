@@ -15,7 +15,7 @@ export function Logs() {
         <p className="text-muted-foreground mt-2">Audit trail of operations in MongoDB Atlas</p>
       </div>
 
-      <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden flex-1 flex flex-col">
+      <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden flex-1 flex flex-col">
         <div className="overflow-auto relative min-h-[400px]">
           <table className="w-full text-left border-collapse">
             <thead className="bg-secondary sticky top-0 z-10 border-b border-border">

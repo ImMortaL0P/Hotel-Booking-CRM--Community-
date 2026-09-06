@@ -63,7 +63,7 @@ export function Rooms() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-4 bg-card p-4 rounded-xl border border-border shadow-sm">
+      <div className="flex flex-wrap gap-4 bg-card p-4 rounded-lg border border-border shadow-sm">
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-muted-foreground" />
           <span className="text-sm font-semibold text-foreground mr-2">Status:</span>
@@ -72,7 +72,7 @@ export function Rooms() {
               key={s}
               onClick={() => setStatusFilter(s)}
               className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
-                statusFilter === s ? 'bg-primary text-white border-[#7B1E22]' : 'bg-muted/50 text-foreground border-border hover:bg-muted'
+                statusFilter === s ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted/50 text-foreground border-border hover:bg-muted'
               }`}
             >
               {s}
@@ -87,7 +87,7 @@ export function Rooms() {
               key={c}
               onClick={() => setCategoryFilter(c)}
               className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
-                categoryFilter === c ? 'bg-primary text-white border-[#7B1E22]' : 'bg-muted/50 text-foreground border-border hover:bg-muted'
+                categoryFilter === c ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted/50 text-foreground border-border hover:bg-muted'
               }`}
             >
               {c}
@@ -112,7 +112,7 @@ export function Rooms() {
                 const booking = isOccupied ? activeBookings.find(b => b.roomId === room.id && (b.status === 'Checked-In' || b.status === 'Confirmed')) : null;
 
                 return (
-                  <div key={room.id} className="bg-card rounded-xl border border-border shadow-sm overflow-hidden flex flex-col hover:border-[#7B1E22] transition-colors group">
+                  <div key={room.id} className="bg-card rounded-lg border border-border shadow-sm overflow-hidden flex flex-col hover:border-primary transition-colors group">
                     <div className="p-3 border-b border-border/50 flex justify-between items-center bg-secondary">
                       <span className="text-xl font-bold text-foreground">{room.number}</span>
                       <span className="text-xs text-muted-foreground font-medium">Floor {room.floor}</span>
@@ -141,7 +141,7 @@ export function Rooms() {
                           </button>
                           
                           {/* Hidden dropup menu on hover */}
-                          <div className="absolute bottom-full left-0 w-full mb-1 bg-card border border-border rounded-md shadow-lg opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all z-10 p-1 flex flex-col gap-1">
+                          <div className="absolute bottom-full left-0 w-full mb-1 bg-card border border-border rounded-md shadow-sm opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all z-10 p-1 flex flex-col gap-1">
                             {(['Available', 'Cleaning', 'Maintenance'] as RoomStatus[]).filter(s => s !== 'Occupied' && s !== room.status).map(s => (
                               <button 
                                 key={s} 
@@ -165,7 +165,7 @@ export function Rooms() {
       })}
       
       {filteredRooms.length === 0 && (
-        <div className="text-center py-12 bg-card rounded-xl border border-border">
+        <div className="text-center py-12 bg-card rounded-lg border border-border">
            <Home className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
            <p className="text-muted-foreground font-medium">No rooms match these filters.</p>
         </div>
