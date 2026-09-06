@@ -10,9 +10,10 @@ interface NewBookingModalProps {
   onClose: () => void;
   defaultRoomId?: string;
   defaultDate?: string;
+  defaultCheckOut?: string;
 }
 
-export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate }: NewBookingModalProps) {
+export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, defaultCheckOut }: NewBookingModalProps) {
   const { rooms, guests, addGuest, addBooking, addPayment } = useData();
 
   // Guest details state
@@ -32,7 +33,10 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate }:
     if (defaultDate) return `${defaultDate}T11:00`;
     return '2026-09-05T11:00';
   });
-  const [checkOutDate, setCheckOutDate] = useState('2026-09-07T11:00');
+  const [checkOutDate, setCheckOutDate] = useState(() => {
+    if (defaultCheckOut) return defaultCheckOut;
+    return '2026-09-07T11:00';
+  });
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
 

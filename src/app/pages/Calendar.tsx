@@ -2,12 +2,15 @@ import { useState, useMemo } from 'react';
 import { useData } from '../data/DataContext';
 import { ChevronLeft, ChevronRight, Search, Clock, Users, CalendarDays, Key } from 'lucide-react';
 import { NewBookingModal } from '../components/NewBookingModal';
+import { BookingDetailDrawer } from '../components/BookingDetailDrawer';
+import { Booking } from '../data/types';
 
 export function Calendar() {
   const { rooms, bookings, guests } = useData();
   const [currentDate, setCurrentDate] = useState(() => new Date(2026, 8, 2)); // Sept 2, 2026
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [prefilledBooking, setPrefilledBooking] = useState<{roomId?: string, checkIn?: string, checkOut?: string}>({});
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
   const titleDate = currentDate.toLocaleString('default', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -27,15 +30,16 @@ export function Calendar() {
   const hourWidth = 40; // 40px per hour
   const dayWidth = 24 * hourWidth; // 960px per day
 
-  const handleCellClick = (roomId: string, dateString: string) => {
+  const handleCellClick = (roomId: string, dateString: string, hour: number) => {
     const checkInDate = new Date(dateString);
     const checkOutDate = new Date(checkInDate);
     checkOutDate.setDate(checkOutDate.getDate() + 1);
     const checkOutString = `${checkOutDate.getFullYear()}-${String(checkOutDate.getMonth() + 1).padStart(2, '0')}-${String(checkOutDate.getDate()).padStart(2, '0')}`;
+    const hh = String(hour).padStart(2, '0');
 
     setPrefilledBooking({
       roomId,
-      checkIn: `${dateString}T11:00`,
+      checkIn: `${dateString}T${hh}:00`,
       checkOut: `${checkOutString}T11:00`
     });
     setIsBookingModalOpen(true);
@@ -131,7 +135,7 @@ export function Calendar() {
                                 <div
                                   key={h}
                                   style={{ width: hourWidth }}
-                                  onClick={() => handleCellClick(room.id, day.dateString)}
+                                  onClick={() => handleCellClick(room.id, day.dateString, h)}
                                   className={`h-full shrink-0 border-r border-gray-100 cursor-pointer hover:bg-neutral-100 transition-colors
                                             ${day.isWeekend ? 'bg-gray-50/50' : 'bg-transparent'}`}
                                 ></div>
@@ -198,7 +202,7 @@ export function Calendar() {
                                   borderBottomRightRadius: hasContinuation ? '0' : '8px',
                                   opacity: 0.98
                                 }}
-                                onClick={(e) => { e.stopPropagation(); /* would open booking detail */ }}
+                                onClick={(e) => { e.stopPropagation(); setSelectedBooking(booking); }}
                               >
                                 <div className="flex flex-col h-full justify-between">
                                   {/* Top Row: Name and ID */}
@@ -258,9 +262,12 @@ export function Calendar() {
         <NewBookingModal
           isOpen={isBookingModalOpen}
           onClose={() => setIsBookingModalOpen(false)}
-          defaultRoomId={prefilledBooking.roomId} defaultDate={prefilledBooking.checkIn}
+          defaultRoomId={prefilledBooking.roomId}
+          defaultDate={prefilledBooking.checkIn}
+          defaultCheckOut={prefilledBooking.checkOut}
         />
       )}
+      <BookingDetailDrawer booking={selectedBooking} isOpen={!!selectedBooking} onClose={() => setSelectedBooking(null)} />
     </div>
   );
 }

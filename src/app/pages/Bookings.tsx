@@ -4,6 +4,7 @@ import { formatCurrency, formatDate } from '../lib/utils';
 import { BookingStatus, Booking } from '../data/types';
 import { Search, Plus, MoreHorizontal, FileText, CheckCircle2, ChevronRight, X, CreditCard } from 'lucide-react';
 import { NewBookingModal } from '../components/NewBookingModal';
+import { BookingDetailDrawer } from '../components/BookingDetailDrawer';
 
 export function Bookings() {
   const { bookings, guests, rooms, updateBooking, addPayment } = useData();
@@ -193,93 +194,7 @@ export function Bookings() {
       <NewBookingModal isOpen={isNewBookingOpen} onClose={() => setIsNewBookingOpen(false)} />
 
       {/* Booking Detail Drawer overlay */}
-      {selectedBooking && (
-        <div className="fixed inset-0 z-50 flex justify-end">
-          <div className="absolute inset-0 bg-black/30" onClick={() => setSelectedBooking(null)}></div>
-          <div className="relative w-full max-w-lg bg-[#FAF6F0] h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
-            <div className="p-4 border-b border-[#e6dfd8] bg-white flex items-center justify-between shrink-0">
-              <h2 className="text-xl font-bold text-[#7B1E22]">{selectedBooking.id}</h2>
-              <button onClick={() => setSelectedBooking(null)} className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              {(() => {
-                const gb = guests.find(g => g.id === selectedBooking.guestId);
-                const rb = rooms.find(r => r.id === selectedBooking.roomId);
-                
-                return (
-                  <>
-                    <div className="flex items-center gap-4 p-4 bg-white rounded-xl shadow-sm border border-[#e6dfd8]">
-                       <div className="w-12 h-12 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center text-xl font-bold">
-                         {gb?.avatarInitial}
-                       </div>
-                       <div>
-                         <h3 className="text-lg font-bold text-gray-900">{gb?.name}</h3>
-                         <p className="text-sm text-gray-500">{gb?.phone} · {gb?.city}</p>
-                       </div>
-                    </div>
-
-                    <div className="p-4 bg-white rounded-xl shadow-sm border border-[#e6dfd8]">
-                      <h4 className="font-semibold mb-3 flex items-center gap-2 border-b border-gray-100 pb-2">
-                        <FileText className="w-4 h-4" /> Stay Summary
-                      </h4>
-                      <div className="grid grid-cols-2 gap-y-3 text-sm">
-                        <div className="text-gray-500">Status</div>
-                        <div className="text-right font-medium">{selectedBooking.status}</div>
-                        <div className="text-gray-500">Room</div>
-                        <div className="text-right font-medium">Rm {rb?.number} ({rb?.category})</div>
-                        <div className="text-gray-500">Dates</div>
-                        <div className="text-right font-medium">{formatDate(selectedBooking.checkIn)} → {formatDate(selectedBooking.checkOut)}</div>
-                        <div className="text-gray-500">Occupancy</div>
-                        <div className="text-right font-medium">{selectedBooking.adults} Adults, {selectedBooking.children} Children</div>
-                      </div>
-                    </div>
-
-                    <div className="p-4 bg-white rounded-xl shadow-sm border border-[#e6dfd8]">
-                      <h4 className="font-semibold mb-3 flex items-center gap-2 border-b border-gray-100 pb-2">
-                        <CreditCard className="w-4 h-4" /> Folio & Folio
-                      </h4>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">Room Tariff ({selectedBooking.nights} nights)</span>
-                          <span className="font-medium">{formatCurrency(selectedBooking.subtotal)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">GST (12%)</span>
-                          <span className="font-medium">{formatCurrency(selectedBooking.gst)}</span>
-                        </div>
-                        <div className="flex justify-between border-t border-gray-100 pt-2 font-bold pb-2">
-                          <span>Total</span>
-                          <span>{formatCurrency(selectedBooking.total)}</span>
-                        </div>
-                        <div className="flex justify-between text-green-700">
-                          <span>Paid</span>
-                          <span>- {formatCurrency(selectedBooking.paid)}</span>
-                        </div>
-                        <div className={`flex justify-between border-t border-gray-100 mt-2 pt-2 font-bold ${selectedBooking.balance > 0 ? 'text-red-600' : 'text-gray-700'}`}>
-                          <span>Balance Due</span>
-                          <span>{formatCurrency(selectedBooking.balance)}</span>
-                        </div>
-                      </div>
-                      
-                      {selectedBooking.balance > 0 && (
-                        <button 
-                          onClick={() => handleAction(selectedBooking, 'Record Payment')}
-                          className="mt-4 w-full bg-[#7B1E22] hover:bg-[#8C1D24] text-white py-2 rounded font-medium transition"
-                        >
-                          Record Payment
-                        </button>
-                      )}
-                    </div>
-                  </>
-                );
-              })()}
-            </div>
-          </div>
-        </div>
-      )}
+      <BookingDetailDrawer booking={selectedBooking} isOpen={!!selectedBooking} onClose={() => setSelectedBooking(null)} />
     </div>
   );
 }
