@@ -87,11 +87,11 @@ export function Calendar() {
 
       {/* Wrapper for scrolling */}
       <div className="flex-1 overflow-auto relative bg-muted/50">
-        <div style={{ width: `calc(180px + ${days.length * dayWidth}px)` }} className="min-w-full">
+        <div style={{ width: `calc(200px + ${days.length * dayWidth}px)` }} className="min-w-full">
 
           {/* Days Header */}
           <div className="flex border-b border-border sticky top-0 z-30 bg-card">
-            <div className="w-[180px] shrink-0 p-3 border-r border-border bg-muted font-bold text-sm text-foreground flex items-center justify-center sticky left-0 z-40 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+            <div className="w-[200px] shrink-0 p-3 border-r border-border bg-muted font-bold text-sm text-foreground flex items-center justify-center sticky left-0 z-40 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
               Room / Time
             </div>
             {days.map(day => (
@@ -161,14 +161,14 @@ export function Calendar() {
                     return (
                       <div key={room.id} className="flex relative hover:bg-orange-50/30 group transition-colors">
                         {/* Room label sticky left */}
-                        <div className="w-[180px] shrink-0 p-4 border-r border-border bg-card sticky left-0 z-20 flex flex-col justify-center group-hover:bg-orange-50/30 transition-colors shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] h-[100px]">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="font-bold text-lg text-primary">Room {room.number}</span>
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${room.status === 'Available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        <div className="w-[200px] shrink-0 p-4 border-r border-border bg-card sticky left-0 z-20 flex flex-col justify-center group-hover:bg-orange-50/30 transition-colors shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] h-[100px]">
+                          <div className="flex items-center justify-between mb-1 gap-2">
+                            <span className="font-bold text-lg text-primary truncate">Room {room.number}</span>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded shrink-0 ${room.status === 'Available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                               {room.status}
                             </span>
                           </div>
-                          <span className="text-xs text-muted-foreground font-medium whitespace-nowrap overflow-hidden text-ellipsis">Floor {room.floor} • ₹{room.tariff}/night</span>
+                          <span className="text-xs text-muted-foreground font-medium break-words w-full">Floor {room.floor} • ₹{room.tariff}/night</span>
                         </div>
 
                         {/* Day & Hour cells */}
