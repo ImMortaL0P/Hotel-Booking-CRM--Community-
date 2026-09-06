@@ -120,20 +120,20 @@ export function Checkout() {
   return (
     <div className="max-w-5xl mx-auto flex flex-col h-full print:m-0 print:p-0 print:w-full print:max-w-none">
       <div className="mb-8 print:hidden">
-        <h1 className="text-3xl font-bold text-[#2d1b1c] font-display flex items-center gap-3">
+        <h1 className="text-3xl font-bold text-foreground font-display flex items-center gap-3">
           <Receipt className="text-[#D4AF37] w-8 h-8" />
           Checkout & Bill Operations
         </h1>
-        <p className="text-gray-600 mt-2">Generate final invoices and checkout guests</p>
+        <p className="text-foreground/80 mt-2">Generate final invoices and checkout guests</p>
       </div>
 
       {!isGenerated ? (
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#e6dfd8] mb-8 print:hidden">
+        <div className="bg-card p-6 rounded-2xl shadow-sm border border-border mb-8 print:hidden">
           <h2 className="text-lg font-bold mb-4">Select Room to Checkout</h2>
           <div className="flex gap-4 max-w-xl">
              <div className="relative flex-1">
                <select 
-                 className="w-full h-12 pl-4 pr-10 rounded-xl border border-gray-300 focus:border-[#7B1E22] focus:ring-1 focus:ring-[#7B1E22] appearance-none"
+                 className="w-full h-12 pl-4 pr-10 rounded-xl border border-border focus:border-[#7B1E22] focus:ring-1 focus:ring-[#7B1E22] appearance-none"
                  value={selectedRoomId}
                  onChange={e => setSelectedRoomId(e.target.value)}
                >
@@ -144,13 +144,13 @@ export function Checkout() {
                  {activeRooms.length === 0 && !isLoading && <option disabled>No occupied rooms</option>}
                </select>
              </div>
-             <button disabled={!activeBooking} onClick={handleCheckout} className="h-12 px-6 bg-[#7B1E22] text-white rounded-xl font-bold hover:bg-[#60171a] disabled:opacity-50 disabled:cursor-not-allowed">
+             <button disabled={!activeBooking} onClick={handleCheckout} className="h-12 px-6 bg-primary text-white rounded-xl font-bold hover:bg-[#60171a] disabled:opacity-50 disabled:cursor-not-allowed">
                Checkout & Save
              </button>
           </div>
         </div>
       ) : (
-        <div className="bg-green-50 p-6 rounded-2xl shadow-sm border border-green-200 mb-8 print:hidden flex items-center justify-between">
+        <div className="bg-green-100/50 p-6 rounded-2xl shadow-sm border border-green-200 mb-8 print:hidden flex items-center justify-between">
            <div className="flex items-center gap-3 text-green-800">
              <CheckCircle className="w-8 h-8" />
              <div>
@@ -159,10 +159,10 @@ export function Checkout() {
              </div>
            </div>
            <div className="flex gap-4">
-              <button onClick={() => { setIsGenerated(false); setSelectedRoomId(''); }} className="px-5 py-2.5 border border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors">
+              <button onClick={() => { setIsGenerated(false); setSelectedRoomId(''); }} className="px-5 py-2.5 border border-border text-foreground font-bold rounded-xl hover:bg-muted/50 transition-colors">
                 New Checkout
               </button>
-              <button onClick={printInvoice} className="px-5 py-2.5 bg-[#7B1E22] text-white font-bold rounded-xl hover:bg-[#60171a] flex gap-2 items-center">
+              <button onClick={printInvoice} className="px-5 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-[#60171a] flex gap-2 items-center">
                 <Printer className="w-4 h-4" /> Print Invoice
               </button>
            </div>
@@ -173,7 +173,7 @@ export function Checkout() {
       {invoiceData && (
         <div className="print:block">
            <div className="print:hidden flex justify-between items-end mb-4">
-              <h2 className="text-xl font-bold text-[#2d1b1c]">Invoice Preview</h2>
+              <h2 className="text-xl font-bold text-foreground">Invoice Preview</h2>
            </div>
            <InvoiceTemplate data={invoiceData} />
         </div>

@@ -46,50 +46,50 @@ export function Calendar() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-xl border border-[#e6dfd8] overflow-hidden shadow-sm">
+    <div className="flex flex-col h-full bg-card rounded-xl border border-border overflow-hidden shadow-sm">
       {/* Header */}
-      <div className="p-4 border-b border-[#e6dfd8] flex items-center justify-between shrink-0 bg-[#FAF6F0]">
+      <div className="p-4 border-b border-border flex items-center justify-between shrink-0 bg-secondary">
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold text-[#2d1b1c] w-64">{titleDate}</h1>
-          <div className="flex bg-white rounded border border-[#e6dfd8] overflow-hidden shadow-sm">
-            <button onClick={prevDay} className="px-3 py-1.5 hover:bg-gray-50 border-r border-[#e6dfd8] text-gray-600"><ChevronLeft className="w-5 h-5"/></button>
-            <button onClick={goToToday} className="px-5 py-1.5 text-sm font-semibold hover:bg-gray-50 text-gray-700">Today</button>
-            <button onClick={nextDay} className="px-3 py-1.5 hover:bg-gray-50 border-l border-[#e6dfd8] text-gray-600"><ChevronRight className="w-5 h-5"/></button>
+          <h1 className="text-xl font-bold text-foreground w-64">{titleDate}</h1>
+          <div className="flex bg-card rounded border border-border overflow-hidden shadow-sm">
+            <button onClick={prevDay} className="px-3 py-1.5 hover:bg-muted/50 border-r border-border text-foreground"><ChevronLeft className="w-5 h-5"/></button>
+            <button onClick={goToToday} className="px-5 py-1.5 text-sm font-semibold hover:bg-muted/50 text-foreground">Today</button>
+            <button onClick={nextDay} className="px-3 py-1.5 hover:bg-muted/50 border-l border-border text-foreground"><ChevronRight className="w-5 h-5"/></button>
           </div>
         </div>
-        <div className="flex items-center gap-4 text-xs font-semibold text-gray-600 bg-white px-4 py-2 rounded-lg border border-[#e6dfd8]">
+        <div className="flex items-center gap-4 text-xs font-semibold text-foreground bg-card px-4 py-2 rounded-lg border border-border">
           <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-green-500 rounded-sm"></div> Checked-In</div>
           <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-blue-500 rounded-sm"></div> Confirmed</div>
           <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-amber-500 rounded-sm"></div> Booked (Pending)</div>
-          <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-gray-500 rounded-sm"></div> Checked-Out</div>
+          <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-muted/500 rounded-sm"></div> Checked-Out</div>
         </div>
       </div>
 
       {/* Wrapper for scrolling */}
-      <div className="flex-1 overflow-auto relative bg-gray-50">
+      <div className="flex-1 overflow-auto relative bg-muted/50">
         <div style={{ width: `calc(180px + ${days.length * dayWidth}px)` }} className="min-w-full">
 
           {/* Days Header */}
-          <div className="flex border-b border-[#e6dfd8] sticky top-0 z-30 bg-white">
-            <div className="w-[180px] shrink-0 p-3 border-r border-[#e6dfd8] bg-gray-100 font-bold text-sm text-gray-700 flex items-center justify-center sticky left-0 z-40 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+          <div className="flex border-b border-border sticky top-0 z-30 bg-card">
+            <div className="w-[180px] shrink-0 p-3 border-r border-border bg-muted font-bold text-sm text-foreground flex items-center justify-center sticky left-0 z-40 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
               Room / Time
             </div>
             {days.map(day => (
               <div
                 key={day.dayNumber}
                 style={{ width: dayWidth }}
-                className={`shrink-0 border-r border-[#e6dfd8] flex flex-col ${day.isWeekend ? 'bg-gray-50' : 'bg-white'}`}
+                className={`shrink-0 border-r border-border flex flex-col ${day.isWeekend ? 'bg-muted/50' : 'bg-card'}`}
               >
                 {/* Day Label */}
-                <div className="w-full text-center py-2 border-b border-gray-100 font-bold text-gray-800 text-sm flex items-center justify-center gap-2">
-                  <span className={`px-2 py-0.5 rounded ${day.dateString === '2026-09-02' ? 'bg-[#7B1E22] text-white' : ''}`}>
+                <div className="w-full text-center py-2 border-b border-border/50 font-bold text-foreground text-sm flex items-center justify-center gap-2">
+                  <span className={`px-2 py-0.5 rounded ${day.dateString === '2026-09-02' ? 'bg-primary text-white' : ''}`}>
                     {titleDate}
                   </span>
                 </div>
                 {/* Hours Label */}
                 <div className="flex w-full">
                   {hours.map(h => (
-                    <div key={h} style={{ width: hourWidth }} className="shrink-0 text-[10px] text-gray-400 font-medium text-center py-1 border-r border-gray-100 last:border-r-0">
+                    <div key={h} style={{ width: hourWidth }} className="shrink-0 text-[10px] text-muted-foreground font-medium text-center py-1 border-r border-border/50 last:border-r-0">
                       {String(h).padStart(2, '0')}:00
                     </div>
                   ))}
@@ -99,7 +99,7 @@ export function Calendar() {
           </div>
 
           {/* Rooms Grid */}
-          <div className="divide-y divide-[#e6dfd8] bg-white">
+          <div className="divide-y divide-[#e6dfd8] bg-card">
             {['Deluxe Double', 'Family Suite'].map((category) => {
               const catRooms = rooms.filter(r => r.category === category);
               if (catRooms.length === 0) return null;
@@ -107,7 +107,7 @@ export function Calendar() {
               return (
                 <div key={category}>
                   {/* Category separator */}
-                  <div className="bg-gray-100 text-sm font-bold text-gray-600 px-4 py-2 flex sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                  <div className="bg-muted text-sm font-bold text-foreground px-4 py-2 flex sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                     {category}
                   </div>
 
@@ -118,14 +118,14 @@ export function Calendar() {
                     return (
                       <div key={room.id} className="flex relative hover:bg-orange-50/30 group transition-colors">
                         {/* Room label sticky left */}
-                        <div className="w-[180px] shrink-0 p-4 border-r border-[#e6dfd8] bg-white sticky left-0 z-20 flex flex-col justify-center group-hover:bg-orange-50/30 transition-colors shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] h-[100px]">
+                        <div className="w-[180px] shrink-0 p-4 border-r border-border bg-card sticky left-0 z-20 flex flex-col justify-center group-hover:bg-orange-50/30 transition-colors shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] h-[100px]">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="font-bold text-lg text-[#7B1E22]">Room {room.number}</span>
+                            <span className="font-bold text-lg text-primary">Room {room.number}</span>
                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${room.status === 'Available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                               {room.status}
                             </span>
                           </div>
-                          <span className="text-xs text-gray-500 font-medium whitespace-nowrap overflow-hidden text-ellipsis">Floor {room.floor} • ₹{room.tariff}/night</span>
+                          <span className="text-xs text-muted-foreground font-medium whitespace-nowrap overflow-hidden text-ellipsis">Floor {room.floor} • ₹{room.tariff}/night</span>
                         </div>
 
                         {/* Day & Hour cells */}
@@ -137,8 +137,8 @@ export function Calendar() {
                                   key={h}
                                   style={{ width: hourWidth }}
                                   onClick={() => handleCellClick(room.id, day.dateString, h)}
-                                  className={`h-full shrink-0 border-r border-gray-100 cursor-pointer hover:bg-neutral-100 transition-colors
-                                            ${day.isWeekend ? 'bg-gray-50/50' : 'bg-transparent'}`}
+                                  className={`h-full shrink-0 border-r border-border/50 cursor-pointer hover:bg-neutral-100 transition-colors
+                                            ${day.isWeekend ? 'bg-muted/50/50' : 'bg-transparent'}`}
                                 ></div>
                               ))}
                             </div>
@@ -189,7 +189,7 @@ export function Calendar() {
                             const bgColor = booking.status === 'Booked' ? 'bg-amber-500 hover:bg-amber-600' :
                                            booking.status === 'Confirmed' ? 'bg-blue-500 hover:bg-blue-600' :
                                            booking.status === 'Checked-In' ? 'bg-green-500 hover:bg-green-600' :
-                                           'bg-gray-500 hover:bg-gray-600'; // Checked-Out
+                                           'bg-muted/500 hover:bg-gray-600'; // Checked-Out
 
                             return (
                               <div

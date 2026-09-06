@@ -47,11 +47,11 @@ export function Rooms() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#2d1b1c]">Rooms</h1>
-          <p className="text-sm text-gray-500">Manage room status and availability across 4 categories.</p>
+          <h1 className="text-2xl font-bold text-foreground">Rooms</h1>
+          <p className="text-sm text-muted-foreground">Manage room status and availability across 4 categories.</p>
         </div>
-        <div className="flex bg-white rounded-lg p-1 border border-[#e6dfd8] shadow-sm">
-           <div className="flex items-center gap-1 px-3 py-1 border-r border-[#e6dfd8]">
+        <div className="flex bg-card rounded-lg p-1 border border-border shadow-sm">
+           <div className="flex items-center gap-1 px-3 py-1 border-r border-border">
              <CheckCircle2 className="w-4 h-4 text-green-600" />
              <span className="text-sm font-semibold">{rooms.filter(r => r.status === 'Available').length} Available</span>
            </div>
@@ -63,16 +63,16 @@ export function Rooms() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-4 bg-white p-4 rounded-xl border border-[#e6dfd8] shadow-sm">
+      <div className="flex flex-wrap gap-4 bg-card p-4 rounded-xl border border-border shadow-sm">
         <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-gray-400" />
-          <span className="text-sm font-semibold text-gray-600 mr-2">Status:</span>
+          <Filter className="w-4 h-4 text-muted-foreground" />
+          <span className="text-sm font-semibold text-foreground mr-2">Status:</span>
           {(['All', 'Available', 'Occupied', 'Cleaning', 'Maintenance'] as const).map(s => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
               className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
-                statusFilter === s ? 'bg-[#7B1E22] text-white border-[#7B1E22]' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                statusFilter === s ? 'bg-primary text-white border-[#7B1E22]' : 'bg-muted/50 text-foreground border-border hover:bg-muted'
               }`}
             >
               {s}
@@ -81,13 +81,13 @@ export function Rooms() {
         </div>
         <div className="w-px h-6 bg-gray-200 hidden md:block"></div>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-gray-600 mr-2">Category:</span>
+          <span className="text-sm font-semibold text-foreground mr-2">Category:</span>
           {(['All', 'Deluxe Double', 'Family Suite'] as const).map(c => (
             <button
               key={c}
               onClick={() => setCategoryFilter(c)}
               className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
-                categoryFilter === c ? 'bg-[#7B1E22] text-white border-[#7B1E22]' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                categoryFilter === c ? 'bg-primary text-white border-[#7B1E22]' : 'bg-muted/50 text-foreground border-border hover:bg-muted'
               }`}
             >
               {c}
@@ -102,7 +102,7 @@ export function Rooms() {
         
         return (
           <div key={cat} className="space-y-4">
-            <h2 className="text-lg font-bold text-[#7B1E22] flex items-center gap-2 border-b border-[#e6dfd8] pb-2">
+            <h2 className="text-lg font-bold text-primary flex items-center gap-2 border-b border-border pb-2">
               <BedDouble className="w-5 h-5" /> 
               {cat} ({groupedRooms[cat].length})
             </h2>
@@ -112,25 +112,25 @@ export function Rooms() {
                 const booking = isOccupied ? activeBookings.find(b => b.roomId === room.id && (b.status === 'Checked-In' || b.status === 'Confirmed')) : null;
 
                 return (
-                  <div key={room.id} className="bg-white rounded-xl border border-[#e6dfd8] shadow-sm overflow-hidden flex flex-col hover:border-[#7B1E22] transition-colors group">
-                    <div className="p-3 border-b border-gray-100 flex justify-between items-center bg-[#FAF6F0]">
-                      <span className="text-xl font-bold text-[#2d1b1c]">{room.number}</span>
-                      <span className="text-xs text-gray-500 font-medium">Floor {room.floor}</span>
+                  <div key={room.id} className="bg-card rounded-xl border border-border shadow-sm overflow-hidden flex flex-col hover:border-[#7B1E22] transition-colors group">
+                    <div className="p-3 border-b border-border/50 flex justify-between items-center bg-secondary">
+                      <span className="text-xl font-bold text-foreground">{room.number}</span>
+                      <span className="text-xs text-muted-foreground font-medium">Floor {room.floor}</span>
                     </div>
                     
                     <div className="p-3 flex-1 flex flex-col">
                       <div className="flex justify-between items-start mb-2">
-                         <span className="text-sm font-semibold text-gray-700">{formatCurrency(room.tariff)}/nt</span>
+                         <span className="text-sm font-semibold text-foreground">{formatCurrency(room.tariff)}/nt</span>
                       </div>
 
                       <div className="mt-auto">
                         {isOccupied && booking ? (
-                          <div className="bg-gray-50 p-2 rounded text-xs mb-3 border border-gray-100">
-                             <p className="font-semibold text-gray-900 truncate">{booking.guestName}</p>
-                             <p className="text-gray-500 mt-1">Out: {formatDate(booking.checkOut)}</p>
+                          <div className="bg-muted/50 p-2 rounded text-xs mb-3 border border-border/50">
+                             <p className="font-semibold text-foreground truncate">{booking.guestName}</p>
+                             <p className="text-muted-foreground mt-1">Out: {formatDate(booking.checkOut)}</p>
                           </div>
                         ) : (
-                          <div className="h-12 flex items-center justify-center text-xs text-gray-400 italic mb-3">
+                          <div className="h-12 flex items-center justify-center text-xs text-muted-foreground italic mb-3">
                             {room.status === 'Available' ? 'Ready' : ''}
                           </div>
                         )}
@@ -141,7 +141,7 @@ export function Rooms() {
                           </button>
                           
                           {/* Hidden dropup menu on hover */}
-                          <div className="absolute bottom-full left-0 w-full mb-1 bg-white border border-[#e6dfd8] rounded-md shadow-lg opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all z-10 p-1 flex flex-col gap-1">
+                          <div className="absolute bottom-full left-0 w-full mb-1 bg-card border border-border rounded-md shadow-lg opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all z-10 p-1 flex flex-col gap-1">
                             {(['Available', 'Cleaning', 'Maintenance'] as RoomStatus[]).filter(s => s !== 'Occupied' && s !== room.status).map(s => (
                               <button 
                                 key={s} 
@@ -165,9 +165,9 @@ export function Rooms() {
       })}
       
       {filteredRooms.length === 0 && (
-        <div className="text-center py-12 bg-white rounded-xl border border-[#e6dfd8]">
-           <Home className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-           <p className="text-gray-500 font-medium">No rooms match these filters.</p>
+        <div className="text-center py-12 bg-card rounded-xl border border-border">
+           <Home className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
+           <p className="text-muted-foreground font-medium">No rooms match these filters.</p>
         </div>
       )}
     </div>
