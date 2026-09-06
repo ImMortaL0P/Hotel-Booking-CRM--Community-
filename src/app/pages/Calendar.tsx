@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useData } from '../data/DataContext';
-import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, Clock, Users, CalendarDays, Key } from 'lucide-react';
 import { NewBookingModal } from '../components/NewBookingModal';
 
 export function Calendar() {
-  const { rooms, bookings } = useData();
+  const { rooms, bookings, guests } = useData();
   const [currentDate, setCurrentDate] = useState(() => new Date(2026, 8, 1)); // September 2026
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [prefilledBooking, setPrefilledBooking] = useState<{roomId?: string, checkIn?: string, checkOut?: string}>({});
@@ -26,25 +26,11 @@ export function Calendar() {
     };
   });
 
-  // Calculate daily occupancy %
-  const dailyOccupancy = days.map(day => {
-    let occupied = 0;
-    rooms.forEach(room => {
-      const isOccupied = bookings.some(b => {
-        if (b.roomId !== room.id) return false;
-        // Check if day.date String is between checkIn and checkOut (exclusive of checkout date itself usually for occupancy, but let's do inclusive of night of)
-        const checkIn = new Date(b.checkIn).getTime();
-        const checkOut = new Date(b.checkOut).getTime();
-        const current = day.date.getTime();
-        return current >= checkIn && current < checkOut;
-      });
-      if (isOccupied) occupied++;
-    });
-    return Math.round((occupied / rooms.length) * 100);
-  });
+  const hours = Array.from({ length: 24 }, (_, i) => i);
+  const hourWidth = 40; // 40px per hour
+  const dayWidth = 24 * hourWidth; // 960px per day
 
   const handleCellClick = (roomId: string, dateString: string) => {
-    // Create checkOut as next day
     const checkInDate = new Date(dateString);
     const checkOutDate = new Date(checkInDate);
     checkOutDate.setDate(checkOutDate.getDate() + 1);
@@ -59,139 +45,193 @@ export function Calendar() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-xl border border-[#e6dfd8] overflow-hidden">
+    <div className="flex flex-col h-full bg-white rounded-xl border border-[#e6dfd8] overflow-hidden shadow-sm">
       {/* Header */}
       <div className="p-4 border-b border-[#e6dfd8] flex items-center justify-between shrink-0 bg-[#FAF6F0]">
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold text-[#2d1b1c] w-48">{monthName}</h1>
+          <h1 className="text-xl font-bold text-[#2d1b1c] w-56">{monthName}</h1>
           <div className="flex bg-white rounded border border-[#e6dfd8] overflow-hidden shadow-sm">
-            <button onClick={prevMonth} className="px-2 py-1 hover:bg-gray-50 border-r border-[#e6dfd8] text-gray-600"><ChevronLeft className="w-5 h-5"/></button>
-            <button onClick={() => setCurrentDate(new Date(2026, 8, 1))} className="px-4 py-1 text-sm font-semibold hover:bg-gray-50 text-gray-700">Today</button>
-            <button onClick={nextMonth} className="px-2 py-1 hover:bg-gray-50 border-l border-[#e6dfd8] text-gray-600"><ChevronRight className="w-5 h-5"/></button>
+            <button onClick={prevMonth} className="px-3 py-1.5 hover:bg-gray-50 border-r border-[#e6dfd8] text-gray-600"><ChevronLeft className="w-5 h-5"/></button>
+            <button onClick={() => setCurrentDate(new Date(2026, 8, 1))} className="px-5 py-1.5 text-sm font-semibold hover:bg-gray-50 text-gray-700">Today</button>
+            <button onClick={nextMonth} className="px-3 py-1.5 hover:bg-gray-50 border-l border-[#e6dfd8] text-gray-600"><ChevronRight className="w-5 h-5"/></button>
           </div>
         </div>
-        <div className="flex items-center gap-3 text-xs font-semibold text-gray-500">
-          <div className="flex items-center gap-1"><div className="w-3 h-3 bg-[#7B1E22] rounded-sm"></div> Confirmed/Checked-In</div>
-          <div className="flex items-center gap-1"><div className="w-3 h-3 bg-amber-500 rounded-sm"></div> Pending</div>
+        <div className="flex items-center gap-4 text-xs font-semibold text-gray-600 bg-white px-4 py-2 rounded-lg border border-[#e6dfd8]">
+          <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-[#7B1E22] rounded-sm"></div> Confirmed/Checked-In</div>
+          <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-amber-500 rounded-sm"></div> Booked (Pending)</div>
+          <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-gray-400 rounded-sm"></div> Checked-Out</div>
         </div>
       </div>
 
       {/* Wrapper for scrolling */}
-      <div className="flex-1 overflow-auto relative">
-        <div style={{ width: `calc(150px + ${daysInMonth * 40}px)` }} className="min-w-full">
-          
+      <div className="flex-1 overflow-auto relative bg-gray-50">
+        <div style={{ width: `calc(180px + ${daysInMonth * dayWidth}px)` }} className="min-w-full">
+
           {/* Days Header */}
-          <div className="flex border-b border-[#e6dfd8] sticky top-0 z-20 bg-white">
-            <div className="w-[150px] shrink-0 p-3 border-r border-[#e6dfd8] bg-gray-50 font-semibold text-xs text-gray-500 uppercase flex items-end">
-              Room
+          <div className="flex border-b border-[#e6dfd8] sticky top-0 z-30 bg-white">
+            <div className="w-[180px] shrink-0 p-3 border-r border-[#e6dfd8] bg-gray-100 font-bold text-sm text-gray-700 flex items-center justify-center sticky left-0 z-40 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+              Room / Time
             </div>
             {days.map(day => (
-              <div 
-                key={day.dayNumber} 
-                className={`w-[40px] shrink-0 border-r border-[#e6dfd8] p-1 flex flex-col items-center justify-center text-xs
-                            ${day.isWeekend ? 'bg-gray-50' : 'bg-white'}`}
+              <div
+                key={day.dayNumber}
+                style={{ width: dayWidth }}
+                className={`shrink-0 border-r border-[#e6dfd8] flex flex-col ${day.isWeekend ? 'bg-gray-50' : 'bg-white'}`}
               >
-                <span className="text-gray-400 font-medium">{day.dayName.charAt(0)}</span>
-                <span className={`font-bold ${day.dateString === '2026-09-02' ? 'bg-[#7B1E22] text-white rounded-full w-6 h-6 flex items-center justify-center' : 'text-gray-900'}`}>
-                  {day.dayNumber}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* Occupancy Strip */}
-          <div className="flex border-b border-[#e6dfd8] bg-gray-50 sticky top-[61px] z-10">
-            <div className="w-[150px] shrink-0 p-2 border-r border-[#e6dfd8] text-xs font-semibold text-gray-500 text-right">
-              Occupancy %
-            </div>
-            {dailyOccupancy.map((occ, i) => (
-              <div key={i} className={`w-[40px] shrink-0 border-r border-[#e6dfd8] text-[9px] font-bold flex items-center justify-center
-                ${occ > 80 ? 'text-green-700 bg-green-100' : occ > 50 ? 'text-amber-700 bg-amber-100' : 'text-gray-500'}`}>
-                {occ}%
+                {/* Day Label */}
+                <div className="w-full text-center py-2 border-b border-gray-100 font-bold text-gray-800 text-sm flex items-center justify-center gap-2">
+                  <span className={`px-2 py-0.5 rounded ${day.dateString === '2026-09-02' ? 'bg-[#7B1E22] text-white' : ''}`}>
+                    {day.dayName}, {day.dayNumber} {monthName.split(' ')[0]}
+                  </span>
+                </div>
+                {/* Hours Label */}
+                <div className="flex w-full">
+                  {hours.map(h => (
+                    <div key={h} style={{ width: hourWidth }} className="shrink-0 text-[10px] text-gray-400 font-medium text-center py-1 border-r border-gray-100 last:border-r-0">
+                      {String(h).padStart(2, '0')}:00
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
 
           {/* Rooms Grid */}
-          <div className="divide-y divide-[#e6dfd8]">
+          <div className="divide-y divide-[#e6dfd8] bg-white">
             {['Deluxe Double', 'Family Suite'].map((category) => {
               const catRooms = rooms.filter(r => r.category === category);
-              
+              if (catRooms.length === 0) return null;
+
               return (
                 <div key={category}>
                   {/* Category separator */}
-                  <div className="bg-gray-100 text-xs font-bold text-gray-500 px-3 py-1 flex sticky left-0 z-10">
+                  <div className="bg-gray-100 text-sm font-bold text-gray-600 px-4 py-2 flex sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                     {category}
                   </div>
-                  
-                  {catRooms.map(room => {
+
+                  {catRooms.map((room) => {
                     // Check bookings for this room
                     const roomBookings = bookings.filter(b => b.roomId === room.id);
-                    
+
                     return (
-                      <div key={room.id} className="flex relative hover:bg-gray-50 group">
+                      <div key={room.id} className="flex relative hover:bg-orange-50/30 group transition-colors">
                         {/* Room label sticky left */}
-                        <div className="w-[150px] shrink-0 p-2 border-r border-[#e6dfd8] bg-white sticky left-0 z-10 font-medium text-sm flex items-center justify-between group-hover:bg-gray-50">
-                          <span className="font-bold text-[#7B1E22]">{room.number}</span>
-                          <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded text-gray-500">Fl {room.floor}</span>
+                        <div className="w-[180px] shrink-0 p-4 border-r border-[#e6dfd8] bg-white sticky left-0 z-20 flex flex-col justify-center group-hover:bg-orange-50/30 transition-colors shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] h-[100px]">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-bold text-lg text-[#7B1E22]">Rm {room.number}</span>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${room.status === 'Available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                              {room.status}
+                            </span>
+                          </div>
+                          <span className="text-xs text-gray-500 font-medium whitespace-nowrap overflow-hidden text-ellipsis">Floor {room.floor} • ₹{room.tariff}/night</span>
                         </div>
-                        
-                        {/* Day cells */}
-                        <div className="flex relative">
+
+                        {/* Day & Hour cells */}
+                        <div className="flex relative items-center h-[100px]">
                           {days.map(day => (
-                             <div 
-                               key={day.dayNumber}
-                               onClick={() => handleCellClick(room.id, day.dateString)}
-                               className={`w-[40px] h-[40px] shrink-0 border-r border-[#e6dfd8] cursor-pointer hover:bg-red-50 transition-colors
-                                          ${day.isWeekend ? 'bg-gray-50/50' : 'bg-transparent'}`}
-                             ></div>
+                            <div key={day.dayNumber} className="flex h-full">
+                              {hours.map(h => (
+                                <div
+                                  key={h}
+                                  style={{ width: hourWidth }}
+                                  onClick={() => handleCellClick(room.id, day.dateString)}
+                                  className={`h-full shrink-0 border-r border-gray-100 cursor-pointer hover:bg-neutral-100 transition-colors
+                                            ${day.isWeekend ? 'bg-gray-50/50' : 'bg-transparent'}`}
+                                ></div>
+                              ))}
+                            </div>
                           ))}
-                          
+
                           {/* Bookings Blocks Overlay */}
                           {roomBookings.map(booking => {
-                            const checkInTime = new Date(booking.checkIn).getTime();
-                            const checkOutTime = new Date(booking.checkOut).getTime();
+                            const guestMatch = guests.find(g => g.id === booking.guestId);
+                            const guestName = guestMatch?.name || booking.guestId;
+
+                            // Check-in at 12:00 PM (12 hours)
+                            const checkInTime = new Date(booking.checkIn).getTime() + (12 * 60 * 60 * 1000);
+                            // Check-out at 11:00 AM (11 hours)
+                            const checkOutTime = new Date(booking.checkOut).getTime() + (11 * 60 * 60 * 1000);
+
                             const monthStartTime = days[0].date.getTime();
                             const monthEndTime = days[days.length-1].date.getTime() + (24*60*60*1000);
-                            
+
                             // Skip if outside this month
                             if (checkOutTime <= monthStartTime || checkInTime >= monthEndTime) return null;
-                            
-                            // Calculate positions
-                            const startIdx = Math.max(0, Math.floor((checkInTime - monthStartTime) / (24*60*60*1000)));
-                            const endIdx = Math.min(daysInMonth, Math.floor((checkOutTime - monthStartTime) / (24*60*60*1000)));
-                            const duration = endIdx - startIdx;
-                            
-                            // Starts before this month?
+
+                            // Calculate position based on hours
+                            const startOffsetHours = (checkInTime - monthStartTime) / (1000 * 60 * 60);
+                            const endOffsetHours = (checkOutTime - monthStartTime) / (1000 * 60 * 60);
+
+                            const boundedStart = Math.max(0, startOffsetHours);
+                            const boundedEnd = Math.min(daysInMonth * 24, endOffsetHours);
+
+                            const durationHours = boundedEnd - boundedStart;
+
                             const isContinuation = checkInTime < monthStartTime;
-                            // Ends after this month?
                             const hasContinuation = checkOutTime > monthEndTime;
-                            
-                            const leftPos = startIdx * 40;
-                            const width = duration * 40;
-                            
-                            const bgColor = booking.status === 'Booked' ? 'bg-amber-500 hover:bg-amber-600' : 
-                                           booking.status === 'Checked-Out' ? 'bg-gray-400 hover:bg-gray-500' : 
+
+                            const leftPos = boundedStart * hourWidth;
+                            const width = durationHours * hourWidth;
+
+                            const bgColor = booking.status === 'Booked' ? 'bg-amber-500 hover:bg-amber-600' :
+                                           booking.status === 'Checked-Out' ? 'bg-gray-500 hover:bg-gray-600' :
                                            'bg-[#7B1E22] hover:bg-[#8C1D24]';
 
                             return (
                               <div
                                 key={booking.id}
-                                className={`absolute h-[32px] top-[4px] ${bgColor} text-white shadow-sm rounded-sm text-[10px] leading-tight p-1 overflow-hidden z-20 cursor-pointer transition-colors group/booking`}
-                                style={{ 
-                                  left: `${leftPos}px`, 
+                                className={`absolute top-[10px] h-[80px] ${bgColor} text-white shadow-md text-xs leading-tight p-2.5 overflow-hidden z-10 cursor-pointer transition-all group/booking border border-white/20`}
+                                style={{
+                                  left: `${leftPos}px`,
                                   width: `${width}px`,
-                                  borderTopLeftRadius: isContinuation ? '0' : '4px',
-                                  borderBottomLeftRadius: isContinuation ? '0' : '4px',
-                                  borderTopRightRadius: hasContinuation ? '0' : '4px',
-                                  borderBottomRightRadius: hasContinuation ? '0' : '4px',
-                                  opacity: 0.95
+                                  borderTopLeftRadius: isContinuation ? '0' : '8px',
+                                  borderBottomLeftRadius: isContinuation ? '0' : '8px',
+                                  borderTopRightRadius: hasContinuation ? '0' : '8px',
+                                  borderBottomRightRadius: hasContinuation ? '0' : '8px',
+                                  opacity: 0.98
                                 }}
                                 onClick={(e) => { e.stopPropagation(); /* would open booking detail */ }}
-                                title={`${booking.guestName} (${booking.id})\n${booking.status}`}
                               >
-                                <div className="font-bold truncate">{booking.guestName}</div>
-                                <div className="opacity-80 truncate">{booking.id}</div>
+                                <div className="flex flex-col h-full justify-between">
+                                  {/* Top Row: Name and ID */}
+                                  <div className="flex justify-between items-start gap-2">
+                                    <div className="font-bold text-sm truncate flex items-center gap-1.5">
+                                      <Users className="w-3.5 h-3.5 opacity-90" />
+                                      {guestName}
+                                    </div>
+                                    <div className="bg-black/20 px-1.5 py-0.5 rounded text-[10px] font-mono shrink-0">
+                                      {booking.id.split('-').pop()}
+                                    </div>
+                                  </div>
+
+                                  {/* Middle Row: Status and Stay details */}
+                                  <div className="flex gap-4 items-center mt-1 text-white/90">
+                                    <div className="flex items-center gap-1 text-[11px]">
+                                      <CalendarDays className="w-3 h-3 opacity-75" />
+                                      {booking.nights} Night{booking.nights > 1 ? 's' : ''}
+                                    </div>
+                                    <div className="flex items-center gap-1 text-[11px]">
+                                      <Users className="w-3 h-3 opacity-75" />
+                                      {booking.adults}A {booking.children > 0 ? `${booking.children}C` : ''}
+                                    </div>
+                                    <div className="flex items-center gap-1 text-[11px] font-medium">
+                                      <Key className="w-3 h-3 opacity-75" />
+                                      {booking.status}
+                                    </div>
+                                  </div>
+
+                                  {/* Bottom Row: Check-in / out specific times */}
+                                  <div className="mt-auto pt-1 border-t border-white/20 flex justify-between items-center text-[10px] text-white/80">
+                                    <div className="flex items-center gap-1 font-medium">
+                                      <Clock className="w-3 h-3" />
+                                      In: {new Date(booking.checkIn).toLocaleString('default', { month: 'short', day: 'numeric'})} 12:00 PM
+                                    </div>
+                                    <div className="flex items-center gap-1 font-medium">
+                                      Out: {new Date(booking.checkOut).toLocaleString('default', { month: 'short', day: 'numeric'})} 11:00 AM
+                                      <Clock className="w-3 h-3" />
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
                             );
                           })}
@@ -205,11 +245,11 @@ export function Calendar() {
           </div>
         </div>
       </div>
-      
+
       {isBookingModalOpen && (
-        <NewBookingModal 
-          isOpen={isBookingModalOpen} 
-          onClose={() => setIsBookingModalOpen(false)} 
+        <NewBookingModal
+          isOpen={isBookingModalOpen}
+          onClose={() => setIsBookingModalOpen(false)}
           defaultRoomId={prefilledBooking.roomId} defaultDate={prefilledBooking.checkIn}
         />
       )}
