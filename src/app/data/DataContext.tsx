@@ -46,15 +46,16 @@ const LoadingScreen = () => {
   const logs = [
     "Connecting to ShardaCRM Platform...",
     "Render backend is sleeping. Sending wake-up signal...",
-    "Container provisioning initialized...",
+    "Container provisioning initialized (this may take up to 60s)...",
     "Starting Node.js + Express.js process...",
     "Establishing secure connection to MongoDB Atlas...",
     "Preparing collections for Rooms, Guests, and Bookings...",
-    "Almost there! Sever is finalizing boot..."
+    "Verifying Google Drive integration tokens...",
+    "Almost there! Server is finalizing boot..."
   ];
 
   React.useEffect(() => {
-    const intervals = [2500, 7000, 14000, 22000, 30000, 40000];
+    const intervals = [2500, 8000, 18000, 28000, 40000, 52000, 65000];
     const timeouts = intervals.map((time, idx) =>
       setTimeout(() => setLogIndex(idx + 1), time)
     );
