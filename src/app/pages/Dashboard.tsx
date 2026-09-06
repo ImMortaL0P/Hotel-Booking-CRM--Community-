@@ -25,6 +25,7 @@ import {
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { NewBookingModal } from '../components/NewBookingModal';
 import { useNavigate } from 'react-router';
+import { format } from 'date-fns';
 import logoUrl from '../../assets/logo.png';
 
 export function Dashboard() {
@@ -51,58 +52,21 @@ export function Dashboard() {
   // Load initially
   useEffect(() => { handleDocSearch(); }, []);
 
-  // Health Status
-  const [health, setHealth] = useState({
-    frontend: 'Online',
-    backend: 'Checking...',
-    database: 'Checking...',
-    pingMs: 0
-  });
-
-  const checkHealth = async () => {
-    const start = Date.now();
-    try {
-      const res = await apiFetch('/api/health').catch(() => null);
-      if (res && res.status === 'ok') {
-        setHealth({
-          frontend: 'Online',
-          backend: 'Online',
-          database: res.dbStatus || 'Connected',
-          pingMs: Date.now() - start
-        });
-      } else {
-        setHealth({
-          frontend: 'Online',
-          backend: 'Offline',
-          database: 'Offline',
-          pingMs: 0
-        });
-      }
-    } catch (err) {
-      setHealth({
-        frontend: 'Online',
-        backend: 'Offline',
-        database: 'Offline',
-        pingMs: 0
-      });
-    }
+  // Time-aware greeting in IST
+  const getISTDate = () => {
+    const d = new Date();
+    const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+    return new Date(utc + (3600000 * 5.5));
   };
 
-  useEffect(() => {
-    checkHealth();
-    const interval = setInterval(checkHealth, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Time-aware greeting
   const getGreeting = () => {
-    const hour = new Date().getHours();
+    const hour = getISTDate().getHours();
     if (hour < 12) return 'Good morning';
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
   };
 
-  const today = '2026-09-05';
+  const today = format(getISTDate(), 'yyyy-MM-dd');
 
   // Stats calculation
   const todayCheckIns = bookings.filter(b => b.checkIn.split('T')[0] === today);
@@ -148,7 +112,7 @@ export function Dashboard() {
               {getGreeting()}, {user?.name.split(' ')[0]} 🙏
             </h1>
             <p className="text-sm text-muted-foreground">
-              Wednesday, 02 Sept 26 · Sharda Palace, Deoghar
+              {format(getISTDate(), "EEEE, dd MMM yy")} · Sharda Palace, Deoghar
             </p>
           </div>
         </div>
@@ -391,49 +355,6 @@ export function Dashboard() {
             >
               Send Bulk Communication
             </button>
-          </div>
-
-          {/* System Health Monitor */}
-          <div className="mt-6 pt-5 border-t border-border/50">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                <Activity className="w-3.5 h-3.5" /> System Health Status
-              </h3>
-              <button
-                onClick={() => {
-                  setHealth(h => ({ ...h, backend: 'Checking...', database: 'Checking...' }));
-                  checkHealth();
-                }}
-                className="text-[10px] font-semibold bg-secondary hover:bg-secondary/80 text-foreground px-2 py-1 rounded border border-border"
-              >
-                Refresh Status
-              </button>
-            </div>
-            <div className="flex flex-wrap gap-4">
-              {/* Frontend Status */}
-              <div className="flex items-center gap-2 bg-secondary/50 px-3 py-1.5 rounded-md border border-border/50">
-                <Globe className="w-4 h-4 text-muted-foreground" />
-                <span className="text-xs font-medium text-card-foreground">Frontend Viewer</span>
-                <span className={`w-2 h-2 rounded-full ml-1 ${health.frontend === 'Online' ? 'bg-green-500 shadow-[0_0_5px_#22c55e]' : 'bg-red-500'}`}></span>
-                <span className="text-[10px] text-muted-foreground uppercase">{health.frontend}</span>
-              </div>
-
-              {/* Backend Status */}
-              <div className="flex items-center gap-2 bg-secondary/50 px-3 py-1.5 rounded-md border border-border/50">
-                <Server className="w-4 h-4 text-muted-foreground" />
-                <span className="text-xs font-medium text-card-foreground">Render Backend Server</span>
-                <span className={`w-2 h-2 rounded-full ml-1 ${health.backend === 'Online' ? 'bg-green-500 shadow-[0_0_5px_#22c55e]' : 'bg-amber-500 animate-pulse'}`}></span>
-                <span className="text-[10px] text-muted-foreground uppercase">{health.backend} {health.pingMs > 0 ? `(${health.pingMs}ms)` : ''}</span>
-              </div>
-
-              {/* DB Status */}
-              <div className="flex items-center gap-2 bg-secondary/50 px-3 py-1.5 rounded-md border border-border/50">
-                <Database className="w-4 h-4 text-muted-foreground" />
-                <span className="text-xs font-medium text-card-foreground">MongoDB Atlas</span>
-                <span className={`w-2 h-2 rounded-full ml-1 ${(health.database === 'Connected' || health.database === 'Online') ? 'bg-green-500 shadow-[0_0_5px_#22c55e]' : 'bg-amber-500 animate-pulse'}`}></span>
-                <span className="text-[10px] text-muted-foreground uppercase">{health.database}</span>
-              </div>
-            </div>
           </div>
         </div>
       )}

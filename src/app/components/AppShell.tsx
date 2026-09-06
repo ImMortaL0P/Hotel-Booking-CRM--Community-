@@ -1,6 +1,6 @@
 import { ReactNode, useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router';
-import { LayoutDashboard, BookOpenText, Users, BedDouble, CalendarDays, MessageSquare, CreditCard, LogOut, ChevronLeft, ChevronRight, Building, FileText, Receipt, History, Moon, Sun, Bell, Search, WalletCards } from 'lucide-react';
+import { LayoutDashboard, BookOpenText, Users, BedDouble, CalendarDays, MessageSquare, CreditCard, LogOut, ChevronLeft, ChevronRight, Building, FileText, Receipt, History, Moon, Sun, Bell, Search, WalletCards, Activity, Globe, Server, Database } from 'lucide-react';
 import { useData } from '../data/DataContext';
 import { useTheme } from './ThemeProvider';
 import { cn } from '../lib/utils';
@@ -12,12 +12,62 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { user, logout, bookings, payments, rooms } = useData();
   const [collapsed, setCollapsed] = useState(false);
   const { theme, setTheme } = useTheme();
-  const [showCommandPalette, setShowCommandPalette] = useState(false);
+    const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
+  // Health Status
+  const [health, setHealth] = useState({
+    frontend: 'Online',
+    backend: 'Checking...',
+    database: 'Checking...',
+    pingMs: 0
+  });
+
+  const checkHealth = async () => {
+    const start = Date.now();
+    try {
+      const { apiFetch } = await import('../lib/api');
+      const res = await apiFetch('/api/health', { method: 'GET' }).catch(() => null);
+      if (res && res.status === 'ok') {
+        setHealth({
+          frontend: 'Online',
+          backend: 'Online',
+          database: res.dbStatus || 'Connected',
+          pingMs: Date.now() - start
+        });
+      } else {
+        setHealth({
+          frontend: 'Online',
+          backend: 'Offline',
+          database: 'Offline',
+          pingMs: 0
+        });
+      }
+    } catch (err) {
+      setHealth({
+        frontend: 'Online',
+        backend: 'Offline',
+        database: 'Offline',
+        pingMs: 0
+      });
+    }
+  };
+
+  useEffect(() => {
+    checkHealth();
+    const interval = setInterval(checkHealth, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+
   // Calculate badges
-  // Today's date is roughly 2026-09-05 per seed data
-  const today = '2026-09-05';
+    // Using real dynamic date per IST
+  const getISTDate = () => {
+    const d = new Date();
+    const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+    return new Date(utc + (3600000 * 5.5));
+  };
+  const today = format(getISTDate(), 'yyyy-MM-dd');
 
   const todaysCheckins = bookings.filter(b => b.checkIn.split('T')[0] === today).length;
   const pendingPayments = payments.filter(p => p.status === 'Pending').length + bookings.filter(b => b.balance > 0).length;
@@ -99,10 +149,71 @@ export function AppShell({ children }: { children: ReactNode }) {
           {['manager', 'owner', 'superadmin'].includes(user?.role || '') && (
             <NavItem to="/expenses" icon={WalletCards} label="Expenses & Ledger" />
           )}
+
           <NavItem to="/logs" icon={History} label="Activity Logs" />
         </div>
 
+        {/* System Health Monitor */}
+        {!collapsed && ['manager', 'owner', 'superadmin'].includes(user?.role || '') && (
+          <div className="mx-4 mb-4 p-3 bg-secondary/30 rounded-lg border border-border/50 shrink-0">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                <Activity className="w-3 h-3" /> System Health
+              </h3>
+              <button
+                onClick={() => {
+                  setHealth(h => ({ ...h, backend: 'Checking...', database: 'Checking...' }));
+                  checkHealth();
+                }}
+                className="text-[9px] font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                title="Refresh Status"
+              >
+                Refresh
+              </button>
+            </div>
+            
+            <div className="flex flex-col gap-2">
+              {/* Frontend Status */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Globe className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span className="text-xs font-medium text-foreground">Frontend</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className={`w-1.5 h-1.5 rounded-full ${health.frontend === 'Online' ? 'bg-green-500 shadow-[0_0_4px_#22c55e]' : 'bg-red-500'}`}></span>
+                  <span className="text-[10px] text-muted-foreground">{health.frontend}</span>
+                </div>
+              </div>
+
+              {/* Backend Status */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Server className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span className="text-xs font-medium text-foreground">Backend</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className={`w-1.5 h-1.5 rounded-full ${health.backend === 'Online' ? 'bg-green-500 shadow-[0_0_4px_#22c55e]' : 'bg-amber-500 animate-pulse'}`}></span>
+                  <span className="text-[10px] text-muted-foreground">{health.backend} {health.pingMs > 0 ? `(${health.pingMs}ms)` : ''}</span>
+                </div>
+              </div>
+
+              {/* DB Status */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Database className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span className="text-xs font-medium text-foreground">Database</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className={`w-1.5 h-1.5 rounded-full ${(health.database === 'Connected' || health.database === 'Online') ? 'bg-green-500 shadow-[0_0_4px_#22c55e]' : 'bg-amber-500 animate-pulse'}`}></span>
+                  <span className="text-[10px] text-muted-foreground">{health.database}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* User Footer */}
+
         <div className="p-4 border-t border-border shrink-0">
           <div className="flex justify-around mb-4 border-b border-border pb-3">
              <button

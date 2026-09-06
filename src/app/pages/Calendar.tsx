@@ -7,7 +7,7 @@ import { Booking } from '../data/types';
 
 export function Calendar() {
   const { rooms, bookings, guests } = useData();
-  const [currentDate, setCurrentDate] = useState(() => new Date(2026, 8, 5)); // Sept 2, 2026
+  const [currentDate, setCurrentDate] = useState(() => new Date());
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [prefilledBooking, setPrefilledBooking] = useState<{roomId?: string, checkIn?: string, checkOut?: string}>({});
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
