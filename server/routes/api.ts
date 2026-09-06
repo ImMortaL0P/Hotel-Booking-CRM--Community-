@@ -1,5 +1,6 @@
 import express from 'express';
 import { saveInvoiceFile } from '../controllers/invoiceArchiveController.js';
+import { saveDocument, searchDocuments } from '../controllers/documentController.js';
 import {
   initializeData,
   updateRoom,
@@ -46,7 +47,11 @@ router.post('/stored-invoices', addStoredInvoice);
 router.post('/expenses', addExpense);
 router.delete('/expenses/:id', deleteExpense);
 
-// Save invoice file (HTML to github folder)
+// Save invoice file (HTML to github folder) // Keeping for backwards compatibility
 router.post('/save-invoice-file', saveInvoiceFile);
+
+// New Document (PDF to Drive) endpoints
+router.post('/documents/save', saveDocument);
+router.get('/documents/search', searchDocuments);
 
 export default router;

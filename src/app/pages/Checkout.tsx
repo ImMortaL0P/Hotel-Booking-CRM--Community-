@@ -120,10 +120,18 @@ export function Checkout() {
     const htmlObj = document.getElementById('invoice-capture-area')?.outerHTML;
     if (htmlObj) {
         // Embed some generic styling to make printed version look ok on backend
-        const fullHtml = `<!DOCTYPE html><html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="p-4">${htmlObj}</body></html>`;
-        apiFetch('/api/save-invoice-file', {
+        const fullHtml = `<!DOCTYPE html><html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="p-4 bg-white text-black print:m-0 w-[800px]">${htmlObj}</body></html>`;
+
+        // Let's use standard toast if available, or just console log
+        apiFetch('/api/documents/save', {
           method: 'POST',
-          body: JSON.stringify({ html: fullHtml, filename: invoiceData.invoiceId })
+          body: JSON.stringify({
+             html: fullHtml,
+             filename: invoiceData.invoiceId,
+             type: 'Invoice'
+          })
+        }).then(res => {
+            console.log("Invoice archived to drive successfully!");
         }).catch(err => console.error("Could not save invoice file", err));
     }
 

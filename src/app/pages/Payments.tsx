@@ -4,6 +4,7 @@ import { formatCurrency, formatDate } from '../lib/utils';
 import { CreditCard, IndianRupee, FileText, Download, Wallet, AlertCircle, ArrowUpRight, Search, Printer, X } from 'lucide-react';
 import { PaymentTransaction } from '../data/types';
 import { exportToCsv } from '../lib/exportCsv';
+import { apiFetch } from '../lib/api';
 // @ts-ignore
 export function Payments() {
   const { payments, bookings, guests } = useData();
@@ -221,9 +222,25 @@ export function Payments() {
                     <Printer className="w-4 h-4"/> Print
                   </button>
                   <button onClick={() => {
-                    const element = document.getElementById('printable-receipt');
-                    if (!element) return;
-                    window.print();
+                    const printable = document.getElementById('printable-receipt');
+                    if (printable) {
+                       const fullHtml = `<!DOCTYPE html><html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="p-4 bg-white text-black print:m-0 w-[800px]">${printable.outerHTML}</body></html>`;
+                       apiFetch('/api/documents/save', {
+                          method: 'POST',
+                          body: JSON.stringify({
+                             html: fullHtml,
+                             filename: selectedReceipt.id,
+                             type: 'Receipt'
+                          })
+                       }).then(() => {
+                           console.log("Receipt archived to drive");
+                           // trigger native print alongside saving
+                           window.print();
+                       }).catch(err => {
+                           console.error(err);
+                           window.print();
+                       });
+                    }
                   }} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-primary bg-card border border-primary rounded hover:bg-red-50">
                     <Download className="w-4 h-4"/> PDF
                   </button>

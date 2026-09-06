@@ -89,11 +89,16 @@ export function InvoiceGenerator() {
     // Optional: save HTML to archive via backend
     const htmlObj = document.getElementById('invoice-capture-area')?.outerHTML;
     if (htmlObj) {
-        const fullHtml = `<!DOCTYPE html><html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="p-4">${htmlObj}</body></html>`;
-        apiFetch('/api/save-invoice-file', {
+        const fullHtml = `<!DOCTYPE html><html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="p-4 bg-white text-black print:m-0 w-[800px]">${htmlObj}</body></html>`;
+        apiFetch('/api/documents/save', {
           method: 'POST',
-          body: JSON.stringify({ html: fullHtml, filename: invoiceData.invoiceId })
-        }).catch(err => console.error("Could not save invoice file", err));
+          body: JSON.stringify({
+             html: fullHtml,
+             filename: invoiceData.invoiceId,
+             type: 'Invoice'
+          })
+        }).then(() => console.log("Standalone Invoice Archived"))
+          .catch(err => console.error("Could not save invoice file", err));
     }
 
     setIsGenerated(true);

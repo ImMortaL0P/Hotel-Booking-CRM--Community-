@@ -31,6 +31,25 @@ export function Dashboard() {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Document Search State
+  const [docSearch, setDocSearch] = useState('');
+  const [docs, setDocs] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const handleDocSearch = async () => {
+    setIsSearching(true);
+    try {
+       const res = await apiFetch(`/api/documents/search?q=${docSearch}`);
+       if (res && res.success) {
+           setDocs(res.data);
+       }
+    } catch(err) {
+       console.error("Search failed", err);
+    }
+    setIsSearching(false);
+  };
+  // Load initially
+  useEffect(() => { handleDocSearch(); }, []);
+
   // Health Status
   const [health, setHealth] = useState({
     frontend: 'Online',
@@ -418,8 +437,92 @@ export function Dashboard() {
         </div>
       )}
 
+      {/* Cloud Document Repository Section */}
+      <div className="bg-card p-6 rounded-lg border border-border mt-6 print:hidden">
+        <div className="flex justify-between items-center mb-4 border-b border-border/50 pb-2">
+            <h2 className="text-base font-bold text-card-foreground flex items-center gap-2">
+               <Database className="w-5 h-5 text-primary" /> Cloud Document Repository
+            </h2>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary px-2 py-1 rounded">
+               <Globe className="w-3 h-3" /> Synced with Google Drive
+            </div>
+        </div>
+        <div className="flex gap-4 items-center mb-6">
+           <div className="relative flex-1">
+             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+             <input
+               type="text"
+               placeholder="Search by Document ID (e.g. SP-CHK-...) or Type..."
+               value={docSearch}
+               onChange={(e) => setDocSearch(e.target.value)}
+               className="w-full pl-9 pr-4 py-2 border border-border rounded-lg text-sm bg-background/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+               onKeyDown={(e) => e.key === 'Enter' && handleDocSearch()}
+             />
+           </div>
+           <button
+             onClick={handleDocSearch}
+             disabled={isSearching}
+             className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-bold text-sm hover:bg-[#60171a] transition-colors disabled:opacity-50"
+           >
+              {isSearching ? 'Searching...' : 'Search'}
+           </button>
+        </div>
+
+        <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm border border-border rounded-lg overflow-hidden">
+                <thead className="bg-secondary/50">
+                   <tr className="text-xs font-semibold text-muted-foreground uppercase">
+                      <th className="px-4 py-3 border-b border-border">Doc ID</th>
+                      <th className="px-4 py-3 border-b border-border">Title</th>
+                      <th className="px-4 py-3 border-b border-border">Type</th>
+                      <th className="px-4 py-3 border-b border-border">Saved Date</th>
+                      <th className="px-4 py-3 border-b border-border">Actions</th>
+                   </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                    {docs.length === 0 ? (
+                        <tr>
+                            <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                                No documents matched your search.
+                            </td>
+                        </tr>
+                    ) : (
+                        docs.map((d: any) => (
+                           <tr key={d.id} className="hover:bg-muted/30">
+                              <td className="px-4 py-3 font-medium text-foreground">{d.documentId}</td>
+                              <td className="px-4 py-3 font-medium text-primary max-w-[200px] truncate" title={d.title}>{d.title}</td>
+                              <td className="px-4 py-3">
+                                  <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider ${
+                                      d.type === 'Invoice' ? 'bg-blue-100 text-blue-700' :
+                                      d.type === 'Receipt' ? 'bg-green-100 text-green-700' :
+                                      'bg-amber-100 text-amber-700'
+                                  }`}>
+                                      {d.type}
+                                  </span>
+                              </td>
+                              <td className="px-4 py-3 text-muted-foreground">
+                                  {new Date(d.createdAt).toLocaleString()}
+                              </td>
+                              <td className="px-4 py-3">
+                                 <div className="flex items-center gap-2">
+                                     <a href={d.webViewLink} target="_blank" rel="noreferrer" className="text-xs font-bold bg-secondary border border-border px-3 py-1.5 rounded hover:bg-muted text-foreground transition-colors">
+                                        View
+                                     </a>
+                                     <a href={d.webContentLink} target="_blank" rel="noreferrer" className="text-xs font-bold bg-primary text-primary-foreground px-3 py-1.5 rounded hover:opacity-90 transition-colors">
+                                        Download PDF
+                                     </a>
+                                 </div>
+                              </td>
+                           </tr>
+                        ))
+                    )}
+                </tbody>
+            </table>
+        </div>
+      </div>
+
       {/* Modal Integration */}
-      <NewBookingModal 
+      <NewBookingModal
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
       />

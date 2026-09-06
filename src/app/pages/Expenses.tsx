@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useData } from '../data/DataContext';
+import { apiFetch } from '../lib/api';
 import { ExpenseCategory, Expense, PaymentTransaction } from '../data/types';
 import { formatCurrency, generateId, formatDate } from '../lib/utils';
 import { WalletCards, Plus, Filter, Download, ArrowUpRight, ArrowDownRight, IndianRupee, FileText } from 'lucide-react';
@@ -151,12 +152,25 @@ export function Expenses() {
   const handleExportPDF = () => {
     setIsGeneratingPDF(true);
     setTimeout(() => {
+      const area = document.getElementById('export-pdf-area');
+      if (area) {
+         const html = `<!DOCTYPE html><html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="p-4 bg-white text-black print:m-0 w-[800px] mx-auto">${area.outerHTML}</body></html>`;
+         const expenseId = `EXP-RPT-${Math.floor(Math.random()*100000)}`;
+         apiFetch('/api/documents/save', {
+           method: 'POST',
+           body: JSON.stringify({
+              html,
+              filename: expenseId,
+              type: 'Expense'
+           })
+         }).then(() => console.log('Expense saved to drive')).catch(console.error);
+      }
       window.print();
       setTimeout(() => {
         setIsGeneratingPDF(false);
         setIsExportMode(false);
       }, 1000);
-    }, 500);
+    }, 500); // give react time to render the hidden block
   };
 
   const exportEntries = useMemo(() => {
