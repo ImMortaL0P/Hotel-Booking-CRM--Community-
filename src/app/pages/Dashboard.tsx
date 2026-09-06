@@ -37,10 +37,10 @@ export function Dashboard() {
   const today = '2026-09-05';
 
   // Stats calculation
-  const todayCheckIns = bookings.filter(b => b.checkIn === today);
+  const todayCheckIns = bookings.filter(b => b.checkIn.split('T')[0] === today);
   const checkedInCount = todayCheckIns.filter(b => b.status === 'Checked-In').length;
-  
-  const todayCheckOuts = bookings.filter(b => b.checkOut === today);
+
+  const todayCheckOuts = bookings.filter(b => b.checkOut.split('T')[0] === today);
 
   const occupiedRooms = rooms.filter(r => r.status === 'Occupied').length;
   const availableRooms = rooms.filter(r => r.status === 'Available').length;

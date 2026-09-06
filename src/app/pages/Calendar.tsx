@@ -35,8 +35,8 @@ export function Calendar() {
 
     setPrefilledBooking({
       roomId,
-      checkIn: dateString,
-      checkOut: checkOutString
+      checkIn: `${dateString}T11:00`,
+      checkOut: `${checkOutString}T11:00`
     });
     setIsBookingModalOpen(true);
   };
@@ -144,10 +144,21 @@ export function Calendar() {
                             const guestMatch = guests.find(g => g.id === booking.guestId);
                             const guestName = guestMatch?.name || booking.guestId;
 
-                            // Check-in at 12:00 PM (12 hours)
-                            const checkInTime = new Date(booking.checkIn).getTime() + (12 * 60 * 60 * 1000);
-                            // Check-out at 11:00 AM (11 hours)
-                            const checkOutTime = new Date(booking.checkOut).getTime() + (11 * 60 * 60 * 1000);
+                            const parseDateTime = (dtStr: string, defaultHour: number) => {
+                              if (dtStr.includes('T')) {
+                                const [datePart, timePart] = dtStr.split('T');
+                                const [y, m, d] = datePart.split('-');
+                                const [h, min] = timePart.split(':');
+                                return new Date(Number(y), Number(m) - 1, Number(d), Number(h), Number(min), 0).getTime();
+                              }
+                              const [y, m, d] = dtStr.split('T')[0].split('-');
+                              return new Date(Number(y), Number(m) - 1, Number(d), defaultHour, 0, 0).getTime();
+                            };
+
+                            // Check-in default 11:00 AM
+                            const checkInTime = parseDateTime(booking.checkIn, 11);
+                            // Check-out default 11:00 AM
+                            const checkOutTime = parseDateTime(booking.checkOut, 11);
 
                             const monthStartTime = days[0].date.getTime();
                             const monthEndTime = days[days.length-1].date.getTime() + (24*60*60*1000);
@@ -221,10 +232,10 @@ export function Calendar() {
                                   <div className="mt-auto pt-1 border-t border-white/20 flex justify-between items-center text-[10px] text-white/80">
                                     <div className="flex items-center gap-1 font-medium">
                                       <Clock className="w-3 h-3" />
-                                      In: {new Date(booking.checkIn).toLocaleString('default', { month: 'short', day: 'numeric'})} 12:00 PM
+                                      In: {new Date(checkInTime).toLocaleString('default', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'})}
                                     </div>
                                     <div className="flex items-center gap-1 font-medium">
-                                      Out: {new Date(booking.checkOut).toLocaleString('default', { month: 'short', day: 'numeric'})} 11:00 AM
+                                      Out: {new Date(checkOutTime).toLocaleString('default', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'})}
                                       <Clock className="w-3 h-3" />
                                     </div>
                                   </div>

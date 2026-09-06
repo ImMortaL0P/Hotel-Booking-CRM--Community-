@@ -27,8 +27,12 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate }:
   // Room details
   const [roomType, setRoomType] = useState<RoomCategory>('Deluxe Double');
   const [selectedRoomId, setSelectedRoomId] = useState(defaultRoomId || '');
-  const [checkInDate, setCheckInDate] = useState(defaultDate || '2026-09-05');
-  const [checkOutDate, setCheckOutDate] = useState('2026-09-07');
+  const [checkInDate, setCheckInDate] = useState(() => {
+    if (defaultDate && defaultDate.includes('T')) return defaultDate;
+    if (defaultDate) return `${defaultDate}T11:00`;
+    return '2026-09-05T11:00';
+  });
+  const [checkOutDate, setCheckOutDate] = useState('2026-09-07T11:00');
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
 
@@ -64,8 +68,9 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate }:
 
   // Compute stay details
   const calculateNights = () => {
-    const start = new Date(checkInDate);
-    const end = new Date(checkOutDate);
+    // Just compare dates regardless of time for night calculation
+    const start = new Date(checkInDate.split('T')[0]);
+    const end = new Date(checkOutDate.split('T')[0]);
     const diff = (end.getTime() - start.getTime()) / (1000 * 3600 * 24);
     return diff > 0 ? diff : 1;
   };
@@ -260,9 +265,9 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate }:
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Check-in Date *</label>
-                <input 
-                  type="date" 
+                <label className="block text-xs font-medium text-gray-700 mb-1">Check-in Date & Time *</label>
+                <input
+                  type="datetime-local"
                   required
                   value={checkInDate}
                   onChange={e => setCheckInDate(e.target.value)}
@@ -270,9 +275,9 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate }:
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Check-out Date *</label>
-                <input 
-                  type="date" 
+                <label className="block text-xs font-medium text-gray-700 mb-1">Check-out Date & Time *</label>
+                <input
+                  type="datetime-local"
                   required
                   value={checkOutDate}
                   onChange={e => setCheckOutDate(e.target.value)}

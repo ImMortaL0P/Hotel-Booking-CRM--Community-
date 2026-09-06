@@ -14,7 +14,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   // Today's date is roughly 2026-09-05 per seed data
   const today = '2026-09-05';
   
-  const todaysCheckins = bookings.filter(b => b.checkIn === today).length;
+  const todaysCheckins = bookings.filter(b => b.checkIn.split('T')[0] === today).length;
   const pendingPayments = payments.filter(p => p.status === 'Pending').length + bookings.filter(b => b.balance > 0).length;
 
   const NavItem = ({ to, icon: Icon, label, badge }: any) => (

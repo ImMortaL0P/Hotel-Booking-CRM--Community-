@@ -10,7 +10,7 @@ export default defineConfig({
     host: true, // Listen on all local IP addresses
     proxy: {
       '/api': {
-        target: 'http://localhost:5001',
+        target: 'http://localhost:5002',
         changeOrigin: true
       }
     }
