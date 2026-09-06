@@ -12,6 +12,7 @@ export function Expenses() {
 
   const [isAddMode, setIsAddMode] = useState(false);
   const [isExportMode, setIsExportMode] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [exportFrom, setExportFrom] = useState(() => {
     const d = new Date();
     d.setMonth(d.getMonth() - 1);
@@ -35,53 +36,58 @@ export function Expenses() {
 
   // Consolidated Ledger data
   const ledgerEntries = useMemo(() => {
-    const entries: {
-      type: 'INCOME' | 'EXPENSE',
-      date: string,
-      amount: number,
-      source: string,
-      roomId: string | undefined,
-      description: string,
-      id: string,
-      category?: string
-    }[] = [];
+    const roomMap = new Map();
+    rooms.forEach(r => roomMap.set(r.id, r.number));
 
-    // Map Payments to Income
-    payments.filter(p => p.status === 'Completed').forEach(p => {
-      const b = bookings.find(bk => bk.id === p.bookingId);
-      entries.push({
-        type: 'INCOME',
-        date: p.date.split('T')[0],
-        amount: p.amount,
-        source: 'Room Booking',
-        roomId: b?.roomId,
-        description: `Payment for booking ${p.bookingId} via ${p.mode}`,
-        id: p.id
-      });
-    });
+    const bookingMap = new Map();
+    bookings.forEach(b => bookingMap.set(b.id, b));
 
-    // Map Expenses
-    expenses.forEach(e => {
-      entries.push({
-        type: 'EXPENSE',
-        date: e.date,
-        amount: e.amount,
-        source: e.category,
-        roomId: e.roomId,
-        description: e.description,
-        category: e.category,
-        id: e.id
-      });
-    });
+    const entries = [];
 
-    // Apply Filters
-    let filtered = entries.filter(e => e.date >= fromDate && e.date <= toDate);
-    if (filterRoom) {
-      filtered = filtered.filter(e => e.roomId === filterRoom);
+    const lenP = payments.length;
+    for (let i = 0; i < lenP; i++) {
+      const p = payments[i];
+      if (p.status !== 'Completed') continue;
+      const d = p.date.split('T')[0];
+      if (d >= fromDate && d <= toDate) {
+        const b = bookingMap.get(p.bookingId);
+        if (!filterRoom || b?.roomId === filterRoom) {
+          entries.push({
+            type: 'INCOME',
+            date: d,
+            amount: p.amount,
+            source: 'Room Booking',
+            roomId: b?.roomId,
+            roomNum: b?.roomId ? roomMap.get(b.roomId) : null,
+            description: `Payment for booking ${p.bookingId} via ${p.mode}`,
+            id: p.id
+          });
+        }
+      }
     }
 
-    return filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [payments, expenses, bookings, fromDate, toDate, filterRoom]);
+    const lenE = expenses.length;
+    for (let i = 0; i < lenE; i++) {
+        const e = expenses[i];
+        if (e.date >= fromDate && e.date <= toDate) {
+            if (!filterRoom || e.roomId === filterRoom) {
+               entries.push({
+                   type: 'EXPENSE',
+                   date: e.date,
+                   amount: e.amount,
+                   source: e.category,
+                   roomId: e.roomId,
+                   roomNum: e.roomId ? roomMap.get(e.roomId) : null,
+                   description: e.description,
+                   category: e.category,
+                   id: e.id
+               });
+            }
+        }
+    }
+
+    return entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [payments, expenses, bookings, rooms, fromDate, toDate, filterRoom]);
 
   const totalIncome = ledgerEntries.filter(e => e.type === 'INCOME').reduce((sum, e) => sum + e.amount, 0);
   const totalExpense = ledgerEntries.filter(e => e.type === 'EXPENSE').reduce((sum, e) => sum + e.amount, 0);
@@ -110,7 +116,6 @@ export function Expenses() {
   };
 
   const handleExportCSV = () => {
-    const exportEntries = getExportEntries();
     const eTotalIncome = exportEntries.filter(e => e.type === 'INCOME').reduce((sum, e) => sum + e.amount, 0);
     const eTotalExpense = exportEntries.filter(e => e.type === 'EXPENSE').reduce((sum, e) => sum + e.amount, 0);
     const eNetBalance = eTotalIncome - eTotalExpense;
@@ -146,52 +151,91 @@ export function Expenses() {
   };
 
   const handleExportPDF = () => {
-    const element = document.getElementById('export-pdf-area');
-    if (!element) return;
-
-    const opt = {
-      margin:       0.5,
-      filename:     `Balance_Sheet_${exportFrom}_to_${exportTo}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2 },
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-    };
-
-    html2pdf().set(opt).from(element).save().then(() => {
-      setIsExportMode(false);
-    });
+    setIsGeneratingPDF(true);
+    // Wait for the next tick for React to render the table in DOM
+    setTimeout(() => {
+      const element = document.getElementById('export-pdf-area');
+      if (!element) {
+        setIsGeneratingPDF(false);
+        return;
+      }
+  
+      const opt = {
+        margin:       0.5,
+        filename:     `Balance_Sheet_${exportFrom}_to_${exportTo}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, windowWidth: 800, logging: false },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+        pagebreak:    { mode: ['css', 'legacy'], avoid: 'tr' }
+      };
+  
+      try {
+        html2pdf().set(opt).from(element).save().then(() => {
+          setIsGeneratingPDF(false);
+          setIsExportMode(false);
+        }).catch((err: any) => {
+          console.error("PDF generation failed", err);
+          setIsGeneratingPDF(false);
+        });
+      } catch (err) {
+        console.error("PDF generation sync error", err);
+        setIsGeneratingPDF(false);
+      }
+    }, 500);
   };
 
-  const getExportEntries = () => {
-    const entries: any[] = [];
-    payments.filter(p => p.status === 'Completed').forEach(p => {
-      const b = bookings.find(bk => bk.id === p.bookingId);
-      entries.push({
-        type: 'INCOME',
-        date: p.date.split('T')[0],
-        amount: p.amount,
-        source: 'Room Booking',
-        roomId: b?.roomId,
-        description: `Payment for booking ${p.bookingId} via ${p.mode}`,
-        id: p.id
-      });
-    });
-    expenses.forEach(e => {
-      entries.push({
-        type: 'EXPENSE',
-        date: e.date,
-        amount: e.amount,
-        source: e.category,
-        roomId: e.roomId,
-        description: e.description,
-        category: e.category,
-        id: e.id
-      });
-    });
-    return entries
-      .filter(e => e.date >= exportFrom && e.date <= exportTo)
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  };
+  const exportEntries = useMemo(() => {
+    // 1. Build O(1) lookups
+    const roomMap = new Map();
+    rooms.forEach(r => roomMap.set(r.id, r.number));
+    
+    const bookingMap = new Map();
+    bookings.forEach(b => bookingMap.set(b.id, b));
+    
+    const entries = [];
+    
+    const lenP = payments.length;
+    for(let i=0; i<lenP; i++) {
+        const p = payments[i];
+        if (p.status !== 'Completed') continue;
+        const d = p.date.split('T')[0];
+        if (d >= exportFrom && d <= exportTo) {
+           const b = bookingMap.get(p.bookingId);
+           const rNum = b?.roomId ? roomMap.get(b.roomId) : null;
+           entries.push({
+               type: 'INCOME',
+               date: d,
+               amount: p.amount,
+               source: 'Room Booking',
+               roomId: b?.roomId,
+               roomNum: rNum,
+               description: `Payment for booking ${p.bookingId} via ${p.mode}`,
+               id: p.id
+           });
+        }
+    }
+    
+    const lenE = expenses.length;
+    for(let i=0; i<lenE; i++) {
+        const e = expenses[i];
+        if (e.date >= exportFrom && e.date <= exportTo) {
+           const rNum = e.roomId ? roomMap.get(e.roomId) : null;
+           entries.push({
+               type: 'EXPENSE',
+               date: e.date,
+               amount: e.amount,
+               source: e.category,
+               roomId: e.roomId,
+               roomNum: rNum,
+               description: e.description,
+               category: e.category,
+               id: e.id
+           });
+        }
+    }
+    
+    return entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [payments, expenses, bookings, rooms, exportFrom, exportTo]);
 
   return (
     <div className="flex flex-col h-full space-y-6">
@@ -307,7 +351,7 @@ export function Expenses() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-muted-foreground whitespace-nowrap">
-                      {entry.roomId ? `Room ${rooms.find(r => r.id === entry.roomId)?.number}` : 'Property Wide'}
+                      {entry.roomNum ? `Room ${entry.roomNum}` : 'Property Wide'}
                     </td>
                     <td className="px-6 py-4 text-foreground/80 max-w-sm truncate" title={entry.description}>{entry.description}</td>
                     <td className="px-6 py-4 text-right font-semibold text-green-600">
@@ -405,8 +449,8 @@ export function Expenses() {
                </div>
 
                <div className="pt-4 flex flex-col gap-2">
-                 <button onClick={handleExportPDF} className="flex items-center justify-center gap-2 px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md font-bold">
-                   <Download className="w-4 h-4" /> Download PDF (Balance Sheet)
+                 <button onClick={handleExportPDF} disabled={isGeneratingPDF} className="flex items-center justify-center gap-2 px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md font-bold">
+                   <Download className="w-4 h-4" /> {isGeneratingPDF ? 'Generating...' : 'Download PDF (Balance Sheet)'}
                  </button>
                  <button onClick={handleExportCSV} className="flex items-center justify-center gap-2 px-4 py-2 text-sm border border-border bg-card text-foreground rounded-md font-bold">
                    <FileText className="w-4 h-4" /> Download CSV
@@ -421,14 +465,15 @@ export function Expenses() {
       )}
 
       {/* Hidden Export Area for PDF */}
-      <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, zIndex: -100, pointerEvents: 'none' }}>
+        {isGeneratingPDF && (
         <div id="export-pdf-area" className="p-8 bg-white text-black w-[800px]">
            <div className="text-center mb-8">
               <h1 className="text-2xl font-bold uppercase tracking-wider">Sharda Palace</h1>
             <p className="text-sm">Balance Sheet: <strong>{exportFrom}</strong> to <strong>{exportTo}</strong></p>
          </div>
 
-         <div className="grid grid-cols-2 gap-8">
+         <div className="flex flex-col gap-8">
             <div>
                <h3 className="text-lg font-bold border-b border-black pb-2 mb-4">INCOME</h3>
                <table className="w-full text-sm text-left">
@@ -440,10 +485,10 @@ export function Expenses() {
                      </tr>
                   </thead>
                   <tbody>
-                     {getExportEntries().filter((e: any) => e.type === 'INCOME').map((item: any, i: number) => (
+                     {exportEntries.filter((e: any) => e.type === 'INCOME').map((item: any, i: number) => (
                         <tr key={i} className="border-b border-gray-100">
                            <td className="py-2">{formatDate(item.date)}</td>
-                           <td className="py-2 pr-2">{item.source} {item.roomId ? `(Rm ${rooms.find(r => r.id === item.roomId)?.number})` : ''}</td>
+                           <td className="py-2 pr-2">{item.source} {item.roomNum ? `(Rm ${item.roomNum})` : ''}</td>
                            <td className="text-right py-2 font-medium">{formatCurrency(item.amount)}</td>
                         </tr>
                      ))}
@@ -452,7 +497,7 @@ export function Expenses() {
                      <tr className="border-t-2 border-black font-bold">
                         <td colSpan={2} className="py-3">TOTAL INCOME</td>
                         <td className="text-right py-3 text-green-700">
-                           {formatCurrency(getExportEntries().filter((e: any) => e.type === 'INCOME').reduce((s: number, e: any) => s + e.amount, 0))}
+                           {formatCurrency(exportEntries.filter((e: any) => e.type === 'INCOME').reduce((s: number, e: any) => s + e.amount, 0))}
                         </td>
                      </tr>
                   </tfoot>
@@ -470,7 +515,7 @@ export function Expenses() {
                      </tr>
                   </thead>
                   <tbody>
-                     {getExportEntries().filter((e: any) => e.type === 'EXPENSE').map((item: any, i: number) => (
+                     {exportEntries.filter((e: any) => e.type === 'EXPENSE').map((item: any, i: number) => (
                         <tr key={i} className="border-b border-gray-100">
                            <td className="py-2">{formatDate(item.date)}</td>
                            <td className="py-2 pr-2">{item.source}</td>
@@ -482,7 +527,7 @@ export function Expenses() {
                      <tr className="border-t-2 border-black font-bold">
                         <td colSpan={2} className="py-3">TOTAL EXPENSE</td>
                         <td className="text-right py-3 text-red-700">
-                           {formatCurrency(getExportEntries().filter((e: any) => e.type === 'EXPENSE').reduce((s: number, e: any) => s + e.amount, 0))}
+                           {formatCurrency(exportEntries.filter((e: any) => e.type === 'EXPENSE').reduce((s: number, e: any) => s + e.amount, 0))}
                         </td>
                      </tr>
                   </tfoot>
@@ -491,8 +536,8 @@ export function Expenses() {
          </div>
 
          {(() => {
-            const inc = getExportEntries().filter((e: any) => e.type === 'INCOME').reduce((s: number, e: any) => s + e.amount, 0);
-            const exp = getExportEntries().filter((e: any) => e.type === 'EXPENSE').reduce((s: number, e: any) => s + e.amount, 0);
+            const inc = exportEntries.filter((e: any) => e.type === 'INCOME').reduce((s: number, e: any) => s + e.amount, 0);
+            const exp = exportEntries.filter((e: any) => e.type === 'EXPENSE').reduce((s: number, e: any) => s + e.amount, 0);
             const net = inc - exp;
             return (
                <div className="mt-8 pt-4 border-t-2 border-black font-bold text-xl flex justify-between">
@@ -503,6 +548,7 @@ export function Expenses() {
          })()}
          <div className="mt-16 text-center text-xs text-gray-500">System Generated Balance Sheet • Sharda Palace</div>
         </div>
+        )}
       </div>
     </div>
   );
