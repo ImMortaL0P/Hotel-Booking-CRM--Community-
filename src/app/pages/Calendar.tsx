@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useData } from '../data/DataContext';
 import { ChevronLeft, ChevronRight, Search, Clock, Users, CalendarDays, Key, LogIn, LogOut, DoorOpen } from 'lucide-react';
 import { NewBookingModal } from '../components/NewBookingModal';
@@ -27,8 +27,26 @@ export function Calendar() {
   }], [currentDate]);
 
   const hours = useMemo(() => Array.from({ length: 24 }, (_, i) => i), []);
-  const hourWidth = 40; // 40px per hour
-  const dayWidth = 24 * hourWidth; // 960px per day
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        setContainerWidth(entry.contentRect.width);
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const roomLabelWidth = 200;
+  const timelineWidth = Math.max(containerWidth - roomLabelWidth, 960);
+  const hourWidth = timelineWidth / 24;
+  const dayWidth = timelineWidth;
 
   const bookingsByRoom = useMemo(() => {
     const map: Record<string, typeof bookings> = {};
@@ -86,8 +104,8 @@ export function Calendar() {
       </div>
 
       {/* Wrapper for scrolling */}
-      <div className="flex-1 overflow-auto relative bg-muted/50">
-        <div style={{ width: `calc(200px + ${days.length * dayWidth}px)` }} className="min-w-full">
+      <div ref={containerRef} className="flex-1 overflow-auto relative bg-muted/50">
+        <div style={{ width: `${roomLabelWidth + days.length * dayWidth}px` }} className="min-w-full">
 
           {/* Days Header */}
           <div className="flex border-b border-border sticky top-0 z-30 bg-card">
