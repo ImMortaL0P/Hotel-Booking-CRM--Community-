@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/Hotel-Booking-CRM--Community-/',
+  base: process.env.RENDER ? '/' : '/Hotel-Booking-CRM--Community-/',
   plugins: [react(), tailwindcss()],
   server: {
     host: true, // Listen on all local IP addresses

@@ -115,7 +115,7 @@ export function Payments() {
           <div className="text-3xl font-bold text-foreground">{formatCurrency(todaysCollections)}</div>
         </div>
 
-        <div className="bg-card p-5 rounded-lg border border-border border-l-4 border-l-gray-400 flex flex-col justify-between">
+        <div className="bg-card p-5 rounded-lg border border-border border-l-4 border-l-muted-foreground flex flex-col justify-between">
           <div className="flex justify-between items-start mb-2">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Refunds Issued</span>
             <div className="w-8 h-8 text-foreground/80 flex items-center justify-center">
@@ -158,7 +158,7 @@ export function Payments() {
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-border/50">
             {filteredPayments.map(p => {
               const booking = bookings.find(b => b.id === p.bookingId);
               const guest = guests.find(g => g.id === booking?.guestId);
@@ -217,13 +217,13 @@ export function Payments() {
                   <FileText className="w-5 h-5"/> Payment Receipt
                 </h3>
                 <div className="flex gap-2">
-                  <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-foreground bg-card border border-gray-300 rounded hover:bg-muted/50">
+                  <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-foreground bg-card border border-border rounded hover:bg-muted/50">
                     <Printer className="w-4 h-4"/> Print
                   </button>
                   <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-primary bg-card border border-primary rounded hover:bg-red-50">
                     <Download className="w-4 h-4"/> PDF
                   </button>
-                  <button onClick={() => setSelectedReceipt(null)} className="p-1.5 hover:bg-gray-200 rounded-full ml-4">
+                  <button onClick={() => setSelectedReceipt(null)} className="p-1.5 hover:bg-muted rounded-full ml-4">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
@@ -294,14 +294,14 @@ export function Payments() {
                   </tfoot>
                 </table>
 
-                <div className="pt-8 mt-12 mb-4 border-t border-gray-200 flex justify-between items-end">
+                <div className="pt-8 mt-12 mb-4 border-t border-border flex justify-between items-end">
                   <div className="text-sm text-muted-foreground flex flex-col gap-1 italic">
                     <span>Includes 12% GST as applicable.</span>
                     <span>This is a computer generated receipt.</span>
                     <span className="font-bold text-primary not-italic mt-2">जय बाबा बैद्यनाथ · Jai Baba Baidyanath</span>
                   </div>
                   <div className="text-center">
-                    <div className="w-40 border-b border-gray-400 mb-2 mt-8"></div>
+                    <div className="w-40 border-b border-border mb-2 mt-8"></div>
                     <span className="text-xs text-muted-foreground font-bold uppercase">Authorized Signatory</span>
                   </div>
                 </div>

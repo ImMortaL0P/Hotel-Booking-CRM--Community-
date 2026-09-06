@@ -158,7 +158,7 @@ export function GuestProfiles() {
               <th className="px-4 py-3 text-right">Total Spent</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-border/50">
             {filteredGuests.map(g => (
               <tr key={g.id} className="hover:bg-muted/50 group cursor-pointer" onClick={() => setSelectedGuest(g)}>
                 <td className="px-4 py-3">
@@ -208,7 +208,7 @@ export function GuestProfiles() {
           <div className="relative w-full max-w-xl bg-secondary h-full shadow-sm flex flex-col animate-in slide-in-from-right duration-300">
             <div className="p-4 border-b border-border bg-card flex items-center justify-between shrink-0">
               <h2 className="text-xl font-bold text-primary">Guest Profile</h2>
-              <button onClick={() => setSelectedGuest(null)} className="p-2 bg-muted hover:bg-gray-200 rounded-full">
+              <button onClick={() => setSelectedGuest(null)} className="p-2 bg-muted hover:bg-muted-foreground/20 rounded-full">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -258,7 +258,7 @@ export function GuestProfiles() {
 
               {/* Stay History */}
               <div className="bg-card p-5 rounded-lg border border-border shadow-sm">
-                <h4 className="font-bold flex items-center gap-2 mb-4 border-b border-gray-100 pb-2">
+                <h4 className="font-bold flex items-center gap-2 mb-4 border-b border-border/50 pb-2">
                   <Clock className="w-5 h-5 text-primary" /> Stay History
                 </h4>
                 <div className="space-y-4">

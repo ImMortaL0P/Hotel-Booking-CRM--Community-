@@ -45,7 +45,7 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
       <div className="relative w-full max-w-lg bg-background h-full shadow-sm flex flex-col animate-in slide-in-from-right duration-300">
         <div className="p-4 border-b border-border bg-card flex items-center justify-between shrink-0">
           <h2 className="text-xl font-bold text-primary">{booking.id}</h2>
-          <button onClick={onClose} className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full">
+          <button onClick={onClose} className="p-2 bg-muted hover:bg-muted/80 rounded-full">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -56,13 +56,13 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
               {guest?.avatarInitial || 'G'}
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900">{guest?.name}</h3>
-              <p className="text-sm text-gray-500">{guest?.phone} · {guest?.city}</p>
+              <h3 className="text-lg font-bold text-foreground">{guest?.name}</h3>
+              <p className="text-sm text-muted-foreground">{guest?.phone} · {guest?.city}</p>
             </div>
           </div>
 
           <div className="p-4 bg-card rounded-lg shadow-sm border border-border">
-            <div className="flex justify-between items-center border-b border-gray-100 pb-3 mb-3">
+            <div className="flex justify-between items-center border-b border-border/50 pb-3 mb-3">
               <h4 className="font-semibold flex items-center gap-2">
                 <FileText className="w-4 h-4" /> Stay Summary
               </h4>
@@ -79,38 +79,38 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
             </div>
 
             <div className="grid grid-cols-2 gap-y-3 text-sm">
-              <div className="text-gray-500">Room</div>
+              <div className="text-muted-foreground">Room</div>
               <div className="text-right font-medium">Room {room?.number} ({room?.category})</div>
 
-              <div className="text-gray-500">Check-in</div>
+              <div className="text-muted-foreground">Check-in</div>
               <div className="text-right font-medium">
                 {booking.checkIn.includes('T') ? new Date(booking.checkIn).toLocaleString('default', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : formatDate(booking.checkIn)}
               </div>
 
-              <div className="text-gray-500">Check-out</div>
+              <div className="text-muted-foreground">Check-out</div>
               <div className="text-right font-medium">
                 {booking.checkOut.includes('T') ? new Date(booking.checkOut).toLocaleString('default', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : formatDate(booking.checkOut)}
               </div>
 
-              <div className="text-gray-500">Occupancy</div>
+              <div className="text-muted-foreground">Occupancy</div>
               <div className="text-right font-medium">{booking.adults} Adults, {booking.children} Children</div>
             </div>
           </div>
 
           <div className="p-4 bg-card rounded-lg shadow-sm border border-border">
-            <h4 className="font-semibold mb-3 flex items-center gap-2 border-b border-gray-100 pb-2">
+            <h4 className="font-semibold mb-3 flex items-center gap-2 border-b border-border/50 pb-2">
               <CreditCard className="w-4 h-4" /> Folio
             </h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-500">Room Tariff ({booking.nights} nights)</span>
+                <span className="text-muted-foreground">Room Tariff ({booking.nights} nights)</span>
                 <span className="font-medium">{formatCurrency(booking.subtotal)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">GST (12%)</span>
+                <span className="text-muted-foreground">GST (12%)</span>
                 <span className="font-medium">{formatCurrency(booking.gst)}</span>
               </div>
-              <div className="flex justify-between border-t border-gray-100 pt-2 font-bold pb-2">
+              <div className="flex justify-between border-t border-border/50 pt-2 font-bold pb-2">
                 <span>Total</span>
                 <span>{formatCurrency(booking.total)}</span>
               </div>
@@ -118,7 +118,7 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
                 <span>Paid</span>
                 <span>- {formatCurrency(booking.paid)}</span>
               </div>
-              <div className={`flex justify-between border-t border-gray-100 mt-2 pt-2 font-bold ${booking.balance > 0 ? 'text-red-600' : 'text-gray-700'}`}>
+              <div className={`flex justify-between border-t border-border/50 mt-2 pt-2 font-bold ${booking.balance > 0 ? 'text-red-600' : 'text-foreground'}`}>
                 <span>Balance Due</span>
                 <span>{formatCurrency(booking.balance)}</span>
               </div>

@@ -41,7 +41,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
         transition={{ duration: 0.5 }}
       >
         <h1>Dashboard</h1>
-        <p className="text-gray-600">Welcome back! Here's what's happening today.</p>
+        <p className="text-muted-foreground">Welcome back! Here's what's happening today.</p>
       </motion.div>
 
       {/* Stats Cards */}
@@ -57,10 +57,10 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle>Total Revenue</CardTitle>
-              <DollarSign className="w-5 h-5 text-gray-500 group-hover:text-green-600 group-hover:scale-110 transition-all duration-300" />
+              <DollarSign className="w-5 h-5 text-muted-foreground group-hover:text-green-600 group-hover:scale-110 transition-all duration-300" />
             </CardHeader>
             <CardContent>
-              <div className="text-gray-900 group-hover:text-green-900 transition-colors">${totalRevenue.toLocaleString()}</div>
+              <div className="text-foreground group-hover:text-green-900 transition-colors">${totalRevenue.toLocaleString()}</div>
               <p className="text-green-600 whitespace-nowrap">+12.5% vs last mo.</p>
             </CardContent>
           </Card>
@@ -77,10 +77,10 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle>Active Bookings</CardTitle>
-              <Calendar className="w-5 h-5 text-gray-500 group-hover:text-blue-600 group-hover:scale-110 transition-all duration-300" />
+              <Calendar className="w-5 h-5 text-muted-foreground group-hover:text-blue-600 group-hover:scale-110 transition-all duration-300" />
             </CardHeader>
             <CardContent>
-              <div className="text-gray-900 group-hover:text-blue-900 transition-colors">{activeBookings}</div>
+              <div className="text-foreground group-hover:text-blue-900 transition-colors">{activeBookings}</div>
               <p className="text-blue-600">{mockBookings.length} total bookings</p>
             </CardContent>
           </Card>
@@ -97,10 +97,10 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle>Total Customers</CardTitle>
-              <Users className="w-5 h-5 text-gray-500 group-hover:text-purple-600 group-hover:scale-110 transition-all duration-300" />
+              <Users className="w-5 h-5 text-muted-foreground group-hover:text-purple-600 group-hover:scale-110 transition-all duration-300" />
             </CardHeader>
             <CardContent>
-              <div className="text-gray-900 group-hover:text-purple-900 transition-colors">{mockCustomers.length}</div>
+              <div className="text-foreground group-hover:text-purple-900 transition-colors">{mockCustomers.length}</div>
               <p className="text-purple-600">{mockCustomers.filter(c => c.vipStatus).length} VIP members</p>
             </CardContent>
           </Card>
@@ -117,10 +117,10 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle>Occupancy Rate</CardTitle>
-              <Bed className="w-5 h-5 text-gray-500 group-hover:text-orange-600 group-hover:scale-110 transition-all duration-300" />
+              <Bed className="w-5 h-5 text-muted-foreground group-hover:text-orange-600 group-hover:scale-110 transition-all duration-300" />
             </CardHeader>
             <CardContent>
-              <div className="text-gray-900 group-hover:text-orange-900 transition-colors">{occupancyRate}%</div>
+              <div className="text-foreground group-hover:text-orange-900 transition-colors">{occupancyRate}%</div>
               <p className="text-orange-600">{occupiedRooms} of {mockRooms.length} rooms</p>
             </CardContent>
           </Card>
@@ -291,7 +291,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.4, delay: 0.8 + index * 0.1 }}
-                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50/50 transition-all duration-300 hover:scale-[1.02] cursor-pointer"
+                  className="flex items-center justify-between p-4 border border-border rounded-lg hover:border-blue-300 hover:bg-blue-50/50 transition-all duration-300 hover:scale-[1.02] cursor-pointer"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
@@ -299,14 +299,14 @@ export function Dashboard({ onNavigate }: DashboardProps) {
                         <Users className="w-5 h-5 text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-gray-900">{booking.customerName}</p>
-                        <p className="text-gray-500">Room {booking.roomNumber} • {booking.roomType}</p>
+                        <p className="text-foreground">{booking.customerName}</p>
+                        <p className="text-muted-foreground">Room {booking.roomNumber} • {booking.roomType}</p>
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-gray-900">${booking.totalPrice}</p>
-                    <p className="text-gray-500">{booking.checkIn} - {booking.checkOut}</p>
+                    <p className="text-foreground">${booking.totalPrice}</p>
+                    <p className="text-muted-foreground">{booking.checkIn} - {booking.checkOut}</p>
                   </div>
                   <div className="ml-4">
                     <span
@@ -316,7 +316,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
                           : booking.status === 'checked-in'
                           ? 'bg-green-100 text-green-700'
                           : booking.status === 'checked-out'
-                          ? 'bg-gray-100 text-gray-700'
+                          ? 'bg-muted text-foreground/80'
                           : 'bg-red-100 text-red-700'
                       }`}
                     >

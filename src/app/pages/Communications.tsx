@@ -77,7 +77,7 @@ export function Communications() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Communications</h1>
-          <p className="text-sm text-gray-500">Manage guest messaging via WhatsApp, SMS, and Email.</p>
+          <p className="text-sm text-muted-foreground">Manage guest messaging via WhatsApp, SMS, and Email.</p>
         </div>
         <button 
           onClick={() => setActiveTab('Compose')}
@@ -94,7 +94,7 @@ export function Communications() {
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeTab === tab ? 'bg-background text-primary' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              activeTab === tab ? 'bg-background text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
             }`}
           >
             {tab === 'History' && <History className="w-4 h-4" />}
@@ -110,14 +110,14 @@ export function Communications() {
           <div className="p-4 border-b border-border bg-background flex justify-between items-center">
             <h2 className="font-bold text-foreground">Message History</h2>
             <div className="relative w-64">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/80" />
               <input type="text" placeholder="Search logs..." className="w-full pl-9 pr-4 py-1.5 border border-border rounded focus:outline-none focus:border-primary text-sm" />
             </div>
           </div>
           <div className="flex-1 overflow-auto">
             <table className="w-full text-left whitespace-nowrap">
               <thead className="bg-background sticky top-0">
-                <tr className="border-b border-border text-xs font-semibold text-gray-600 uppercase">
+                <tr className="border-b border-border text-xs font-semibold text-muted-foreground uppercase">
                   <th className="px-4 py-3">Channel</th>
                   <th className="px-4 py-3">Guest / Segment</th>
                   <th className="px-4 py-3">Template</th>
@@ -125,23 +125,23 @@ export function Communications() {
                   <th className="px-4 py-3">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-border/50">
                 {comms.sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).map(c => {
                   const guest = guests.find(g => g.id === c.recipientId);
                   return (
-                    <tr key={c.id} className="hover:bg-gray-50">
+                    <tr key={c.id} className="hover:bg-muted/50">
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-2 text-gray-700 font-medium h-full">
+                        <div className="flex items-center gap-2 text-foreground/80 font-medium h-full">
                           {channelIcon[c.channel]} {c.channel}
                         </div>
                       </td>
-                      <td className="px-4 py-3 font-semibold text-gray-900">
+                      <td className="px-4 py-3 font-semibold text-foreground">
                         {guest ? guest.name : c.recipientId}
                       </td>
-                      <td className="px-4 py-3 text-gray-600">
+                      <td className="px-4 py-3 text-muted-foreground">
                         {c.templateName}
                       </td>
-                      <td className="px-4 py-3 text-gray-500 text-sm">
+                      <td className="px-4 py-3 text-muted-foreground text-sm">
                         {formatDate(c.timestamp)} {new Date(c.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                       </td>
                       <td className="px-4 py-3">
@@ -153,7 +153,7 @@ export function Communications() {
                   )
                 })}
                 {comms.length === 0 && (
-                  <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">No communication history found.</td></tr>
+                  <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">No communication history found.</td></tr>
                 )}
               </tbody>
             </table>
@@ -168,14 +168,14 @@ export function Communications() {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">1. Select Channel</label>
+                <label className="block text-sm font-semibold text-foreground/80 mb-2">1. Select Channel</label>
                 <div className="flex gap-4">
                   {(['WhatsApp', 'SMS', 'Email'] as const).map(ch => (
                     <button
                       key={ch}
                       onClick={() => setChannel(ch)}
                       className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center gap-2 border font-medium transition-colors
-                        ${channel === ch ? 'bg-background border-primary text-primary' : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'}`}
+                        ${channel === ch ? 'bg-background border-primary text-primary' : 'bg-muted/50 border-border text-muted-foreground hover:bg-muted'}`}
                     >
                       {channelIcon[ch]} {ch}
                     </button>
@@ -184,13 +184,13 @@ export function Communications() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">2. Recipients Target</label>
+                <label className="block text-sm font-semibold text-foreground/80 mb-2">2. Recipients Target</label>
                 <div className="grid grid-cols-3 gap-2 mb-3">
                   {(['Single', 'All Arriving Tomorrow', 'Balance Due'] as const).map(tgt => (
                     <button
                       key={tgt}
                       onClick={() => setRecipientFilter(tgt)}
-                      className={`py-2 px-2 text-sm rounded border font-medium ${recipientFilter === tgt ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-card border-border text-gray-600'}`}
+                      className={`py-2 px-2 text-sm rounded border font-medium ${recipientFilter === tgt ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-card border-border text-muted-foreground'}`}
                     >
                       {tgt}
                     </button>
@@ -210,14 +210,14 @@ export function Communications() {
                   </select>
                 )}
                 {recipientFilter !== 'Single' && (
-                  <div className="bg-gray-50 p-3 rounded border border-gray-200 text-sm italic text-gray-600">
+                  <div className="bg-muted/50 p-3 rounded border border-border text-sm italic text-muted-foreground">
                     This message will be sent to the {recipientFilter.toLowerCase()} segment dynamically.
                   </div>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">3. Template</label>
+                <label className="block text-sm font-semibold text-foreground/80 mb-2">3. Template</label>
                 <select 
                   value={selectedTemplate}
                   onChange={e => setSelectedTemplate(e.target.value)}
@@ -241,15 +241,15 @@ export function Communications() {
           <div className="bg-background p-6 rounded-lg border border-border flex flex-col justify-between">
              <div>
                <h2 className="font-bold text-lg text-primary border-b border-white pb-2 mb-4">Live Preview</h2>
-               <div className="bg-card p-4 rounded-lg border border-border shadow-sm text-gray-800 leading-relaxed relative">
+               <div className="bg-card p-4 rounded-lg border border-border shadow-sm text-foreground/90 leading-relaxed relative">
                  {/* Tail for preview bubble based on channel */}
                  <div className="absolute top-4 -left-2 w-4 h-4 bg-card border-l border-b border-border rotate-45"></div>
                  {getPreviewText()}
                </div>
              </div>
              
-             <div className="mt-8 text-sm text-gray-500 bg-card/50 p-4 rounded border border-gray-100">
-               <p className="font-semibold text-gray-700 mb-1">Available Merge Tags:</p>
+             <div className="mt-8 text-sm text-muted-foreground bg-card/50 p-4 rounded border border-border/50">
+               <p className="font-semibold text-foreground/80 mb-1">Available Merge Tags:</p>
                <div className="flex flex-wrap gap-2 font-mono text-xs text-primary">
                  <span className="bg-red-50 px-1 py-0.5 rounded px-2">{`{{guest_name}}`}</span>
                  <span className="bg-red-50 px-1 py-0.5 rounded px-2">{`{{room}}`}</span>
@@ -267,8 +267,8 @@ export function Communications() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(templates).map(([name, text]) => (
               <div key={name} className="border border-border rounded-lg p-4 flex flex-col hover:border-primary transition-colors">
-                <div className="font-bold text-gray-900 mb-2 truncate">{name}</div>
-                <div className="text-sm text-gray-600 bg-background p-3 rounded-md flex-1 whitespace-pre-wrap font-sans">
+                <div className="font-bold text-foreground mb-2 truncate">{name}</div>
+                <div className="text-sm text-muted-foreground bg-background p-3 rounded-md flex-1 whitespace-pre-wrap font-sans">
                   {text}
                 </div>
                 <button className="mt-4 text-xs font-semibold text-primary self-start uppercase tracking-wider hover:underline">

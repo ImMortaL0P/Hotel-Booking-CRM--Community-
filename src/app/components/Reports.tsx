@@ -46,7 +46,7 @@ export function Reports() {
     <div>
       <div className="mb-8">
         <h1>Financial Reports</h1>
-        <p className="text-gray-600">Track revenue, expenses, and financial performance</p>
+        <p className="text-muted-foreground">Track revenue, expenses, and financial performance</p>
       </div>
 
       {/* Stats */}
@@ -62,8 +62,8 @@ export function Reports() {
                 +{revenueGrowth}%
               </Badge>
             </div>
-            <p className="text-gray-500 group-hover:text-green-700 transition-colors">Monthly Revenue</p>
-            <p className="text-gray-900 group-hover:text-green-900 transition-colors">${currentMonthRevenue.toLocaleString()}</p>
+            <p className="text-muted-foreground group-hover:text-green-700 transition-colors">Monthly Revenue</p>
+            <p className="text-foreground group-hover:text-green-900 transition-colors">${currentMonthRevenue.toLocaleString()}</p>
           </CardContent>
         </Card>
 
@@ -75,8 +75,8 @@ export function Reports() {
               </div>
               <Badge className="bg-blue-100 text-blue-700">YTD</Badge>
             </div>
-            <p className="text-gray-500 group-hover:text-blue-700 transition-colors">Total Revenue</p>
-            <p className="text-gray-900 group-hover:text-blue-900 transition-colors">${ytdRevenue.toLocaleString()}</p>
+            <p className="text-muted-foreground group-hover:text-blue-700 transition-colors">Total Revenue</p>
+            <p className="text-foreground group-hover:text-blue-900 transition-colors">${ytdRevenue.toLocaleString()}</p>
           </CardContent>
         </Card>
 
@@ -88,8 +88,8 @@ export function Reports() {
               </div>
               <Badge className="bg-red-100 text-red-700">YTD</Badge>
             </div>
-            <p className="text-gray-500 group-hover:text-red-700 transition-colors">Total Expenses</p>
-            <p className="text-gray-900 group-hover:text-red-900 transition-colors">${ytdExpenses.toLocaleString()}</p>
+            <p className="text-muted-foreground group-hover:text-red-700 transition-colors">Total Expenses</p>
+            <p className="text-foreground group-hover:text-red-900 transition-colors">${ytdExpenses.toLocaleString()}</p>
           </CardContent>
         </Card>
 
@@ -101,8 +101,8 @@ export function Reports() {
               </div>
               <Badge className="bg-purple-100 text-purple-700">YTD</Badge>
             </div>
-            <p className="text-gray-500 group-hover:text-purple-700 transition-colors">Net Profit</p>
-            <p className="text-gray-900 group-hover:text-purple-900 transition-colors">${ytdProfit.toLocaleString()}</p>
+            <p className="text-muted-foreground group-hover:text-purple-700 transition-colors">Net Profit</p>
+            <p className="text-foreground group-hover:text-purple-900 transition-colors">${ytdProfit.toLocaleString()}</p>
           </CardContent>
         </Card>
       </div>
@@ -216,9 +216,9 @@ export function Reports() {
               const isPositive = parseFloat(growth) >= 0;
               
               return (
-                <div key={index} className="p-4 border border-gray-200 rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-200">
+                <div key={index} className="p-4 border border-border rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-200">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-gray-900">{item.category}</h3>
+                    <h3 className="text-foreground">{item.category}</h3>
                     <Badge className={isPositive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}>
                       {isPositive ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
                       {growth}%
@@ -226,15 +226,15 @@ export function Reports() {
                   </div>
                   <div className="flex items-center gap-6">
                     <div>
-                      <p className="text-gray-500">Current Month</p>
-                      <p className="text-gray-900">${item.current.toLocaleString()}</p>
+                      <p className="text-muted-foreground">Current Month</p>
+                      <p className="text-foreground">${item.current.toLocaleString()}</p>
                     </div>
                     <div>
-                      <p className="text-gray-500">Previous Month</p>
-                      <p className="text-gray-600">${item.previous.toLocaleString()}</p>
+                      <p className="text-muted-foreground">Previous Month</p>
+                      <p className="text-muted-foreground">${item.previous.toLocaleString()}</p>
                     </div>
                     <div className="flex-1">
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-muted/80 rounded-full h-2">
                         <div 
                           className={`h-2 rounded-full ${isPositive ? 'bg-green-500' : 'bg-red-500'}`}
                           style={{ width: `${Math.min((item.current / Math.max(item.current, item.previous)) * 100, 100)}%` }}

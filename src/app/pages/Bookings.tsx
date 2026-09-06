@@ -55,8 +55,8 @@ export function Bookings() {
       case 'Checked-In': return 'bg-green-100 text-green-700';
       case 'Confirmed': return 'bg-blue-100 text-blue-700';
       case 'Booked': return 'bg-amber-100 text-amber-700';
-      case 'Checked-Out': return 'bg-muted text-gray-700';
-      default: return 'bg-muted text-gray-700';
+      case 'Checked-Out': return 'bg-muted text-foreground/80';
+      default: return 'bg-muted text-foreground/80';
     }
   };
 
@@ -146,7 +146,7 @@ export function Bookings() {
       {/* Toolbar */}
       <div className="flex items-center justify-between bg-card p-4 rounded-t-xl border border-border border-b-0 shrink-0">
         <div className="relative w-full max-w-sm">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/80" />
           <input 
             type="text" 
             placeholder="Search by guest, ID, phone..."
@@ -176,7 +176,7 @@ export function Bookings() {
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-border/50">
             {filteredBookings.map(b => {
               const guest = guests.find(g => g.id === b.guestId);
               const room = rooms.find(r => r.id === b.roomId);
@@ -203,7 +203,7 @@ export function Bookings() {
                     {b.balance > 0 ? (
                       <span className="text-red-600 font-medium">{formatCurrency(b.balance)}</span>
                     ) : (
-                      <span className="text-gray-400">—</span>
+                      <span className="text-muted-foreground/80">—</span>
                     )}
                   </td>
                   <td className="px-4 py-3">
@@ -213,16 +213,16 @@ export function Bookings() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="relative inline-block text-left" onClick={e => e.stopPropagation()}>
-                      <button className="p-1 text-gray-400 hover:text-primary">
+                      <button className="p-1 text-muted-foreground/80 hover:text-primary">
                         <MoreHorizontal className="w-5 h-5" />
                       </button>
                       
                       {/* Simple hardcoded actions for demo, normally this would be a custom dropdown component */}
                       <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-md shadow-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible z-20 transition-all">
                         <div className="p-1">
-                           <button onClick={(e) => { e.stopPropagation(); setSelectedBooking(b); }} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-secondary rounded">View Details</button>
+                           <button onClick={(e) => { e.stopPropagation(); setSelectedBooking(b); }} className="w-full text-left px-3 py-2 text-sm text-foreground/80 hover:bg-secondary rounded">View Details</button>
                            {b.status === 'Confirmed' && <button onClick={(e) => { e.stopPropagation(); handleAction(b,'Check-in'); }} className="w-full text-left px-3 py-2 text-sm text-green-700 hover:bg-green-50 rounded">Check In</button>}
-                           {b.status === 'Checked-In' && <button onClick={(e) => { e.stopPropagation(); handleAction(b,'Check-out'); }} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-muted rounded">Check Out</button>}
+                           {b.status === 'Checked-In' && <button onClick={(e) => { e.stopPropagation(); handleAction(b,'Check-out'); }} className="w-full text-left px-3 py-2 text-sm text-foreground/80 hover:bg-muted rounded">Check Out</button>}
                            {b.balance > 0 && <button onClick={(e) => { e.stopPropagation(); handleAction(b,'Record Payment'); }} className="w-full text-left px-3 py-2 text-sm text-primary hover:bg-secondary rounded">Record Payment</button>}
                         </div>
                       </div>

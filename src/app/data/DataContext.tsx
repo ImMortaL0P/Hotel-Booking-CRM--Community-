@@ -63,13 +63,13 @@ const LoadingScreen = () => {
         </div>
 
         <h2 className="text-xl font-bold text-[#2d1b1c] mb-1 text-center">Starting ShardaCRM</h2>
-        <p className="text-sm text-gray-500 mb-6 text-center">Connecting to environment</p>
+        <p className="text-sm text-muted-foreground mb-6 text-center">Connecting to environment</p>
 
         <div className="w-full bg-[#1e1e1e] rounded-lg p-4 font-mono text-[11px] md:text-xs text-gray-300 mt-2 min-h-[140px] items-end justify-end shadow-inner overflow-hidden flex flex-col">
           <div className="flex-1 w-full flex flex-col justify-end gap-1.5">
             {logs.slice(0, logIndex + 1).map((log, i) => (
               <div key={i} className={`flex items-start gap-2 ${i === logIndex ? 'text-green-400 font-semibold' : 'opacity-50'}`}>
-                <span className="text-gray-500 shrink-0">{'>'}</span>
+                <span className="text-muted-foreground shrink-0">{'>'}</span>
                 <span className={i === logIndex ? 'animate-pulse' : ''}>{log}</span>
               </div>
             ))}

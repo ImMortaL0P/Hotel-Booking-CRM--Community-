@@ -228,7 +228,7 @@ export function Dashboard() {
                   <th className="pb-3">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-border/50">
                 {bookings.slice(0, 5).map(b => {
                   const guest = guests.find(g => g.id === b.guestId);
                   const room = rooms.find(r => r.id === b.roomId);

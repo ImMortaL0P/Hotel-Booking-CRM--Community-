@@ -78,7 +78,7 @@ export function AdminUsers() {
       case 'staff':
         return 'bg-green-100 text-green-700';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-muted text-foreground/80';
     }
   };
 
@@ -94,7 +94,7 @@ export function AdminUsers() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1>Admin Users</h1>
-          <p className="text-gray-600">Manage staff access and permissions</p>
+          <p className="text-muted-foreground">Manage staff access and permissions</p>
         </div>
         <Dialog open={isAddingUser} onOpenChange={setIsAddingUser}>
           <DialogTrigger asChild>
@@ -159,8 +159,8 @@ export function AdminUsers() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 group-hover:text-blue-700 transition-colors">Total Users</p>
-                <p className="text-gray-900 group-hover:text-blue-900 transition-colors">{stats.total}</p>
+                <p className="text-muted-foreground group-hover:text-blue-700 transition-colors">Total Users</p>
+                <p className="text-foreground group-hover:text-blue-900 transition-colors">{stats.total}</p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-500 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
                 <UserCog className="w-6 h-6 text-blue-600 group-hover:text-primary-foreground transition-colors" />
@@ -173,8 +173,8 @@ export function AdminUsers() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 group-hover:text-green-700 transition-colors">Active</p>
-                <p className="text-gray-900 group-hover:text-green-900 transition-colors">{stats.active}</p>
+                <p className="text-muted-foreground group-hover:text-green-700 transition-colors">Active</p>
+                <p className="text-foreground group-hover:text-green-900 transition-colors">{stats.active}</p>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-500 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
                 <UserCog className="w-6 h-6 text-green-600 group-hover:text-primary-foreground transition-colors" />
@@ -187,8 +187,8 @@ export function AdminUsers() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 group-hover:text-red-700 transition-colors">Inactive</p>
-                <p className="text-gray-900 group-hover:text-red-900 transition-colors">{stats.inactive}</p>
+                <p className="text-muted-foreground group-hover:text-red-700 transition-colors">Inactive</p>
+                <p className="text-foreground group-hover:text-red-900 transition-colors">{stats.inactive}</p>
               </div>
               <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-500 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
                 <UserCog className="w-6 h-6 text-red-600 group-hover:text-primary-foreground transition-colors" />
@@ -201,8 +201,8 @@ export function AdminUsers() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 group-hover:text-purple-700 transition-colors">Admins</p>
-                <p className="text-gray-900 group-hover:text-purple-900 transition-colors">{stats.admins}</p>
+                <p className="text-muted-foreground group-hover:text-purple-700 transition-colors">Admins</p>
+                <p className="text-foreground group-hover:text-purple-900 transition-colors">{stats.admins}</p>
               </div>
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-500 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
                 <Shield className="w-6 h-6 text-purple-600 group-hover:text-primary-foreground transition-colors" />
@@ -215,7 +215,7 @@ export function AdminUsers() {
       {/* Filters */}
       <div className="flex gap-4 mb-6">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground/80" />
           <Input
             placeholder="Search by name, email, or department..."
             value={searchTerm}
@@ -249,12 +249,12 @@ export function AdminUsers() {
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="text-gray-900 group-hover:text-blue-700 transition-colors">{user.name}</h3>
+                      <h3 className="text-foreground group-hover:text-blue-700 transition-colors">{user.name}</h3>
                       <Badge className={getRoleColor(user.role)}>
                         {user.role}
                       </Badge>
                     </div>
-                    <p className="text-gray-500">{user.department}</p>
+                    <p className="text-muted-foreground">{user.department}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -269,27 +269,27 @@ export function AdminUsers() {
               </div>
 
               <div className="space-y-2 mb-4">
-                <div className="flex items-center gap-2 text-gray-600">
+                <div className="flex items-center gap-2 text-muted-foreground">
                   <Mail className="w-4 h-4" />
                   <span>{user.email}</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-600">
+                <div className="flex items-center gap-2 text-muted-foreground">
                   <Phone className="w-4 h-4" />
                   <span>{user.phone}</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-600">
+                <div className="flex items-center gap-2 text-muted-foreground">
                   <Clock className="w-4 h-4" />
                   <span>Last login: {user.lastLogin || 'Never'}</span>
                 </div>
               </div>
 
-              <div className="mb-4 p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors">
-                <p className="text-gray-600 mb-2">Permissions</p>
+              <div className="mb-4 p-3 bg-muted/50 rounded-lg group-hover:bg-blue-50 transition-colors">
+                <p className="text-muted-foreground mb-2">Permissions</p>
                 <div className="flex flex-wrap gap-2">
                   {user.permissions.map((permission) => (
                     <div
                       key={permission}
-                      className="px-2 py-1 bg-card border border-gray-200 rounded text-gray-700"
+                      className="px-2 py-1 bg-card border border-border rounded text-foreground/80"
                     >
                       {permission}
                     </div>
@@ -297,14 +297,14 @@ export function AdminUsers() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
                 <div>
-                  <p className="text-gray-500">User ID</p>
-                  <p className="text-gray-900">{user.id}</p>
+                  <p className="text-muted-foreground">User ID</p>
+                  <p className="text-foreground">{user.id}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Joined</p>
-                  <p className="text-gray-900">{user.createdAt}</p>
+                  <p className="text-muted-foreground">Joined</p>
+                  <p className="text-foreground">{user.createdAt}</p>
                 </div>
               </div>
 
@@ -345,7 +345,7 @@ export function AdminUsers() {
                 </div>
                 <div>
                   <h3>{selectedUser.name}</h3>
-                  <p className="text-gray-500">{selectedUser.email}</p>
+                  <p className="text-muted-foreground">{selectedUser.email}</p>
                 </div>
               </div>
 
@@ -388,7 +388,7 @@ export function AdminUsers() {
 
               <div>
                 <Label>Permissions</Label>
-                <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                <div className="mt-2 p-3 bg-muted/50 rounded-lg">
                   <div className="flex flex-wrap gap-2">
                     {selectedUser.permissions.map((permission) => (
                       <Badge key={permission} variant="outline">

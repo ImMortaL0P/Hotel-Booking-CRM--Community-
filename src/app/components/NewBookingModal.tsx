@@ -188,9 +188,9 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
         <div className="p-6 bg-background border-b border-border flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-foreground">New Booking</h2>
-            <p className="text-xs text-gray-500">Create a new guest booking at Sharda Palace</p>
+            <p className="text-xs text-muted-foreground">Create a new guest booking at Sharda Palace</p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="text-muted-foreground/80 hover:text-muted-foreground">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -203,7 +203,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Guest Full Name *</label>
+                <label className="block text-xs font-medium text-foreground/80 mb-1">Guest Full Name *</label>
                 <input 
                   type="text" 
                   required
@@ -214,7 +214,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Phone Number *</label>
+                <label className="block text-xs font-medium text-foreground/80 mb-1">Phone Number *</label>
                 <input 
                   type="text" 
                   required
@@ -225,7 +225,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">ID Proof Type *</label>
+                <label className="block text-xs font-medium text-foreground/80 mb-1">ID Proof Type *</label>
                 <select 
                   value={idProofType}
                   onChange={e => setIdProofType(e.target.value as IDProofType)}
@@ -239,7 +239,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">ID Number *</label>
+                <label className="block text-xs font-medium text-foreground/80 mb-1">ID Number *</label>
                 <input 
                   type="text" 
                   required
@@ -250,7 +250,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-xs font-medium text-gray-700 mb-1">Email Address</label>
+                <label className="block text-xs font-medium text-foreground/80 mb-1">Email Address</label>
                 <input 
                   type="email" 
                   value={email}
@@ -269,7 +269,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Room Category *</label>
+                <label className="block text-xs font-medium text-foreground/80 mb-1">Room Category *</label>
                 <select
                   value={roomType}
                   onChange={e => setRoomType(e.target.value as RoomCategory)}
@@ -280,7 +280,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Room Number *</label>
+                <label className="block text-xs font-medium text-foreground/80 mb-1">Room Number *</label>
                 <select 
                   value={selectedRoomId}
                   onChange={e => setSelectedRoomId(e.target.value)}
@@ -294,7 +294,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Check-in Date & Time *</label>
+                <label className="block text-xs font-medium text-foreground/80 mb-1">Check-in Date & Time *</label>
                 <input
                   type="datetime-local"
                   required
@@ -304,7 +304,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Check-out Date & Time *</label>
+                <label className="block text-xs font-medium text-foreground/80 mb-1">Check-out Date & Time *</label>
                 <input
                   type="datetime-local"
                   required
@@ -314,7 +314,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Adults</label>
+                <label className="block text-xs font-medium text-foreground/80 mb-1">Adults</label>
                 <input 
                   type="number" 
                   min="1"
@@ -325,7 +325,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Children (Below 12 yrs)</label>
+                <label className="block text-xs font-medium text-foreground/80 mb-1">Children (Below 12 yrs)</label>
                 <input 
                   type="number" 
                   min="0"
@@ -347,16 +347,16 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
             {/* Live Pricing Summary Box */}
             <div className="bg-background p-4 rounded-lg border border-border mb-4 space-y-1.5 text-xs">
               <div className="flex justify-between">
-                <span className="text-gray-600">Nights:</span>
-                <span className="font-semibold text-gray-800">{nights} night(s)</span>
+                <span className="text-muted-foreground">Nights:</span>
+                <span className="font-semibold text-foreground/90">{nights} night(s)</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Room Subtotal:</span>
-                <span className="font-semibold text-gray-800">{formatCurrency(subtotal)}</span>
+                <span className="text-muted-foreground">Room Subtotal:</span>
+                <span className="font-semibold text-foreground/90">{formatCurrency(subtotal)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">GST (12%):</span>
-                <span className="font-semibold text-gray-800">{formatCurrency(gst)}</span>
+                <span className="text-muted-foreground">GST (12%):</span>
+                <span className="font-semibold text-foreground/90">{formatCurrency(gst)}</span>
               </div>
               <div className="flex justify-between text-sm font-bold pt-2 border-t border-border">
                 <span className="text-primary">Total Amount:</span>
@@ -366,7 +366,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Advance Payment (₹)</label>
+                <label className="block text-xs font-medium text-foreground/80 mb-1">Advance Payment (₹)</label>
                 <input 
                   type="number" 
                   min="0"
@@ -377,7 +377,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Payment Mode</label>
+                <label className="block text-xs font-medium text-foreground/80 mb-1">Payment Mode</label>
                 <select 
                   value={paymentMode}
                   onChange={e => setPaymentMode(e.target.value as PaymentMode)}
@@ -390,7 +390,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                 </select>
               </div>
               <div className="md:col-span-2">
-                <label className="block text-xs font-medium text-gray-700 mb-1">Special Requests / Notes</label>
+                <label className="block text-xs font-medium text-foreground/80 mb-1">Special Requests / Notes</label>
                 <textarea 
                   rows={2}
                   value={notes}
@@ -407,7 +407,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
             <button 
               type="button" 
               onClick={onClose}
-              className="px-4 py-2 text-sm border border-border rounded-md text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 text-sm border border-border rounded-md text-foreground/80 hover:bg-muted/50"
             >
               Cancel
             </button>

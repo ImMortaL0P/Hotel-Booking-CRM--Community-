@@ -7,7 +7,7 @@ import { Booking } from '../data/types';
 
 export function Calendar() {
   const { rooms, bookings, guests } = useData();
-  const [currentDate, setCurrentDate] = useState(() => new Date(2026, 8, 2)); // Sept 2, 2026
+  const [currentDate, setCurrentDate] = useState(() => new Date(2026, 8, 5)); // Sept 2, 2026
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [prefilledBooking, setPrefilledBooking] = useState<{roomId?: string, checkIn?: string, checkOut?: string}>({});
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -16,7 +16,7 @@ export function Calendar() {
 
   const nextDay = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1));
   const prevDay = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 1));
-  const goToToday = () => setCurrentDate(new Date(2026, 8, 2));
+  const goToToday = () => setCurrentDate(new Date(2026, 8, 5));
 
   const days = useMemo(() => [{
     date: currentDate,
@@ -29,6 +29,15 @@ export function Calendar() {
   const hours = useMemo(() => Array.from({ length: 24 }, (_, i) => i), []);
   const hourWidth = 40; // 40px per hour
   const dayWidth = 24 * hourWidth; // 960px per day
+
+  const bookingsByRoom = useMemo(() => {
+    const map: Record<string, typeof bookings> = {};
+    bookings.forEach(b => {
+      if (!map[b.roomId]) map[b.roomId] = [];
+      map[b.roomId].push(b);
+    });
+    return map;
+  }, [bookings]);
 
   const handleCellClick = (roomId: string, dateString: string, hour: number) => {
     const checkInDate = new Date(dateString);
@@ -61,7 +70,7 @@ export function Calendar() {
           <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-green-500 rounded-sm"></div> Checked-In</div>
           <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-blue-500 rounded-sm"></div> Confirmed</div>
           <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-amber-500 rounded-sm"></div> Booked (Pending)</div>
-          <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-muted/500 rounded-sm"></div> Checked-Out</div>
+          <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-muted rounded-sm"></div> Checked-Out</div>
         </div>
       </div>
 
@@ -82,7 +91,7 @@ export function Calendar() {
               >
                 {/* Day Label */}
                 <div className="w-full text-center py-2 border-b border-border/50 font-bold text-foreground text-sm flex items-center justify-center gap-2">
-                  <span className={`px-2 py-0.5 rounded ${day.dateString === '2026-09-02' ? 'bg-primary text-primary-foreground' : ''}`}>
+                  <span className={`px-2 py-0.5 rounded ${day.dateString === '2026-09-05' ? 'bg-primary text-primary-foreground' : ''}`}>
                     {titleDate}
                   </span>
                 </div>
@@ -113,7 +122,7 @@ export function Calendar() {
 
                   {catRooms.map((room) => {
                     // Check bookings for this room
-                    const roomBookings = bookings.filter(b => b.roomId === room.id);
+                    const roomBookings = bookingsByRoom[room.id] || [];
 
                     return (
                       <div key={room.id} className="flex relative hover:bg-orange-50/30 group transition-colors">
@@ -137,7 +146,7 @@ export function Calendar() {
                                   key={h}
                                   style={{ width: hourWidth }}
                                   onClick={() => handleCellClick(room.id, day.dateString, h)}
-                                  className={`h-full shrink-0 border-r border-border/50 cursor-pointer hover:bg-neutral-100 transition-colors
+                                  className={`h-full shrink-0 border-r border-border/50 cursor-pointer hover:bg-muted transition-colors
                                             ${day.isWeekend ? 'bg-muted/50/50' : 'bg-transparent'}`}
                                 ></div>
                               ))}
@@ -189,7 +198,7 @@ export function Calendar() {
                             const bgColor = booking.status === 'Booked' ? 'bg-amber-500 hover:bg-amber-600' :
                                            booking.status === 'Confirmed' ? 'bg-blue-500 hover:bg-blue-600' :
                                            booking.status === 'Checked-In' ? 'bg-green-500 hover:bg-green-600' :
-                                           'bg-muted/500 hover:bg-gray-600'; // Checked-Out
+                                           'bg-muted hover:opacity-80'; // Checked-Out
 
                             return (
                               <div

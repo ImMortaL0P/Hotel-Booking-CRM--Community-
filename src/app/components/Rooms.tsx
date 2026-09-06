@@ -29,7 +29,7 @@ export function Rooms() {
       case 'cleaning':
         return 'bg-yellow-100 text-yellow-700';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-muted text-foreground/80';
     }
   };
 
@@ -42,9 +42,9 @@ export function Rooms() {
       case 'double':
         return 'bg-green-100 text-green-700';
       case 'single':
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-muted text-foreground/80';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-muted text-foreground/80';
     }
   };
 
@@ -71,7 +71,7 @@ export function Rooms() {
     <div>
       <div className="mb-8">
         <h1>Room Management</h1>
-        <p className="text-gray-600">View and manage hotel room inventory</p>
+        <p className="text-muted-foreground">View and manage hotel room inventory</p>
       </div>
 
       {/* Stats */}
@@ -80,8 +80,8 @@ export function Rooms() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 group-hover:text-green-700 transition-colors">Available</p>
-                <p className="text-gray-900 group-hover:text-green-900 transition-colors">{stats.available} rooms</p>
+                <p className="text-muted-foreground group-hover:text-green-700 transition-colors">Available</p>
+                <p className="text-foreground group-hover:text-green-900 transition-colors">{stats.available} rooms</p>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-500 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
                 <Bed className="w-6 h-6 text-green-600 group-hover:text-primary-foreground transition-colors" />
@@ -94,8 +94,8 @@ export function Rooms() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 group-hover:text-blue-700 transition-colors">Occupied</p>
-                <p className="text-gray-900 group-hover:text-blue-900 transition-colors">{stats.occupied} rooms</p>
+                <p className="text-muted-foreground group-hover:text-blue-700 transition-colors">Occupied</p>
+                <p className="text-foreground group-hover:text-blue-900 transition-colors">{stats.occupied} rooms</p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-500 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
                 <Bed className="w-6 h-6 text-blue-600 group-hover:text-primary-foreground transition-colors" />
@@ -108,8 +108,8 @@ export function Rooms() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 group-hover:text-yellow-700 transition-colors">Cleaning</p>
-                <p className="text-gray-900 group-hover:text-yellow-900 transition-colors">{stats.cleaning} rooms</p>
+                <p className="text-muted-foreground group-hover:text-yellow-700 transition-colors">Cleaning</p>
+                <p className="text-foreground group-hover:text-yellow-900 transition-colors">{stats.cleaning} rooms</p>
               </div>
               <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center group-hover:bg-yellow-500 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
                 <Bed className="w-6 h-6 text-yellow-600 group-hover:text-primary-foreground transition-colors" />
@@ -122,8 +122,8 @@ export function Rooms() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 group-hover:text-orange-700 transition-colors">Maintenance</p>
-                <p className="text-gray-900 group-hover:text-orange-900 transition-colors">{stats.maintenance} rooms</p>
+                <p className="text-muted-foreground group-hover:text-orange-700 transition-colors">Maintenance</p>
+                <p className="text-foreground group-hover:text-orange-900 transition-colors">{stats.maintenance} rooms</p>
               </div>
               <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center group-hover:bg-orange-500 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
                 <Bed className="w-6 h-6 text-orange-600 group-hover:text-primary-foreground transition-colors" />
@@ -185,36 +185,36 @@ export function Rooms() {
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Price per night</span>
-                  <span className="text-gray-900 group-hover:text-purple-700 transition-colors">${room.pricePerNight}</span>
+                  <span className="text-muted-foreground">Price per night</span>
+                  <span className="text-foreground group-hover:text-purple-700 transition-colors">${room.pricePerNight}</span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Capacity</span>
-                  <span className="text-gray-900">{room.capacity} guests</span>
+                  <span className="text-muted-foreground">Capacity</span>
+                  <span className="text-foreground">{room.capacity} guests</span>
                 </div>
 
                 <div>
-                  <p className="text-gray-600 mb-2">Amenities</p>
+                  <p className="text-muted-foreground mb-2">Amenities</p>
                   <div className="flex flex-wrap gap-2">
                     {room.amenities.slice(0, 4).map((amenity) => (
                       <div
                         key={amenity}
-                        className="px-2 py-1 bg-gray-100 rounded text-gray-700 group-hover:bg-purple-50 group-hover:text-purple-700 transition-colors"
+                        className="px-2 py-1 bg-muted rounded text-foreground/80 group-hover:bg-purple-50 group-hover:text-purple-700 transition-colors"
                       >
                         {amenity}
                       </div>
                     ))}
                     {room.amenities.length > 4 && (
-                      <div className="px-2 py-1 bg-gray-100 rounded text-gray-700 group-hover:bg-purple-50 group-hover:text-purple-700 transition-colors">
+                      <div className="px-2 py-1 bg-muted rounded text-foreground/80 group-hover:bg-purple-50 group-hover:text-purple-700 transition-colors">
                         +{room.amenities.length - 4} more
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-gray-200">
-                  <Label className="mb-2 block text-gray-700">Update Status</Label>
+                <div className="pt-4 border-t border-border">
+                  <Label className="mb-2 block text-foreground/80">Update Status</Label>
                   <Select
                     value={room.status}
                     onValueChange={(value) => updateRoomStatus(room.id, value as Room['status'])}

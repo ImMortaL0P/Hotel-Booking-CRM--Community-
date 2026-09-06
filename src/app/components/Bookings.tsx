@@ -66,11 +66,11 @@ export function Bookings() {
       case 'checked-in':
         return 'bg-green-100 text-green-700';
       case 'checked-out':
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-muted text-foreground/80';
       case 'cancelled':
         return 'bg-red-100 text-red-700';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-muted text-foreground/80';
     }
   };
 
@@ -85,7 +85,7 @@ export function Bookings() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1>Bookings</h1>
-          <p className="text-gray-600">Manage reservations and check-ins</p>
+          <p className="text-muted-foreground">Manage reservations and check-ins</p>
         </div>
         <Dialog open={isAddingBooking} onOpenChange={setIsAddingBooking}>
           <DialogTrigger asChild>
@@ -163,7 +163,7 @@ export function Bookings() {
       {/* Filters */}
       <div className="flex gap-4 mb-6">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground/80" />
           <Input
             placeholder="Search by customer name, booking ID, or room number..."
             value={searchTerm}
@@ -190,7 +190,7 @@ export function Bookings() {
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-muted/50 border-b border-border">
                 <tr>
                   <th className="px-6 py-4 text-left">Booking ID</th>
                   <th className="px-6 py-4 text-left">Customer</th>
@@ -203,38 +203,38 @@ export function Bookings() {
                   <th className="px-6 py-4 text-left">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-border">
                 {filteredBookings.map((booking) => (
                   <tr key={booking.id} className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-200 cursor-pointer">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <CalendarIcon className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-900">{booking.id}</span>
+                        <CalendarIcon className="w-4 h-4 text-muted-foreground/80" />
+                        <span className="text-foreground">{booking.id}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div>
-                        <p className="text-gray-900">{booking.customerName}</p>
+                        <p className="text-foreground">{booking.customerName}</p>
                         {booking.specialRequests && (
-                          <p className="text-gray-500">{booking.specialRequests}</p>
+                          <p className="text-muted-foreground">{booking.specialRequests}</p>
                         )}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div>
-                        <p className="text-gray-900">Room {booking.roomNumber}</p>
-                        <p className="text-gray-500">{booking.roomType}</p>
+                        <p className="text-foreground">Room {booking.roomNumber}</p>
+                        <p className="text-muted-foreground">{booking.roomType}</p>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-gray-900">{booking.checkIn}</td>
-                    <td className="px-6 py-4 text-gray-900">{booking.checkOut}</td>
+                    <td className="px-6 py-4 text-foreground">{booking.checkIn}</td>
+                    <td className="px-6 py-4 text-foreground">{booking.checkOut}</td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-1 text-gray-900">
+                      <div className="flex items-center gap-1 text-foreground">
                         <Users className="w-4 h-4" />
                         {booking.guests}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-gray-900">${booking.totalPrice}</td>
+                    <td className="px-6 py-4 text-foreground">${booking.totalPrice}</td>
                     <td className="px-6 py-4">
                       <Badge className={getStatusColor(booking.status)}>
                         {booking.status}

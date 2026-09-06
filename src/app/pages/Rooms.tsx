@@ -79,7 +79,7 @@ export function Rooms() {
             </button>
           ))}
         </div>
-        <div className="w-px h-6 bg-gray-200 hidden md:block"></div>
+        <div className="w-px h-6 bg-muted/80 hidden md:block"></div>
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-foreground mr-2">Category:</span>
           {(['All', 'Deluxe Double', 'Family Suite'] as const).map(c => (

@@ -45,7 +45,7 @@ export function Customers() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1>Customers</h1>
-          <p className="text-gray-600">Manage your hotel guests and customer relationships</p>
+          <p className="text-muted-foreground">Manage your hotel guests and customer relationships</p>
         </div>
         <Dialog open={isAddingCustomer} onOpenChange={setIsAddingCustomer}>
           <DialogTrigger asChild>
@@ -97,7 +97,7 @@ export function Customers() {
       {/* Search */}
       <div className="mb-6">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground/80" />
           <Input
             placeholder="Search customers by name or email..."
             value={searchTerm}
@@ -119,7 +119,7 @@ export function Customers() {
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="text-gray-900 group-hover:text-blue-700 transition-colors">{customer.name}</h3>
+                      <h3 className="text-foreground group-hover:text-blue-700 transition-colors">{customer.name}</h3>
                       {customer.vipStatus && (
                         <Badge variant="default" className="bg-yellow-500">
                           <Star className="w-3 h-3 mr-1" />
@@ -127,22 +127,22 @@ export function Customers() {
                         </Badge>
                       )}
                     </div>
-                    <p className="text-gray-500">Customer ID: {customer.id}</p>
+                    <p className="text-muted-foreground">Customer ID: {customer.id}</p>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-2 mb-4">
-                <div className="flex items-center gap-2 text-gray-600">
+                <div className="flex items-center gap-2 text-muted-foreground">
                   <Mail className="w-4 h-4" />
                   <span>{customer.email}</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-600">
+                <div className="flex items-center gap-2 text-muted-foreground">
                   <Phone className="w-4 h-4" />
                   <span>{customer.phone}</span>
                 </div>
                 {customer.address && (
-                  <div className="flex items-center gap-2 text-gray-600">
+                  <div className="flex items-center gap-2 text-muted-foreground">
                     <MapPin className="w-4 h-4" />
                     <span>{customer.address}</span>
                   </div>
@@ -150,23 +150,23 @@ export function Customers() {
               </div>
 
               {customer.notes && (
-                <div className="mb-4 p-3 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors">
-                  <p className="text-gray-700">{customer.notes}</p>
+                <div className="mb-4 p-3 bg-muted/50 rounded-lg group-hover:bg-blue-50 transition-colors">
+                  <p className="text-foreground/80">{customer.notes}</p>
                 </div>
               )}
 
-              <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200">
+              <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border">
                 <div>
-                  <p className="text-gray-500">Bookings</p>
-                  <p className="text-gray-900">{customer.totalBookings}</p>
+                  <p className="text-muted-foreground">Bookings</p>
+                  <p className="text-foreground">{customer.totalBookings}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Total Spent</p>
-                  <p className="text-gray-900">${customer.totalSpent.toLocaleString()}</p>
+                  <p className="text-muted-foreground">Total Spent</p>
+                  <p className="text-foreground">${customer.totalSpent.toLocaleString()}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Last Visit</p>
-                  <p className="text-gray-900">{customer.lastBooking || 'N/A'}</p>
+                  <p className="text-muted-foreground">Last Visit</p>
+                  <p className="text-foreground">{customer.lastBooking || 'N/A'}</p>
                 </div>
               </div>
 
@@ -204,33 +204,33 @@ export function Customers() {
                       <Badge variant="default" className="bg-yellow-500">VIP</Badge>
                     )}
                   </div>
-                  <p className="text-gray-500">Member since {selectedCustomer.createdAt}</p>
+                  <p className="text-muted-foreground">Member since {selectedCustomer.createdAt}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Email</Label>
-                  <p className="text-gray-900">{selectedCustomer.email}</p>
+                  <p className="text-foreground">{selectedCustomer.email}</p>
                 </div>
                 <div>
                   <Label>Phone</Label>
-                  <p className="text-gray-900">{selectedCustomer.phone}</p>
+                  <p className="text-foreground">{selectedCustomer.phone}</p>
                 </div>
                 <div>
                   <Label>Total Bookings</Label>
-                  <p className="text-gray-900">{selectedCustomer.totalBookings}</p>
+                  <p className="text-foreground">{selectedCustomer.totalBookings}</p>
                 </div>
                 <div>
                   <Label>Total Spent</Label>
-                  <p className="text-gray-900">${selectedCustomer.totalSpent.toLocaleString()}</p>
+                  <p className="text-foreground">${selectedCustomer.totalSpent.toLocaleString()}</p>
                 </div>
               </div>
 
               {selectedCustomer.notes && (
                 <div>
                   <Label>Notes</Label>
-                  <p className="text-gray-700 mt-1">{selectedCustomer.notes}</p>
+                  <p className="text-foreground/80 mt-1">{selectedCustomer.notes}</p>
                 </div>
               )}
             </div>

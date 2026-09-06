@@ -70,7 +70,7 @@ export function AdminProfile({ onBack }: AdminProfileProps) {
           ← Back to Admin Users
         </Button>
         <h1>My Profile</h1>
-        <p className="text-gray-600">Manage your account settings and preferences</p>
+        <p className="text-muted-foreground">Manage your account settings and preferences</p>
       </div>
 
       {/* Profile Overview Card */}
@@ -93,7 +93,7 @@ export function AdminProfile({ onBack }: AdminProfileProps) {
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-gray-900">{currentUser.name}</h2>
+                    <h2 className="text-foreground">{currentUser.name}</h2>
                     <Badge className="bg-red-100 text-red-700">
                       <Shield className="w-3 h-3 mr-1" />
                       {currentUser.role}
@@ -102,7 +102,7 @@ export function AdminProfile({ onBack }: AdminProfileProps) {
                       {currentUser.status}
                     </Badge>
                   </div>
-                  <p className="text-gray-600">{currentUser.department}</p>
+                  <p className="text-muted-foreground">{currentUser.department}</p>
                 </div>
               </div>
 
@@ -112,8 +112,8 @@ export function AdminProfile({ onBack }: AdminProfileProps) {
                     <Mail className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-gray-500">Email</p>
-                    <p className="text-gray-900">{currentUser.email}</p>
+                    <p className="text-muted-foreground">Email</p>
+                    <p className="text-foreground">{currentUser.email}</p>
                   </div>
                 </div>
 
@@ -122,8 +122,8 @@ export function AdminProfile({ onBack }: AdminProfileProps) {
                     <Phone className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-gray-500">Phone</p>
-                    <p className="text-gray-900">{currentUser.phone}</p>
+                    <p className="text-muted-foreground">Phone</p>
+                    <p className="text-foreground">{currentUser.phone}</p>
                   </div>
                 </div>
 
@@ -132,8 +132,8 @@ export function AdminProfile({ onBack }: AdminProfileProps) {
                     <User className="w-5 h-5 text-purple-600" />
                   </div>
                   <div>
-                    <p className="text-gray-500">User ID</p>
-                    <p className="text-gray-900">{currentUser.id}</p>
+                    <p className="text-muted-foreground">User ID</p>
+                    <p className="text-foreground">{currentUser.id}</p>
                   </div>
                 </div>
 
@@ -142,8 +142,8 @@ export function AdminProfile({ onBack }: AdminProfileProps) {
                     <Clock className="w-5 h-5 text-orange-600" />
                   </div>
                   <div>
-                    <p className="text-gray-500">Last Login</p>
-                    <p className="text-gray-900">{currentUser.lastLogin}</p>
+                    <p className="text-muted-foreground">Last Login</p>
+                    <p className="text-foreground">{currentUser.lastLogin}</p>
                   </div>
                 </div>
               </div>
@@ -220,7 +220,7 @@ export function AdminProfile({ onBack }: AdminProfileProps) {
                 <Label htmlFor="bio">Bio</Label>
                 <textarea 
                   id="bio"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-3 py-2 border border-border rounded-md"
                   rows={4}
                   placeholder="Tell us about yourself..."
                 />
@@ -266,10 +266,10 @@ export function AdminProfile({ onBack }: AdminProfileProps) {
                 <CardTitle>Two-Factor Authentication</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                   <div>
-                    <p className="text-gray-900">Two-Factor Authentication</p>
-                    <p className="text-gray-500">Add an extra layer of security to your account</p>
+                    <p className="text-foreground">Two-Factor Authentication</p>
+                    <p className="text-muted-foreground">Add an extra layer of security to your account</p>
                   </div>
                   <Button>Enable 2FA</Button>
                 </div>
@@ -282,19 +282,19 @@ export function AdminProfile({ onBack }: AdminProfileProps) {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors">
                     <div>
-                      <p className="text-gray-900">Current Session</p>
-                      <p className="text-gray-500">Chrome on Windows • 192.168.1.1</p>
-                      <p className="text-gray-400">Last active: Just now</p>
+                      <p className="text-foreground">Current Session</p>
+                      <p className="text-muted-foreground">Chrome on Windows • 192.168.1.1</p>
+                      <p className="text-muted-foreground/80">Last active: Just now</p>
                     </div>
                     <Badge variant="default" className="bg-green-500">Active</Badge>
                   </div>
-                  <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors">
                     <div>
-                      <p className="text-gray-900">Mobile Session</p>
-                      <p className="text-gray-500">Safari on iPhone • 192.168.1.45</p>
-                      <p className="text-gray-400">Last active: 2 hours ago</p>
+                      <p className="text-foreground">Mobile Session</p>
+                      <p className="text-muted-foreground">Safari on iPhone • 192.168.1.45</p>
+                      <p className="text-muted-foreground/80">Last active: 2 hours ago</p>
                     </div>
                     <Button variant="outline" size="sm">Revoke</Button>
                   </div>
@@ -312,32 +312,32 @@ export function AdminProfile({ onBack }: AdminProfileProps) {
                 <CardTitle>Notification Preferences</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                   <div className="flex items-center gap-3">
-                    <Bell className="w-5 h-5 text-gray-600" />
+                    <Bell className="w-5 h-5 text-muted-foreground" />
                     <div>
-                      <p className="text-gray-900">Email Notifications</p>
-                      <p className="text-gray-500">Receive notifications via email</p>
+                      <p className="text-foreground">Email Notifications</p>
+                      <p className="text-muted-foreground">Receive notifications via email</p>
                     </div>
                   </div>
                   <input type="checkbox" defaultChecked className="w-4 h-4" />
                 </div>
-                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                   <div className="flex items-center gap-3">
-                    <Bell className="w-5 h-5 text-gray-600" />
+                    <Bell className="w-5 h-5 text-muted-foreground" />
                     <div>
-                      <p className="text-gray-900">New Booking Alerts</p>
-                      <p className="text-gray-500">Get notified of new bookings</p>
+                      <p className="text-foreground">New Booking Alerts</p>
+                      <p className="text-muted-foreground">Get notified of new bookings</p>
                     </div>
                   </div>
                   <input type="checkbox" defaultChecked className="w-4 h-4" />
                 </div>
-                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                   <div className="flex items-center gap-3">
-                    <Bell className="w-5 h-5 text-gray-600" />
+                    <Bell className="w-5 h-5 text-muted-foreground" />
                     <div>
-                      <p className="text-gray-900">System Updates</p>
-                      <p className="text-gray-500">Important system notifications</p>
+                      <p className="text-foreground">System Updates</p>
+                      <p className="text-muted-foreground">Important system notifications</p>
                     </div>
                   </div>
                   <input type="checkbox" className="w-4 h-4" />
@@ -412,14 +412,14 @@ export function AdminProfile({ onBack }: AdminProfileProps) {
                 {activityLog.map((log) => (
                   <div 
                     key={log.id} 
-                    className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-200 cursor-pointer"
+                    className="flex items-center gap-4 p-4 border border-border rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-200 cursor-pointer"
                   >
                     <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                       <Activity className="w-5 h-5 text-blue-600" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-gray-900">{log.action}</p>
-                      <p className="text-gray-500">{log.timestamp} • IP: {log.ip}</p>
+                      <p className="text-foreground">{log.action}</p>
+                      <p className="text-muted-foreground">{log.timestamp} • IP: {log.ip}</p>
                     </div>
                     {log.id <= 3 && (
                       <Badge variant="outline" className="bg-green-50 text-green-700">

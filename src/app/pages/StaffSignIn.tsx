@@ -94,7 +94,7 @@ export function StaffSignIn() {
         <div className="w-full max-w-md bg-card p-10 rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-border/50">
           <div className="mb-8 text-center">
             <h2 className="text-3xl font-bold text-foreground mb-2">Staff Sign In</h2>
-            <p className="text-gray-500">Sign in to manage hotel operations</p>
+            <p className="text-muted-foreground">Sign in to manage hotel operations</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -131,7 +131,7 @@ export function StaffSignIn() {
                 <button
                   type="button"
                   onClick={() => setShowPwd(!showPwd)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/80 hover:text-muted-foreground"
                 >
                   {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
