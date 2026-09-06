@@ -213,6 +213,7 @@ export function Expenses() {
   }, [payments, expenses, bookings, rooms, exportFrom, exportTo]);
 
   return (
+    <div className="h-full print:m-0 print:p-0 w-full">
     <div className="flex flex-col h-full space-y-6 print:hidden">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -438,6 +439,8 @@ export function Expenses() {
           </div>
         </div>
       )}
+
+      </div>
 
       {/* Hidden Export Area for PDF */}
       <div className="hidden print:block print:w-full print:m-0 print:p-0">
