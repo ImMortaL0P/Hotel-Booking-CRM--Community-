@@ -44,21 +44,17 @@ export function StaffSignIn() {
     <div className="min-h-screen flex font-sans bg-[#FAF6F0]">
       {/* Left Panel: Brand / Hotel Info */}
       <div className="hidden lg:flex w-1/2 bg-[#7B1E22] text-white flex-col justify-between p-12 relative overflow-hidden">
-        {/* Faint subtle background pattern (arch shape) */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none flex items-center justify-center">
-          <svg viewBox="0 0 100 100" className="w-[150%] h-[150%] text-white" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M 10,90 L 10,40 C 10,10 90,10 90,40 L 90,90" />
-            <path d="M 30,90 L 30,50 C 30,30 70,30 70,50 L 70,90" />
-          </svg>
+        {/* Logo Background with reduced opacity */}
+        <div className="absolute inset-0 opacity-15 pointer-events-none flex items-center justify-center p-8">
+          <img src={logoUrl} alt="" className="w-full h-full object-contain" />
         </div>
 
-        <div className="relative z-10">
-          <img src={logoUrl} alt="Sharda Palace Logo" className="h-28 w-auto object-contain mb-8 bg-white/20 p-2 rounded-xl backdrop-blur-sm shadow-md" />
-          <div className="inline-block px-3 py-1 bg-white/10 rounded-full text-sm font-medium mb-6">
+        <div className="relative z-10 mt-8">
+          <div className="inline-block px-3 py-1 bg-white/10 rounded-full text-sm font-medium mb-6 backdrop-blur-sm">
             Hospitality Management System
           </div>
-          <h1 className="text-5xl font-bold mb-4">ShardaCRM</h1>
-          <p className="text-[#e6dfd8] text-xl mb-12 max-w-md">
+          <h1 className="text-5xl font-bold mb-4 drop-shadow-md">ShardaCRM</h1>
+          <p className="text-[#e6dfd8] text-xl mb-12 max-w-md drop-shadow-sm">
             Complete hotel management for bookings, guests, rooms, and communications — all in one place.
           </p>
 
