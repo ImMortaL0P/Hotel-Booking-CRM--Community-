@@ -14,7 +14,7 @@ interface NewBookingModalProps {
 }
 
 export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, defaultCheckOut }: NewBookingModalProps) {
-  const { rooms, guests, addGuest, addBooking, addPayment } = useData();
+  const { rooms, guests, bookings, addGuest, updateGuest, addBooking, addPayment } = useData();
 
   // Guest details state
   const [guestName, setGuestName] = useState('');
@@ -93,6 +93,25 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
       toast.error('Please fill all required fields');
       return;
     }
+    if (new Date(checkInDate).getTime() >= new Date(checkOutDate).getTime()) {
+      toast.error('Check-out must be after check-in time');
+      return;
+    }
+
+    const isConflict = bookings.some(b => {
+      if (b.roomId !== selectedRoomId) return false;
+      if (b.status === 'Checked-Out' || b.status === 'Cancelled') return false;
+      const start1 = new Date(checkInDate).getTime();
+      const end1 = new Date(checkOutDate).getTime();
+      const start2 = new Date(b.checkIn).getTime();
+      const end2 = new Date(b.checkOut).getTime();
+      return start1 < end2 && end1 > start2;
+    });
+
+    if (isConflict) {
+      toast.error('Room is already booked for these dates.');
+      return;
+    }
 
     // Check if guest exists or create new
     let guest = guests.find(g => g.phone === phone);
@@ -115,6 +134,12 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
         avatarInitial: guestName.charAt(0).toUpperCase()
       };
       addGuest(guest);
+    } else {
+      updateGuest({
+        ...guest,
+        totalStays: guest.totalStays + 1,
+        lastStay: checkInDate
+      });
     }
 
     const bookingId = `SP-2026-${Math.floor(100 + Math.random() * 900)}`;

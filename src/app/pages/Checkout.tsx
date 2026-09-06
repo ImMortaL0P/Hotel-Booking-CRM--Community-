@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useData } from '../data/DataContext';
+import { apiFetch } from '../lib/api';
 import { Receipt, Search, Printer, CheckCircle } from 'lucide-react';
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { InvoiceTemplate, InvoiceDataProps } from '../components/InvoiceTemplate';
@@ -87,9 +88,14 @@ export function Checkout() {
   const handleCheckout = async () => {
     if (!activeBooking || !room || !invoiceData) return;
 
+    if (activeBooking.balance > 0) {
+      const authorized = window.confirm(`This booking has an outstanding balance of ₹${activeBooking.balance}. Do you want to authorize checkout anyway?`);
+      if (!authorized) return;
+    }
+
     // 1. Update Booking
     updateBooking({ ...activeBooking, status: 'Checked-Out' });
-    
+
     // 2. Update Room Status
     updateRoomStatus(room.id, 'Cleaning');
 
@@ -98,9 +104,8 @@ export function Checkout() {
     if (htmlObj) {
         // Embed some generic styling to make printed version look ok on backend
         const fullHtml = `<!DOCTYPE html><html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="p-4">${htmlObj}</body></html>`;
-        fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/save-invoice-file`, {
+        apiFetch('/api/save-invoice-file', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ html: fullHtml, filename: invoiceData.invoiceId })
         }).catch(err => console.error("Could not save invoice file", err));
     }

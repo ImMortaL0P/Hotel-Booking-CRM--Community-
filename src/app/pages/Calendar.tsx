@@ -18,15 +18,15 @@ export function Calendar() {
   const prevDay = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 1));
   const goToToday = () => setCurrentDate(new Date(2026, 8, 2));
 
-  const days = [{
+  const days = useMemo(() => [{
     date: currentDate,
     dayNumber: currentDate.getDate(),
     dayName: currentDate.toLocaleString('default', { weekday: 'short' }),
     isWeekend: currentDate.getDay() === 0 || currentDate.getDay() === 6,
     dateString: `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`
-  }];
+  }], [currentDate]);
 
-  const hours = Array.from({ length: 24 }, (_, i) => i);
+  const hours = useMemo(() => Array.from({ length: 24 }, (_, i) => i), []);
   const hourWidth = 40; // 40px per hour
   const dayWidth = 24 * hourWidth; // 960px per day
 

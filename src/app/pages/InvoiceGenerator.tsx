@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useData } from '../data/DataContext';
+import { apiFetch } from '../lib/api';
 import { FileText, Plus, Printer, CheckCircle, Trash } from 'lucide-react';
 import { InvoiceTemplate, InvoiceDataProps, InvoiceItem } from '../components/InvoiceTemplate';
 
@@ -71,9 +72,8 @@ export function InvoiceGenerator() {
     const htmlObj = document.getElementById('invoice-capture-area')?.outerHTML;
     if (htmlObj) {
         const fullHtml = `<!DOCTYPE html><html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="p-4">${htmlObj}</body></html>`;
-        fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/save-invoice-file`, {
+        apiFetch('/api/save-invoice-file', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ html: fullHtml, filename: invoiceData.invoiceId })
         }).catch(err => console.error("Could not save invoice file", err));
     }

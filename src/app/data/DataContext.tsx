@@ -1,3 +1,4 @@
+import { apiFetch } from '../lib/api';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Room, Guest, Booking, PaymentTransaction, CommRecord, User, ActivityLog, StandaloneInvoice } from './types';
 
@@ -101,8 +102,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/initialize`)
-      .then(res => res.json())
+    apiFetch('/api/initialize')
       .then(data => {
         setRooms(data.rooms || []);
         setGuests(data.guests || []);
@@ -145,66 +145,71 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateRoomStatus = (roomId: string, status: Room['status']) => {
-    // Optimistic
-    setRooms(prev => prev.map(r => r.id === roomId ? { ...r, status } : r));
-    fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/rooms/${roomId}`, {
+        apiFetch(`/api/rooms/${roomId}`, {
        method: 'PUT',
        headers: getHeaders(),
        body: JSON.stringify({ status })
+    }).then(updated => {
+      setRooms(prev => prev.map(r => r.id === roomId ? updated : r));
     }).catch(console.error);
   };
 
   const addGuest = (guest: Guest) => {
-    setGuests(prev => [guest, ...prev]);
-    fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/guests`, {
+    apiFetch(`/api/guests`, {
        method: 'POST',
        headers: getHeaders(),
        body: JSON.stringify(guest)
+    }).then(created => {
+       setGuests(prev => [created, ...prev]);
     }).catch(console.error);
   };
 
   const updateGuest = (guest: Guest) => {
-    setGuests(prev => prev.map(g => g.id === guest.id ? guest : g));
-    fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/guests/${guest.id}`, {
+    apiFetch(`/api/guests/${guest.id}`, {
        method: 'PUT',
        headers: getHeaders(),
        body: JSON.stringify(guest)
+    }).then(updated => {
+       setGuests(prev => prev.map(g => g.id === guest.id ? updated : g));
     }).catch(console.error);
   };
 
   const addBooking = (booking: Booking) => {
-    setBookings(prev => [booking, ...prev]);
-    fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/bookings`, {
+    apiFetch(`/api/bookings`, {
        method: 'POST',
        headers: getHeaders(),
        body: JSON.stringify(booking)
+    }).then(created => {
+       setBookings(prev => [created, ...prev]);
     }).catch(console.error);
   };
 
   const updateBooking = (booking: Booking) => {
-    setBookings(prev => prev.map(b => b.id === booking.id ? booking : b));
-    fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/bookings/${booking.id}`, {
+    apiFetch(`/api/bookings/${booking.id}`, {
        method: 'PUT',
        headers: getHeaders(),
        body: JSON.stringify(booking)
+    }).then(updated => {
+       setBookings(prev => prev.map(b => b.id === booking.id ? updated : b));
     }).catch(console.error);
   };
 
   const deleteBooking = (bookingId: string) => {
-    setBookings(prev => prev.filter(b => b.id !== bookingId));
-    fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/bookings/${bookingId}`, {
+    apiFetch(`/api/bookings/${bookingId}`, {
       method: 'DELETE',
       headers: getHeaders()
+    }).then(() => {
+       setBookings(prev => prev.filter(b => b.id !== bookingId));
     }).catch(console.error);
   };
 
   const addPayment = (payment: PaymentTransaction) => {
-    setPayments(prev => [payment, ...prev]);
-    fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/payments`, {
+    apiFetch(`/api/payments`, {
        method: 'POST',
        headers: getHeaders(),
        body: JSON.stringify(payment)
-    }).then(() => {
+    }).then((created) => {
+      setPayments(prev => [created, ...prev]);
       const booking = bookings.find(b => b.id === payment.bookingId);
       if (booking) {
         const newPaid = booking.paid + payment.amount;
@@ -216,25 +221,28 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           updateGuest({ ...guest, totalSpent: guest.totalSpent + payment.amount });
         }
       }
+    
     }).catch(console.error);
   };
 
   
   const addInvoice = (invoice: StandaloneInvoice) => {
-    setInvoices(prev => [invoice, ...prev]);
-    fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/invoices`, {
+    apiFetch(`/api/invoices`, {
        method: 'POST',
        headers: getHeaders(),
        body: JSON.stringify(invoice)
+    }).then(created => {
+       setInvoices(prev => [created, ...prev]);
     }).catch(console.error);
   };
 
   const addComm = (comm: CommRecord) => {
-    setComms(prev => [comm, ...prev]);
-    fetch(`${import.meta.env.VITE_API_BASE_URL || ""}/api/comms`, {
+    apiFetch(`/api/comms`, {
        method: 'POST',
        headers: getHeaders(),
        body: JSON.stringify(comm)
+    }).then(created => {
+       setComms(prev => [created, ...prev]);
     }).catch(console.error);
   };
 

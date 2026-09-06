@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router';
 import { useData } from '../data/DataContext';
 import { formatCurrency, formatDate } from '../lib/utils';
 import { BookingStatus, Booking } from '../data/types';
@@ -8,8 +9,24 @@ import { BookingDetailDrawer } from '../components/BookingDetailDrawer';
 
 export function Bookings() {
   const { bookings, guests, rooms, updateBooking, addPayment } = useData();
-  const [activeTab, setActiveTab] = useState<BookingStatus | 'All'>('All');
-  const [search, setSearch] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = (searchParams.get('status') as BookingStatus | 'All') || 'All';
+  const search = searchParams.get('search') || '';
+
+  const setActiveTab = (tab: BookingStatus | 'All') => {
+    const params = new URLSearchParams(searchParams);
+    if (tab === 'All') params.delete('status');
+    else params.set('status', tab);
+    setSearchParams(params);
+  };
+
+  const setSearch = (query: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (!query) params.delete('search');
+    else params.set('search', query);
+    setSearchParams(params);
+  };
+
   const [isNewBookingOpen, setIsNewBookingOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
