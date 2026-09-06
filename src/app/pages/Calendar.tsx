@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useData } from '../data/DataContext';
-import { ChevronLeft, ChevronRight, Search, Clock, Users, CalendarDays, Key } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, Clock, Users, CalendarDays, Key, LogIn, LogOut, DoorOpen } from 'lucide-react';
 import { NewBookingModal } from '../components/NewBookingModal';
 import { BookingDetailDrawer } from '../components/BookingDetailDrawer';
 import { Booking } from '../data/types';
@@ -16,7 +16,7 @@ export function Calendar() {
 
   const nextDay = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1));
   const prevDay = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 1));
-  const goToToday = () => setCurrentDate(new Date(2026, 8, 5));
+  const goToToday = () => setCurrentDate(new Date());
 
   const days = useMemo(() => [{
     date: currentDate,
@@ -60,10 +60,21 @@ export function Calendar() {
       <div className="p-4 border-b border-border flex items-center justify-between shrink-0 bg-secondary">
         <div className="flex items-center gap-4">
           <h1 className="text-xl font-bold text-foreground w-64">{titleDate}</h1>
-          <div className="flex bg-card rounded border border-border overflow-hidden shadow-sm">
+          <div className="flex bg-card rounded border border-border overflow-hidden shadow-sm items-center">
             <button onClick={prevDay} className="px-3 py-1.5 hover:bg-muted/50 border-r border-border text-foreground"><ChevronLeft className="w-5 h-5"/></button>
-            <button onClick={goToToday} className="px-5 py-1.5 text-sm font-semibold hover:bg-muted/50 text-foreground">Today</button>
-            <button onClick={nextDay} className="px-3 py-1.5 hover:bg-muted/50 border-l border-border text-foreground"><ChevronRight className="w-5 h-5"/></button>
+            <input
+              type="date"
+              value={`${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`}
+              onChange={(e) => {
+                if (e.target.value) {
+                  const [y, m, d] = e.target.value.split('-');
+                  setCurrentDate(new Date(Number(y), Number(m) - 1, Number(d)));
+                }
+              }}
+              className="px-2 py-1.5 text-sm bg-transparent border-r border-border focus:outline-none text-foreground cursor-pointer"
+            />
+            <button onClick={goToToday} className="px-5 py-1.5 text-sm font-semibold hover:bg-muted/50 text-foreground border-r border-border">Today</button>
+            <button onClick={nextDay} className="px-3 py-1.5 hover:bg-muted/50 text-foreground"><ChevronRight className="w-5 h-5"/></button>
           </div>
         </div>
         <div className="flex items-center gap-4 text-xs font-semibold text-foreground bg-card px-4 py-2 rounded-lg border border-border">
@@ -91,10 +102,33 @@ export function Calendar() {
               >
                 {/* Day Label */}
                 <div className="w-full text-center py-2 border-b border-border/50 font-bold text-foreground text-sm flex items-center justify-center gap-2">
-                  <span className={`px-2 py-0.5 rounded ${day.dateString === '2026-09-05' ? 'bg-primary text-primary-foreground' : ''}`}>
-                    {titleDate}
+                  <span className={`px-2 py-0.5 rounded ${day.dateString === new Date().toISOString().split('T')[0] ? 'bg-primary text-primary-foreground' : ''}`}>
+                    {day.dayName}, {day.dayNumber}
                   </span>
                 </div>
+                {/* Activity counts below the date */}
+                {(() => {
+                  const checkIns = bookings.filter(b => b.checkIn.split('T')[0] === day.dateString).length;
+                  const checkOuts = bookings.filter(b => b.checkOut.split('T')[0] === day.dateString).length;
+                  const active = bookings.filter(b => {
+                    const s = b.checkIn.split('T')[0];
+                    const e = b.checkOut.split('T')[0];
+                    return s <= day.dateString && day.dateString < e && b.status !== 'Checked-Out';
+                  }).length;
+                  return (
+                    <div className="w-full flex items-center justify-center gap-3 py-1 text-[10px] font-semibold border-b border-border/40">
+                      <span className="flex items-center gap-1 text-green-600" title={`${checkIns} check-in(s)`}>
+                        <LogIn className="w-3 h-3" />{checkIns}
+                      </span>
+                      <span className="flex items-center gap-1 text-red-500" title={`${checkOuts} check-out(s)`}>
+                        <LogOut className="w-3 h-3" />{checkOuts}
+                      </span>
+                      <span className="flex items-center gap-1 text-blue-600" title={`${active} guest(s) staying`}>
+                        <DoorOpen className="w-3 h-3" />{active}
+                      </span>
+                    </div>
+                  );
+                })()}
                 {/* Hours Label */}
                 <div className="flex w-full">
                   {hours.map(h => (
@@ -109,7 +143,7 @@ export function Calendar() {
 
           {/* Rooms Grid */}
           <div className="divide-y divide-border bg-card">
-            {['Deluxe Double', 'Family Suite'].map((category) => {
+            {['Double Bed Room', 'Family Bed Room'].map((category) => {
               const catRooms = rooms.filter(r => r.category === category);
               if (catRooms.length === 0) return null;
 
@@ -169,10 +203,10 @@ export function Calendar() {
                               return new Date(Number(y), Number(m) - 1, Number(d), defaultHour, 0, 0).getTime();
                             };
 
-                            // Check-in default 11:00 AM
-                            const checkInTime = parseDateTime(booking.checkIn, 11);
-                            // Check-out default 11:00 AM
-                            const checkOutTime = parseDateTime(booking.checkOut, 11);
+                // Check-in default 12:00 PM
+                const checkInTime = parseDateTime(booking.checkIn, 12);
+                // Check-out default 11:00 AM
+                const checkOutTime = parseDateTime(booking.checkOut, 11);
 
                             const monthStartTime = days[0].date.getTime();
                             const monthEndTime = days[days.length-1].date.getTime() + (24*60*60*1000);

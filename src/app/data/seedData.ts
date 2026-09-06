@@ -5,7 +5,7 @@ export const INITAL_ROOMS: Room[] = [
   {
     "id": "rm-101",
     "number": "101",
-    "category": "Deluxe Double",
+    "category": "Double Bed Room",
     "floor": 1,
     "status": "Available",
     "tariff": 1500
@@ -13,7 +13,7 @@ export const INITAL_ROOMS: Room[] = [
   {
     "id": "rm-102",
     "number": "102",
-    "category": "Deluxe Double",
+    "category": "Double Bed Room",
     "floor": 1,
     "status": "Available",
     "tariff": 1500
@@ -21,7 +21,7 @@ export const INITAL_ROOMS: Room[] = [
   {
     "id": "rm-103",
     "number": "103",
-    "category": "Family Suite",
+    "category": "Family Bed Room",
     "floor": 1,
     "status": "Available",
     "tariff": 3000

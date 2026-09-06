@@ -1,0 +1,18 @@
+@@ -438,7 +437,7 @@
+                   </tr>
+                </thead>
+                <tbody>
+-                  {getExportEntries().filter((e: any) => e.type === 'INCOME').map((item: any, i: number) => (
++                  {exportEntries.filter((e: any) => e.type === 'INCOME').map((item: any, i: number) => (
+                      <tr key={i} className="border-b border-gray-100">
+                         <td className="py-2">{formatDate(item.date)}</td>
+                         <td className="py-2 pr-2">{item.source} {item.roomId ? `(Rm ${rooms.find(r => r.id === item.roomId)?.number})` : ''}</td>
+@@ -450,7 +449,7 @@
+                <tfoot>
+                   <tr className="border-t-2 border-black font-bold">
+                      <td colSpan={2} className="py-3">TOTAL INCOME</td>
+                      <td className="text-right py-3 text-green-700">
+-                        {formatCurrency(getExportEntries().filter((e: any) => e.type === 'INCOME').reduce((s: number, e: any) => s + e.amount, 0))}
++                        {formatCurrency(exportEntries.filter((e: any) => e.type === 'INCOME').reduce((s: number, e: any) => s + e.amount, 0))}
+                      </td>
+                   </tr>

@@ -26,16 +26,16 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
   const [state, setState] = useState('');
 
   // Room details
-  const [roomType, setRoomType] = useState<RoomCategory>('Deluxe Double');
+  const [roomType, setRoomType] = useState<RoomCategory>('Double Bed Room');
   const [selectedRoomId, setSelectedRoomId] = useState(defaultRoomId || '');
   const [checkInDate, setCheckInDate] = useState(() => {
     if (defaultDate && defaultDate.includes('T')) return defaultDate;
-    if (defaultDate) return `${defaultDate}T11:00`;
-    return '2026-09-05T11:00';
+    if (defaultDate) return `${defaultDate}T12:00`;
+    return '2026-09-06T12:00'; // Default to today's date based on current context
   });
   const [checkOutDate, setCheckOutDate] = useState(() => {
     if (defaultCheckOut) return defaultCheckOut;
-    return '2026-09-07T11:00';
+    return '2026-09-07T11:00'; // Tomorrow
   });
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
@@ -275,8 +275,8 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                   onChange={e => setRoomType(e.target.value as RoomCategory)}
                   className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary"
                 >
-                  <option value="Deluxe Double">Deluxe Double (₹1,500/night)</option>
-                  <option value="Family Suite">Family Suite (₹3,000/night)</option>
+                  <option value="Double Bed Room">Double Bed Room (₹1,500/night)</option>
+                  <option value="Family Bed Room">Family Bed Room (₹3,000/night)</option>
                 </select>
               </div>
               <div>

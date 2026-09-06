@@ -4,6 +4,8 @@ import { formatCurrency, formatDate } from '../lib/utils';
 import { CreditCard, IndianRupee, FileText, Download, Wallet, AlertCircle, ArrowUpRight, Search, Printer, X } from 'lucide-react';
 import { PaymentTransaction } from '../data/types';
 import { exportToCsv } from '../lib/exportCsv';
+// @ts-ignore
+import html2pdf from 'html2pdf.js';
 
 export function Payments() {
   const { payments, bookings, guests } = useData();
@@ -49,8 +51,8 @@ export function Payments() {
   };
 
   return (
-    <div className="space-y-6 h-full flex flex-col relative">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-6 h-full flex flex-col relative print:m-0 print:p-0 print:block">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden">
         <div>
           <div className="flex flex-col">
             <h1 className="text-2xl font-bold text-foreground">Payments Ledger</h1>
@@ -84,7 +86,7 @@ export function Payments() {
       </div>
 
       {/* 4 Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 shrink-0 print:hidden">
         <div className="bg-card p-5 rounded-lg border border-border border-l-4 border-l-green-600 flex flex-col justify-between">
           <div className="flex justify-between items-start mb-2">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Collected This Month</span>
@@ -127,7 +129,7 @@ export function Payments() {
       </div>
 
       {/* Toolbar */}
-      <div className="flex items-center justify-between bg-card p-4 rounded-t-xl border border-border border-b-0 shrink-0 mt-4">
+      <div className="flex items-center justify-between bg-card p-4 rounded-t-xl border border-border border-b-0 shrink-0 mt-4 print:hidden">
         <h2 className="font-bold text-primary flex items-center gap-2">
           <FileText className="w-5 h-5"/> Transaction History
         </h2>
@@ -144,7 +146,7 @@ export function Payments() {
       </div>
 
       {/* Table */}
-      <div className="bg-card border text-sm border-border rounded-b-xl overflow-x-auto flex-1 h-0">
+      <div className="bg-card border text-sm border-border rounded-b-xl overflow-x-auto flex-1 h-0 print:hidden">
         <table className="w-full text-left whitespace-nowrap">
           <thead className="bg-secondary sticky top-0 z-10 shadow-sm">
             <tr className="border-b border-border text-xs font-semibold text-foreground/80 uppercase">
@@ -207,20 +209,30 @@ export function Payments() {
       {selectedReceipt && (() => {
         const _booking = bookings.find(b => b.id === selectedReceipt.bookingId);
         const _guest = guests.find(g => g.id === _booking?.guestId);
-        
+
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
-            <div className="bg-card rounded-xl shadow-2xl max-w-2xl w-full flex flex-col max-h-full overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 print:block print:relative print:bg-transparent print:p-0 print:inset-auto">
+            <div className="bg-card rounded-xl shadow-2xl max-w-2xl w-full flex flex-col max-h-full overflow-hidden animate-in zoom-in-95 duration-200 print:shadow-none print:max-w-none print:border-none print:overflow-visible">
               {/* Actions Header */}
-              <div className="px-6 py-4 border-b border-border/50 flex justify-between items-center bg-muted/50 shrink-0">
+              <div className="px-6 py-4 border-b border-border/50 flex justify-between items-center bg-muted/50 shrink-0 print:hidden">
                 <h3 className="font-bold text-foreground flex items-center gap-2">
                   <FileText className="w-5 h-5"/> Payment Receipt
                 </h3>
                 <div className="flex gap-2">
-                  <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-foreground bg-card border border-border rounded hover:bg-muted/50">
+                  <button onClick={() => window.print()} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-foreground bg-card border border-border rounded hover:bg-muted/50">
                     <Printer className="w-4 h-4"/> Print
                   </button>
-                  <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-primary bg-card border border-primary rounded hover:bg-red-50">
+                  <button onClick={() => {
+                    const element = document.getElementById('printable-receipt');
+                    if (!element) return;
+                    html2pdf().set({
+                      margin: 0.5,
+                      filename: `Receipt_${selectedReceipt.id}.pdf`,
+                      image: { type: 'jpeg', quality: 0.98 },
+                      html2canvas: { scale: 2 },
+                      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                    }).from(element).save();
+                  }} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-primary bg-card border border-primary rounded hover:bg-red-50">
                     <Download className="w-4 h-4"/> PDF
                   </button>
                   <button onClick={() => setSelectedReceipt(null)} className="p-1.5 hover:bg-muted rounded-full ml-4">

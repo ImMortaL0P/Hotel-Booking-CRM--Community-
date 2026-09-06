@@ -1,34 +1,41 @@
 import { apiFetch } from '../lib/api';
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Room, Guest, Booking, PaymentTransaction, CommRecord, User, ActivityLog, StandaloneInvoice } from './types';
+import { Room, Guest, Booking, PaymentTransaction, CommRecord, User, ActivityLog, StandaloneInvoice, Expense, StoredInvoiceData } from './types';
 
 interface DataContextType {
   user: User | null;
   login: (user: User) => void;
   logout: () => void;
-  
+
   rooms: Room[];
   updateRoomStatus: (roomId: string, status: Room['status']) => void;
-  
+
   guests: Guest[];
   addGuest: (guest: Guest) => void;
   updateGuest: (guest: Guest) => void;
-  
+
   bookings: Booking[];
   addBooking: (booking: Booking) => void;
   updateBooking: (booking: Booking) => void;
   deleteBooking: (bookingId: string) => void;
-  
+
   payments: PaymentTransaction[];
   addPayment: (payment: PaymentTransaction) => void;
-  
+
   comms: CommRecord[];
   addComm: (comm: CommRecord) => void;
-  
+
   isLoading: boolean;
   logs: ActivityLog[];
   invoices: StandaloneInvoice[];
   addInvoice: (invoice: StandaloneInvoice) => void;
+
+  storedInvoices: StoredInvoiceData[];
+  addStoredInvoice: (storedInvoice: StoredInvoiceData) => void;
+
+  expenses: Expense[];
+  addExpense: (expense: Expense) => void;
+  deleteExpense: (expenseId: string) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -99,6 +106,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [comms, setComms] = useState<CommRecord[]>([]);
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [invoices, setInvoices] = useState<StandaloneInvoice[]>([]);
+  const [storedInvoices, setStoredInvoices] = useState<StoredInvoiceData[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -111,6 +120,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         setComms(data.comms || []);
         setLogs(data.logs || []);
         setInvoices(data.invoices || []);
+        setStoredInvoices(data.storedInvoices || []);
+        setExpenses(data.expenses || []);
         setIsLoading(false);
       })
       .catch(err => {
@@ -236,6 +247,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }).catch(console.error);
   };
 
+  const addStoredInvoice = (storedInvoice: StoredInvoiceData) => {
+    apiFetch(`/api/stored-invoices`, {
+       method: 'POST',
+       headers: getHeaders(),
+       body: JSON.stringify(storedInvoice)
+    }).then(created => {
+       setStoredInvoices(prev => [created, ...prev]);
+    }).catch(console.error);
+  };
+
   const addComm = (comm: CommRecord) => {
     apiFetch(`/api/comms`, {
        method: 'POST',
@@ -243,6 +264,25 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
        body: JSON.stringify(comm)
     }).then(created => {
        setComms(prev => [created, ...prev]);
+    }).catch(console.error);
+  };
+
+  const addExpense = (expense: Expense) => {
+    apiFetch(`/api/expenses`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(expense)
+    }).then(created => {
+      setExpenses(prev => [created, ...prev]);
+    }).catch(console.error);
+  };
+
+  const deleteExpense = (expenseId: string) => {
+    apiFetch(`/api/expenses/${expenseId}`, {
+      method: 'DELETE',
+      headers: getHeaders()
+    }).then(() => {
+      setExpenses(prev => prev.filter(e => e.id !== expenseId));
     }).catch(console.error);
   };
 
@@ -254,6 +294,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       bookings, addBooking, updateBooking, deleteBooking,
       payments, addPayment,
       comms, addComm, logs, invoices, addInvoice,
+      storedInvoices, addStoredInvoice,
+      expenses, addExpense, deleteExpense,
       isLoading
     }}>
       {isLoading ? <LoadingScreen /> : children}

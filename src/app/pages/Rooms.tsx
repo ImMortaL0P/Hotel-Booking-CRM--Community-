@@ -20,8 +20,8 @@ export function Rooms() {
 
   // Group by category
   const groupedRooms: Record<RoomCategory, Room[]> = {
-    'Deluxe Double': filteredRooms.filter(r => r.category === 'Deluxe Double'),
-    'Family Suite': filteredRooms.filter(r => r.category === 'Family Suite'),
+    'Double Bed Room': filteredRooms.filter(r => r.category === 'Double Bed Room'),
+    'Family Bed Room': filteredRooms.filter(r => r.category === 'Family Bed Room'),
   };
 
   const statusColors = {
@@ -82,7 +82,7 @@ export function Rooms() {
         <div className="w-px h-6 bg-muted/80 hidden md:block"></div>
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-foreground mr-2">Category:</span>
-          {(['All', 'Deluxe Double', 'Family Suite'] as const).map(c => (
+          {(['All', 'Double Bed Room', 'Family Bed Room'] as const).map(c => (
             <button
               key={c}
               onClick={() => setCategoryFilter(c)}
@@ -97,7 +97,7 @@ export function Rooms() {
       </div>
 
       {/* Categories loop */}
-      {(['Deluxe Double', 'Family Suite'] as RoomCategory[]).map(cat => {
+      {(['Double Bed Room', 'Family Bed Room'] as RoomCategory[]).map(cat => {
         if (groupedRooms[cat].length === 0) return null;
         
         return (

@@ -10,7 +10,10 @@ import {
   deleteBooking,
   addPayment,
   addComm,
-  addInvoice
+  addInvoice,
+  addExpense,
+  deleteExpense,
+  addStoredInvoice
 } from '../controllers/dataController.js';
 
 const router = express.Router();
@@ -37,8 +40,13 @@ router.post('/comms', addComm);
 
 // Invoices
 router.post('/invoices', addInvoice);
+router.post('/stored-invoices', addStoredInvoice);
 
-export default router;
+// Expenses
+router.post('/expenses', addExpense);
+router.delete('/expenses/:id', deleteExpense);
 
 // Save invoice file (HTML to github folder)
 router.post('/save-invoice-file', saveInvoiceFile);
+
+export default router;

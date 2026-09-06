@@ -39,47 +39,39 @@ export function Dashboard() {
     pingMs: 0
   });
 
-  useEffect(() => {
-    let isMounted = true;
-    const checkHealth = async () => {
-      const start = Date.now();
-      try {
-        const res = await apiFetch('/api/health').catch(() => null);
-        if (isMounted) {
-          if (res && res.status === 'ok') {
-            setHealth({
-              frontend: 'Online',
-              backend: 'Online',
-              database: res.dbStatus || 'Connected',
-              pingMs: Date.now() - start
-            });
-          } else {
-            setHealth({
-              frontend: 'Online',
-              backend: 'Offline',
-              database: 'Offline',
-              pingMs: 0
-            });
-          }
-        }
-      } catch (err) {
-        if (isMounted) {
-          setHealth({
-            frontend: 'Online',
-            backend: 'Offline',
-            database: 'Offline',
-            pingMs: 0
-          });
-        }
+  const checkHealth = async () => {
+    const start = Date.now();
+    try {
+      const res = await apiFetch('/api/health').catch(() => null);
+      if (res && res.status === 'ok') {
+        setHealth({
+          frontend: 'Online',
+          backend: 'Online',
+          database: res.dbStatus || 'Connected',
+          pingMs: Date.now() - start
+        });
+      } else {
+        setHealth({
+          frontend: 'Online',
+          backend: 'Offline',
+          database: 'Offline',
+          pingMs: 0
+        });
       }
-    };
+    } catch (err) {
+      setHealth({
+        frontend: 'Online',
+        backend: 'Offline',
+        database: 'Offline',
+        pingMs: 0
+      });
+    }
+  };
 
+  useEffect(() => {
     checkHealth();
     const interval = setInterval(checkHealth, 30000);
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
+    return () => clearInterval(interval);
   }, []);
 
   // Time-aware greeting
@@ -106,7 +98,7 @@ export function Dashboard() {
   const totalPendingAmount = pendingBookings.reduce((sum, b) => sum + b.balance, 0);
 
   // Chart data: Room Occupancy by Type
-  const categories = ['Deluxe Double', 'Family Suite'] as const;
+  const categories = ['Double Bed Room', 'Family Bed Room'] as const;
   const chartData = categories.map(cat => {
     const catRooms = rooms.filter(r => r.category === cat);
     const occupied = catRooms.filter(r => r.status === 'Occupied').length;
@@ -383,9 +375,20 @@ export function Dashboard() {
 
           {/* System Health Monitor */}
           <div className="mt-6 pt-5 border-t border-border/50">
-            <h3 className="text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider flex items-center gap-2">
-              <Activity className="w-3.5 h-3.5" /> System Health Status
-            </h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                <Activity className="w-3.5 h-3.5" /> System Health Status
+              </h3>
+              <button
+                onClick={() => {
+                  setHealth(h => ({ ...h, backend: 'Checking...', database: 'Checking...' }));
+                  checkHealth();
+                }}
+                className="text-[10px] font-semibold bg-secondary hover:bg-secondary/80 text-foreground px-2 py-1 rounded border border-border"
+              >
+                Refresh Status
+              </button>
+            </div>
             <div className="flex flex-wrap gap-4">
               {/* Frontend Status */}
               <div className="flex items-center gap-2 bg-secondary/50 px-3 py-1.5 rounded-md border border-border/50">

@@ -8,7 +8,7 @@ export type User = {
   avatar?: string;
 };
 
-export type RoomCategory = 'Deluxe Double' | 'Family Suite';
+export type RoomCategory = 'Double Bed Room' | 'Family Bed Room';
 
 export type RoomStatus = 'Available' | 'Occupied' | 'Maintenance' | 'Cleaning';
 
@@ -93,6 +93,18 @@ export interface ActivityLog {
   timestamp: string;
 }
 
+export type ExpenseCategory = 'Staff Payment' | 'Maintenance' | 'Furniture' | 'Utility' | 'Inventory' | 'Other';
+
+export interface Expense {
+  id: string;
+  date: string;
+  amount: number;
+  category: ExpenseCategory;
+  description: string;
+  roomId?: string; // e.g. "ROOM_ID" or blank if property-wide
+  recordedBy: string;
+}
+
 export interface StandaloneInvoice {
   id: string;
   customerName: string;
@@ -103,4 +115,42 @@ export interface StandaloneInvoice {
   subtotal: number;
   gst: number;
   total: number;
+}
+
+export interface StoredInvoiceData {
+  id?: string;
+  invoiceId: string;
+  date: string;
+  billedTo: {
+    name: string;
+    address: string;
+    cityState: string;
+    phone: string;
+    idPrefix?: string;
+  };
+  checkIn?: string;
+  checkOut?: string;
+  roomPlan?: string;
+  paymentStatus: string;
+  items: {
+    id: number;
+    description: string;
+    unitPrice: number;
+    qty: number;
+    discount: number;
+    gstPct: number;
+    amount: number;
+  }[];
+  subtotal: number;
+  gstTotal: number;
+  total: number;
+  staySummary?: {
+    nights: number;
+    adults: number;
+    children: number;
+    room: string;
+    paymentMode: string;
+    amountReceived: number;
+    balance: number;
+  };
 }

@@ -21,8 +21,8 @@ export function Reports() {
   ];
 
   const roomTypeRevenue = [
-    { type: 'Deluxe Double', revenue: 78000, percentage: 65 },
-    { type: 'Family Suite', revenue: 42000, percentage: 35 }
+    { type: 'Double Bed Room', revenue: 78000, percentage: 65 },
+    { type: 'Family Bed Room', revenue: 42000, percentage: 35 }
   ];
 
   const monthlyComparison = [

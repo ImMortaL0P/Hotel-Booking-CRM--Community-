@@ -41,9 +41,9 @@ export interface InvoiceDataProps {
   };
 }
 
-export const InvoiceTemplate = ({ data }: { data: InvoiceDataProps }) => {
+export const InvoiceTemplate = ({ data, elementId = "invoice-capture-area" }: { data: InvoiceDataProps, elementId?: string }) => {
   return (
-    <div className="bg-card p-8 max-w-4xl mx-auto border border-border" id="invoice-capture-area">
+    <div className="bg-card p-8 max-w-4xl mx-auto border border-border" id={elementId}>
       {/* Header */}
       <div className="flex justify-between items-start mb-8 border-b-2 border-border/50 pb-4">
         <div className="flex flex-col items-center">

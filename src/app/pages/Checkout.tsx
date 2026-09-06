@@ -1,14 +1,17 @@
 import { useState, useMemo } from 'react';
 import { useData } from '../data/DataContext';
 import { apiFetch } from '../lib/api';
-import { Receipt, Search, Printer, CheckCircle } from 'lucide-react';
+import { Receipt, Search, Printer, CheckCircle, Download } from 'lucide-react';
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { InvoiceTemplate, InvoiceDataProps } from '../components/InvoiceTemplate';
+// @ts-ignore
+import html2pdf from 'html2pdf.js';
 
 export function Checkout() {
-  const { rooms, bookings, guests, payments, updateBooking, updateRoomStatus, isLoading } = useData();
+  const { rooms, bookings, guests, payments, updateBooking, updateRoomStatus, addStoredInvoice, isLoading } = useData();
   const [selectedRoomId, setSelectedRoomId] = useState('');
   const [isGenerated, setIsGenerated] = useState(false);
+  const [finalInvoiceData, setFinalInvoiceData] = useState<InvoiceDataProps | null>(null);
 
   const activeRooms = useMemo(() => {
     return rooms.filter(r => r.status === 'Occupied');
@@ -99,7 +102,23 @@ export function Checkout() {
     // 2. Update Room Status
     updateRoomStatus(room.id, 'Cleaning');
 
-    // 3. Optional: save HTML to archive via backend
+    // 3. Save to database via addStoredInvoice
+    addStoredInvoice({
+      invoiceId: invoiceData.invoiceId,
+      date: invoiceData.date,
+      billedTo: invoiceData.billedTo,
+      checkIn: invoiceData.checkIn,
+      checkOut: invoiceData.checkOut,
+      roomPlan: invoiceData.roomPlan,
+      paymentStatus: invoiceData.paymentStatus,
+      items: invoiceData.items,
+      subtotal: invoiceData.subtotal,
+      gstTotal: invoiceData.gstTotal,
+      total: invoiceData.total,
+      staySummary: invoiceData.staySummary
+    });
+
+    // 4. Optional: save HTML to archive via backend
     const htmlObj = document.getElementById('invoice-capture-area')?.outerHTML;
     if (htmlObj) {
         // Embed some generic styling to make printed version look ok on backend
@@ -111,10 +130,25 @@ export function Checkout() {
     }
 
     setIsGenerated(true);
+    setFinalInvoiceData(invoiceData);
   };
 
   const printInvoice = () => {
     window.print();
+  };
+
+  const downloadPDF = () => {
+    const element = document.getElementById('invoice-capture-area');
+    const dataToUse = isGenerated ? finalInvoiceData : invoiceData;
+    if (!element || !dataToUse) return;
+    const opt = {
+      margin:       0.5,
+      filename:     `${dataToUse.invoiceId}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(element).save();
   };
 
   return (
@@ -132,7 +166,7 @@ export function Checkout() {
           <h2 className="text-lg font-bold mb-4">Select Room to Checkout</h2>
           <div className="flex gap-4 max-w-xl">
              <div className="relative flex-1">
-               <select 
+               <select
                  className="w-full h-12 pl-4 pr-10 rounded-lg border border-border focus:border-primary focus:ring-1 focus:ring-primary appearance-none"
                  value={selectedRoomId}
                  onChange={e => setSelectedRoomId(e.target.value)}
@@ -150,32 +184,35 @@ export function Checkout() {
           </div>
         </div>
       ) : (
-        <div className="bg-green-100/50 p-6 rounded-lg shadow-sm border border-green-200 mb-8 print:hidden flex items-center justify-between">
+        <div className="bg-green-100/50 p-6 rounded-lg shadow-sm border border-green-200 mb-8 print:hidden flex flex-col sm:flex-row gap-4 items-center justify-between">
            <div className="flex items-center gap-3 text-green-800">
              <CheckCircle className="w-8 h-8" />
              <div>
                 <h3 className="font-bold text-lg">Checkout Completed</h3>
-                <p>Room is set to cleaning. You can now print the invoice.</p>
+                <p>Room is set to cleaning. You can now download or print the invoice.</p>
              </div>
            </div>
-           <div className="flex gap-4">
-              <button onClick={() => { setIsGenerated(false); setSelectedRoomId(''); }} className="px-5 py-2.5 border border-border text-foreground font-bold rounded-lg hover:bg-muted/50 transition-colors">
+           <div className="flex gap-4 flex-wrap">
+              <button onClick={() => { setIsGenerated(false); setSelectedRoomId(''); setFinalInvoiceData(null); }} className="px-5 py-2.5 border border-border text-foreground font-bold rounded-lg hover:bg-muted/50 transition-colors">
                 New Checkout
               </button>
+              <button onClick={downloadPDF} className="px-5 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 flex gap-2 items-center">
+                <Download className="w-4 h-4" /> Download PDF
+              </button>
               <button onClick={printInvoice} className="px-5 py-2.5 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-[#60171a] flex gap-2 items-center">
-                <Printer className="w-4 h-4" /> Print Invoice
+                <Printer className="w-4 h-4" /> Print
               </button>
            </div>
         </div>
       )}
 
       {/* Invoice Preview */}
-      {invoiceData && (
+      {(isGenerated ? finalInvoiceData : invoiceData) && (
         <div className="print:block">
            <div className="print:hidden flex justify-between items-end mb-4">
               <h2 className="text-xl font-bold text-foreground">Invoice Preview</h2>
            </div>
-           <InvoiceTemplate data={invoiceData} />
+           <InvoiceTemplate data={(isGenerated ? finalInvoiceData : invoiceData)!} />
         </div>
       )}
     </div>

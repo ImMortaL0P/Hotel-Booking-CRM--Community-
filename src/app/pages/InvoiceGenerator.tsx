@@ -1,11 +1,16 @@
 import { useState, useMemo } from 'react';
 import { useData } from '../data/DataContext';
 import { apiFetch } from '../lib/api';
-import { FileText, Plus, Printer, CheckCircle, Trash } from 'lucide-react';
+import { FileText, Plus, Printer, CheckCircle, Trash, Download, Archive, ArrowLeft, Eye } from 'lucide-react';
 import { InvoiceTemplate, InvoiceDataProps, InvoiceItem } from '../components/InvoiceTemplate';
+// @ts-ignore
+import html2pdf from 'html2pdf.js';
 
 export function InvoiceGenerator() {
-  const { addInvoice } = useData();
+  const { storedInvoices, addInvoice, addStoredInvoice } = useData();
+  const [viewMode, setViewMode] = useState<'generate' | 'archive'>('generate');
+  const [selectedArchiveData, setSelectedArchiveData] = useState<InvoiceDataProps | null>(null);
+
   const [customerName, setCustomerName] = useState('');
   const [phone, setPhone] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -68,6 +73,21 @@ export function InvoiceGenerator() {
       total: invoiceData.total
     });
 
+    addStoredInvoice({
+      invoiceId: invoiceData.invoiceId,
+      date: invoiceData.date,
+      billedTo: invoiceData.billedTo,
+      checkIn: invoiceData.checkIn,
+      checkOut: invoiceData.checkOut,
+      roomPlan: invoiceData.roomPlan,
+      paymentStatus: invoiceData.paymentStatus,
+      items: invoiceData.items,
+      subtotal: invoiceData.subtotal,
+      gstTotal: invoiceData.gstTotal,
+      total: invoiceData.total,
+      staySummary: invoiceData.staySummary
+    });
+
     // Optional: save HTML to archive via backend
     const htmlObj = document.getElementById('invoice-capture-area')?.outerHTML;
     if (htmlObj) {
@@ -83,17 +103,122 @@ export function InvoiceGenerator() {
 
   const printInvoice = () => window.print();
 
+  const downloadPDF = () => {
+    const element = document.getElementById('invoice-capture-area');
+    if (!element) return;
+    const opt = {
+      margin:       0.5,
+      filename:     `${invoiceData.invoiceId}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(element).save();
+  };
+
+  const downloadPDFArchive = () => {
+    const element = document.getElementById('archive-invoice-capture-area');
+    if (!element || !selectedArchiveData) return;
+    const opt = {
+      margin:       0.5,
+      filename:     `${selectedArchiveData.invoiceId}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(element).save();
+  };
+
   return (
     <div className="max-w-5xl mx-auto flex flex-col h-full print:m-0 print:p-0 print:w-full print:max-w-none">
-      <div className="mb-8 print:hidden">
-        <h1 className="text-3xl font-bold text-foreground font-display flex items-center gap-3">
-          <FileText className="text-[#D4AF37] w-8 h-8" />
-          Standalone Invoice Generator
-        </h1>
-        <p className="text-foreground/80 mt-2">Generate custom bills manually</p>
+      <div className="mb-8 print:hidden flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground font-display flex items-center gap-3">
+            <FileText className="text-[#D4AF37] w-8 h-8" />
+            Standalone Invoice Generator
+          </h1>
+          <p className="text-foreground/80 mt-2">Generate custom bills manually or browse the archive</p>
+        </div>
+        <div className="flex bg-secondary p-1 rounded-lg border border-border">
+          <button
+            onClick={() => { setViewMode('generate'); setSelectedArchiveData(null); }}
+            className={`px-4 py-2 text-sm font-bold rounded-md transition-colors ${viewMode === 'generate' ? 'bg-background shadow-sm text-primary border border-border/50' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            Generate New
+          </button>
+          <button
+            onClick={() => setViewMode('archive')}
+            className={`px-4 py-2 flex items-center gap-2 text-sm font-bold rounded-md transition-colors ${viewMode === 'archive' ? 'bg-background shadow-sm text-primary border border-border/50' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            <Archive className="w-4 h-4" /> Invoice Archive
+          </button>
+        </div>
       </div>
 
-      {!isGenerated ? (
+      {viewMode === 'archive' ? (
+        <div className="print:block">
+          {!selectedArchiveData ? (
+            <div className="bg-card p-6 rounded-lg shadow-sm border border-border print:hidden">
+              <h2 className="text-lg font-bold mb-4">Past Invoices & Checkouts</h2>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-border text-xs font-semibold text-muted-foreground uppercase">
+                      <th className="pb-3">Invoice ID</th>
+                      <th className="pb-3">Date</th>
+                      <th className="pb-3">Billed To</th>
+                      <th className="pb-3">Amount</th>
+                      <th className="pb-3">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/50">
+                    {storedInvoices.length === 0 && (
+                      <tr><td colSpan={5} className="py-4 text-center text-muted-foreground">No invoices stored yet.</td></tr>
+                    )}
+                    {storedInvoices.map((inv, idx) => (
+                      <tr key={inv.invoiceId || idx} className="hover:bg-muted/50">
+                        <td className="py-3 font-medium text-primary">{inv.invoiceId}</td>
+                        <td className="py-3 text-foreground">{inv.date}</td>
+                        <td className="py-3">
+                          <p className="font-medium text-card-foreground">{inv.billedTo?.name}</p>
+                        </td>
+                        <td className="py-3 font-semibold text-card-foreground">₹{inv.total?.toFixed(2)}</td>
+                        <td className="py-3">
+                          <button
+                            onClick={() => setSelectedArchiveData(inv as InvoiceDataProps)}
+                            className="bg-secondary text-primary px-3 py-1.5 rounded-md text-xs font-bold hover:bg-secondary/80 flex items-center gap-1 border border-border"
+                          >
+                            <Eye className="w-3 h-3" /> View / Download
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 flex flex-col">
+              <div className="bg-card p-6 rounded-lg shadow-sm border border-border mb-8 print:hidden flex items-center justify-between">
+                 <button onClick={() => setSelectedArchiveData(null)} className="flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground">
+                   <ArrowLeft className="w-4 h-4" /> Back to Archive
+                 </button>
+                 <div className="flex gap-4">
+                    <button onClick={downloadPDFArchive} className="px-5 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 flex gap-2 items-center">
+                      <Download className="w-4 h-4" /> Download PDF
+                    </button>
+                    <button onClick={printInvoice} className="px-5 py-2.5 bg-primary text-primary-foreground font-bold rounded-lg hover:opacity-90 flex gap-2 items-center">
+                      <Printer className="w-4 h-4" /> Print
+                    </button>
+                 </div>
+              </div>
+              <div className="print:block" id="archive-invoice-container">
+                <InvoiceTemplate data={selectedArchiveData} elementId="archive-invoice-capture-area" />
+              </div>
+            </div>
+          )}
+        </div>
+      ) : !isGenerated ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 print:block">
            <div className="print:hidden space-y-6">
               <div className="bg-card p-6 rounded-lg shadow-sm border border-border">
@@ -157,20 +282,23 @@ export function InvoiceGenerator() {
         </div>
       ) : (
          <div className="flex-1 flex flex-col">
-          <div className="bg-green-100/50 p-6 rounded-lg shadow-sm border border-green-200 mb-8 print:hidden flex items-center justify-between">
+          <div className="bg-green-100/50 p-6 rounded-lg shadow-sm border border-green-200 mb-8 print:hidden flex flex-col sm:flex-row gap-4 items-center justify-between">
              <div className="flex items-center gap-3 text-green-800">
                <CheckCircle className="w-8 h-8" />
                <div>
                   <h3 className="font-bold text-lg">Invoice Saved Successfully</h3>
-                  <p>Archived in local database. You can now print the bill.</p>
+                  <p>Archived in local database. You can now download or print the bill.</p>
                </div>
              </div>
-             <div className="flex gap-4">
-                <button onClick={() => { setIsGenerated(false); setItems([{ description: '', unitPrice: 0, qty: 1, discount: 0, gstPct: 12 }]); setCustomerName(''); }} className="px-5 py-2.5 border border-border text-foreground font-bold rounded-lg hover:bg-muted/50 transition-colors">
+             <div className="flex gap-4 flex-wrap">
+                <button onClick={() => { setIsGenerated(false); setItems([{ description: '', unitPrice: 0, qty: 1, discount: 0, gstPct: 12 }]); setCustomerName(''); setPhone(''); }} className="px-5 py-2.5 border border-border text-foreground font-bold rounded-lg hover:bg-muted/50 transition-colors">
                   New Invoice
                 </button>
+                <button onClick={downloadPDF} className="px-5 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 flex gap-2 items-center">
+                  <Download className="w-4 h-4" /> Download PDF
+                </button>
                 <button onClick={printInvoice} className="px-5 py-2.5 bg-primary text-primary-foreground font-bold rounded-lg hover:opacity-90 flex gap-2 items-center">
-                  <Printer className="w-4 h-4" /> Print Invoice
+                  <Printer className="w-4 h-4" /> Print
                 </button>
              </div>
           </div>
