@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import compression from 'compression';
+import mongoose from 'mongoose';
 import { connectDB } from './db.js';
 import apiRoutes from './routes/api.js';
 
@@ -25,7 +26,19 @@ app.use(express.json());
 app.use('/api', apiRoutes);
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', msg: 'ShardaCRM Backend is running' });
+  const dbState = mongoose.connection.readyState;
+  let dbStatusStr = 'Disconnected';
+  if (dbState === 1) dbStatusStr = 'Connected';
+  else if (dbState === 2) dbStatusStr = 'Connecting';
+  else if (dbState === 3) dbStatusStr = 'Disconnecting';
+
+  res.json({
+    status: 'ok',
+    msg: 'ShardaCRM Backend is running',
+    dbState: dbState,
+    dbStatus: dbStatusStr,
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Serve static frontend files continuously in production

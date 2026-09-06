@@ -1,20 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useData } from '../data/DataContext';
 import { formatCurrency, formatDate } from '../lib/utils';
-import { 
-  Users, 
-  Calendar, 
-  Bed, 
-  CreditCard, 
-  Plus, 
-  MessageSquare, 
-  CheckCircle, 
-  Clock, 
+import { apiFetch } from '../lib/api';
+import {
+  Users,
+  Calendar,
+  Bed,
+  CreditCard,
+  Plus,
+  MessageSquare,
+  CheckCircle,
+  Clock,
   ArrowRight,
   TrendingUp,
   Mail,
   Smartphone,
-  PhoneCall
+  PhoneCall,
+  Activity,
+  Server,
+  Database,
+  Globe
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { NewBookingModal } from '../components/NewBookingModal';
@@ -25,6 +30,57 @@ export function Dashboard() {
   const { user, bookings, rooms, guests, comms } = useData();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Health Status
+  const [health, setHealth] = useState({
+    frontend: 'Online',
+    backend: 'Checking...',
+    database: 'Checking...',
+    pingMs: 0
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+    const checkHealth = async () => {
+      const start = Date.now();
+      try {
+        const res = await apiFetch('/api/health').catch(() => null);
+        if (isMounted) {
+          if (res && res.status === 'ok') {
+            setHealth({
+              frontend: 'Online',
+              backend: 'Online',
+              database: res.dbStatus || 'Connected',
+              pingMs: Date.now() - start
+            });
+          } else {
+            setHealth({
+              frontend: 'Online',
+              backend: 'Offline',
+              database: 'Offline',
+              pingMs: 0
+            });
+          }
+        }
+      } catch (err) {
+        if (isMounted) {
+          setHealth({
+            frontend: 'Online',
+            backend: 'Offline',
+            database: 'Offline',
+            pingMs: 0
+          });
+        }
+      }
+    };
+
+    checkHealth();
+    const interval = setInterval(checkHealth, 30000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
 
   // Time-aware greeting
   const getGreeting = () => {
@@ -317,12 +373,44 @@ export function Dashboard() {
             >
               Availability Calendar
             </button>
-            <button 
+            <button
               onClick={() => navigate('/communications')}
               className="px-4 py-2 border border-border rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-primary transition-colors"
             >
               Send Bulk Communication
             </button>
+          </div>
+
+          {/* System Health Monitor */}
+          <div className="mt-6 pt-5 border-t border-border/50">
+            <h3 className="text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider flex items-center gap-2">
+              <Activity className="w-3.5 h-3.5" /> System Health Status
+            </h3>
+            <div className="flex flex-wrap gap-4">
+              {/* Frontend Status */}
+              <div className="flex items-center gap-2 bg-secondary/50 px-3 py-1.5 rounded-md border border-border/50">
+                <Globe className="w-4 h-4 text-muted-foreground" />
+                <span className="text-xs font-medium text-card-foreground">Frontend Viewer</span>
+                <span className={`w-2 h-2 rounded-full ml-1 ${health.frontend === 'Online' ? 'bg-green-500 shadow-[0_0_5px_#22c55e]' : 'bg-red-500'}`}></span>
+                <span className="text-[10px] text-muted-foreground uppercase">{health.frontend}</span>
+              </div>
+
+              {/* Backend Status */}
+              <div className="flex items-center gap-2 bg-secondary/50 px-3 py-1.5 rounded-md border border-border/50">
+                <Server className="w-4 h-4 text-muted-foreground" />
+                <span className="text-xs font-medium text-card-foreground">Render Backend Server</span>
+                <span className={`w-2 h-2 rounded-full ml-1 ${health.backend === 'Online' ? 'bg-green-500 shadow-[0_0_5px_#22c55e]' : 'bg-amber-500 animate-pulse'}`}></span>
+                <span className="text-[10px] text-muted-foreground uppercase">{health.backend} {health.pingMs > 0 ? `(${health.pingMs}ms)` : ''}</span>
+              </div>
+
+              {/* DB Status */}
+              <div className="flex items-center gap-2 bg-secondary/50 px-3 py-1.5 rounded-md border border-border/50">
+                <Database className="w-4 h-4 text-muted-foreground" />
+                <span className="text-xs font-medium text-card-foreground">MongoDB Atlas</span>
+                <span className={`w-2 h-2 rounded-full ml-1 ${(health.database === 'Connected' || health.database === 'Online') ? 'bg-green-500 shadow-[0_0_5px_#22c55e]' : 'bg-amber-500 animate-pulse'}`}></span>
+                <span className="text-[10px] text-muted-foreground uppercase">{health.database}</span>
+              </div>
+            </div>
           </div>
         </div>
       )}
