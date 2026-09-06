@@ -295,7 +295,7 @@ export function Dashboard() {
       </div>
 
       {/* Manager Quick Actions Row */}
-      {user?.role === 'manager' && (
+      {['manager', 'owner', 'superadmin'].includes(user?.role || '') && (
         <div className="bg-white p-5 rounded-xl border border-[#e6dfd8]">
           <h2 className="text-sm font-bold text-[#2d1b1c] mb-3 uppercase tracking-wider">Manager Quick Actions</h2>
           <div className="flex flex-wrap gap-3">

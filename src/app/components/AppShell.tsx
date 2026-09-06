@@ -79,7 +79,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <NavItem to="/rooms" icon={BedDouble} label="Rooms" />
           <NavItem to="/calendar" icon={CalendarDays} label="Calendar" />
           <NavItem to="/communications" icon={MessageSquare} label="Communications" />
-          {user?.role === 'manager' && (
+          {['manager', 'owner', 'superadmin'].includes(user?.role || '') && (
             <NavItem to="/payments" icon={CreditCard} label="Payments" badge={pendingPayments} />
           )}
           <NavItem to="/checkout" icon={Receipt} label="Checkout & Bill" />

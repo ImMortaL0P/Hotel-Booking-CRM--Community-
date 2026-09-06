@@ -1,42 +1,43 @@
 import { useState } from 'react';
-import { Eye, EyeOff, MapPin, Phone, Clock, Bed, UserCircle, Briefcase } from 'lucide-react';
+import { Eye, EyeOff, MapPin, Phone, Clock, Bed } from 'lucide-react';
 import { useData } from '../data/DataContext';
 import { Role } from '../data/types';
 import logoUrl from '../../assets/logo.png';
 
 export function StaffSignIn() {
   const { login } = useData();
-  const [role, setRole] = useState<Role>('manager');
-  const [email, setEmail] = useState('');
+  const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
   const [showPwd, setShowPwd] = useState(false);
+  const [error, setError] = useState('');
 
-  // Demo accounts
+  // Official accounts
   const accounts = [
-    { name: 'Ravi Kumar', role: 'manager' as Role, email: 'ravi@shardapalace.in', emoji: '🧑‍💼' },
-    { name: 'Seema Devi', role: 'front-desk' as Role, email: 'seema@shardapalace.in', emoji: '💁‍♀️' },
-    { name: 'Arun Sharma', role: 'front-desk' as Role, email: 'arun@shardapalace.in', emoji: '👨‍💼' },
+    { name: 'Mangalam', role: 'superadmin' as Role, userId: 'mangalam', passHash: 'S3Vra3U0MDQj' },
+    { name: 'Harsh Chandra', role: 'owner' as Role, userId: 'harsh', passHash: 'SGFyc2gjMTIz' },
+    { name: 'Arya Chandra', role: 'owner' as Role, userId: 'arya', passHash: 'RWt0YSMxNDM=' },
+    { name: 'Front Desk', role: 'front-desk' as Role, userId: 'frontdesk1', passHash: 'c2hhcmRhIzMyMQ==' }
   ];
-
-  const handleAutofill = (acc: typeof accounts[0]) => {
-    setRole(acc.role);
-    setEmail(acc.email);
-    setPassword('demo123');
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    
+    if (!userId || !password) return;
+
     // Find matched account
-    const acc = accounts.find(a => a.email === email);
-    login({
-      id: acc ? acc.name.split(' ')[0].toLowerCase() : 'user-001',
-      name: acc ? acc.name : 'Quick User',
-      email: email,
-      role: role,
-      avatar: acc ? acc.name.charAt(0) : 'Q'
-    });
+    const acc = accounts.find(a => a.userId === userId && a.passHash === btoa(password));
+
+    if (acc) {
+      setError('');
+      login({
+        id: acc.userId,
+        name: acc.name,
+        email: `${acc.userId}@shardapalace.in`,
+        role: acc.role,
+        avatar: acc.name.charAt(0).toUpperCase()
+      });
+    } else {
+      setError('Invalid User ID or Password.');
+    }
   };
 
   return (
@@ -69,12 +70,12 @@ export function StaffSignIn() {
                 <p>Main Shivganga Road, Bam Bam Baba Path,<br/>near Matri Mandir, Deoghar 814112, Jharkhand</p>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-4">
               <Phone className="w-6 h-6 shrink-0" />
               <p>+91 79707 35251</p>
             </div>
-            
+
             <div className="flex items-center gap-4">
               <Clock className="w-6 h-6 shrink-0" />
               <p>12 min from Baba Baidyanath Mandir</p>
@@ -101,48 +102,37 @@ export function StaffSignIn() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Role Toggle */}
-            <div className="flex p-1 bg-[#e6dfd8] rounded-lg">
-              <button
-                type="button"
-                onClick={() => setRole('manager')}
-                className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-md transition-colors ${role === 'manager' ? 'bg-white text-[#7B1E22] shadow-sm' : 'text-gray-600 hover:text-[#2d1b1c]'}`}
-              >
-                <Briefcase className="w-4 h-4" /> Manager
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole('front-desk')}
-                className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-md transition-colors ${role === 'front-desk' ? 'bg-white text-[#7B1E22] shadow-sm' : 'text-gray-600 hover:text-[#2d1b1c]'}`}
-              >
-                <UserCircle className="w-4 h-4" /> Front Desk
-              </button>
-            </div>
+
+            {error && (
+              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg">
+                {error}
+              </div>
+            )}
 
             <div>
-              <label className="block text-sm font-medium text-[#2d1b1c] mb-1">Email Address</label>
-              <input 
-                type="email" 
+              <label className="block text-sm font-medium text-[#2d1b1c] mb-1">User ID</label>
+              <input
+                type="text"
                 required
-                value={email}
-                onChange={e => setEmail(e.target.value)}
+                value={userId}
+                onChange={e => setUserId(e.target.value)}
                 className="w-full px-4 py-2 bg-white border border-[#e6dfd8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7B1E22] focus:border-transparent"
-                placeholder="name@shardapalace.in"
+                placeholder="Enter your User ID"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-[#2d1b1c] mb-1">Password</label>
               <div className="relative">
-                <input 
-                  type={showPwd ? 'text' : 'password'} 
+                <input
+                  type={showPwd ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   className="w-full px-4 py-2 bg-white border border-[#e6dfd8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7B1E22] focus:border-transparent pr-10"
                   placeholder="••••••••"
                 />
-                <button 
+                <button
                   type="button"
                   onClick={() => setShowPwd(!showPwd)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
@@ -157,34 +147,10 @@ export function StaffSignIn() {
               <label htmlFor="keep" className="ml-2 text-sm text-[#2d1b1c]">Keep me signed in</label>
             </div>
 
-            <button type="submit" className="w-full bg-[#7B1E22] text-white py-3 rounded-lg font-medium hover:bg-[#8C1D24] transition-colors">
+            <button type="submit" className="w-full bg-[#7B1E22] text-white py-3 rounded-lg font-medium hover:bg-[#8C1D24] transition-colors mt-2">
               Sign Into Dashboard
             </button>
           </form>
-
-          {/* Demo Accounts */}
-          <div className="mt-8 p-5 bg-[#FAF6F0] rounded-xl ring-1 ring-inset ring-[#e6dfd8]/70">
-            <h3 className="text-sm font-semibold text-[#2d1b1c] mb-3 text-center">Demo Accounts — Click to autofill</h3>
-            <div className="space-y-3">
-              {accounts.map(acc => (
-                <div key={acc.email} className="flex flex-wrap items-center justify-between gap-2 p-3 bg-white shadow-sm rounded-lg transition-all hover:-translate-y-0.5 hover:shadow-md cursor-pointer border border-[#e6dfd8]/40" onClick={() => handleAutofill(acc)}>
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{acc.emoji}</span>
-                    <div>
-                      <p className="text-sm font-bold text-[#2d1b1c]">{acc.name} <span className="font-normal text-gray-500">({acc.role === 'manager' ? 'Manager' : 'Front Desk'})</span></p>
-                      <p className="text-xs text-gray-400">{acc.email}</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleAutofill(acc); }}
-                    className="text-xs font-semibold text-[#7B1E22] bg-[#FAF6F0] px-3 py-1.5 rounded-full hover:bg-[#8C1D24] hover:text-white transition-colors"
-                  >
-                    Use
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
 
         </div>
       </div>
