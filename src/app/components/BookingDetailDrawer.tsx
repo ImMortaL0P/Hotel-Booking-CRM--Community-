@@ -10,10 +10,12 @@ interface Props {
   onClose: () => void;
 }
 
-export function BookingDetailDrawer({ booking, isOpen, onClose }: Props) {
-  const { guests, rooms, updateBooking, addPayment } = useData();
+export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }: Props) {
+  const { guests, rooms, bookings, updateBooking, addPayment } = useData();
 
-  if (!isOpen || !booking) return null;
+  if (!isOpen || !initialBooking) return null;
+
+  const booking = bookings.find(b => b.id === initialBooking.id) || initialBooking;
 
   const guest = guests.find(g => g.id === booking.guestId);
   const room = rooms.find(r => r.id === booking.roomId);
