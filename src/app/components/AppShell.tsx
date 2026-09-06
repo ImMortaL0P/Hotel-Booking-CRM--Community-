@@ -1,6 +1,6 @@
 import { ReactNode, useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router';
-import { LayoutDashboard, BookOpenText, Users, BedDouble, CalendarDays, MessageSquare, CreditCard, LogOut, ChevronLeft, ChevronRight, Building, FileText, Receipt, History, Moon, Sun, Bell, Search } from 'lucide-react';
+import { LayoutDashboard, BookOpenText, Users, BedDouble, CalendarDays, MessageSquare, CreditCard, LogOut, ChevronLeft, ChevronRight, Building, FileText, Receipt, History, Moon, Sun, Bell, Search, WalletCards } from 'lucide-react';
 import { useData } from '../data/DataContext';
 import { useTheme } from './ThemeProvider';
 import { cn } from '../lib/utils';
@@ -54,10 +54,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className="min-h-screen bg-background flex text-foreground">
+    <div className="min-h-screen bg-background flex text-foreground print:block print:bg-white">
       {/* Sidebar */}
       <aside className={cn(
-        "bg-card border-r border-border flex flex-col transition-all duration-300",
+        "bg-card border-r border-border flex flex-col transition-all duration-300 print:hidden",
         collapsed ? "w-20" : "w-64"
       )}>
         {/* Header */}
@@ -96,6 +96,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
           <NavItem to="/checkout" icon={Receipt} label="Checkout & Bill" />
           <NavItem to="/invoices" icon={FileText} label="Custom Invoice" />
+          {['manager', 'owner', 'superadmin'].includes(user?.role || '') && (
+            <NavItem to="/expenses" icon={WalletCards} label="Expenses & Ledger" />
+          )}
           <NavItem to="/logs" icon={History} label="Activity Logs" />
         </div>
 
@@ -185,9 +188,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden">
+      <main className="flex-1 flex flex-col h-screen overflow-hidden print:h-auto print:overflow-visible print:block">
         {/* We can add a top bar here if needed, but per requirements most screens manage their own header area in Main */}
-        <div className="flex-1 overflow-auto p-4 md:p-6 bg-background">
+        <div className="flex-1 overflow-auto p-4 md:p-6 bg-background print:p-0 print:overflow-visible print:block text-black">
           {children}
         </div>
       </main>
