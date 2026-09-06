@@ -5,8 +5,6 @@ import { CreditCard, IndianRupee, FileText, Download, Wallet, AlertCircle, Arrow
 import { PaymentTransaction } from '../data/types';
 import { exportToCsv } from '../lib/exportCsv';
 // @ts-ignore
-import html2pdf from 'html2pdf.js';
-
 export function Payments() {
   const { payments, bookings, guests } = useData();
   const [search, setSearch] = useState('');
@@ -225,13 +223,7 @@ export function Payments() {
                   <button onClick={() => {
                     const element = document.getElementById('printable-receipt');
                     if (!element) return;
-                    html2pdf().set({
-                      margin: 0.5,
-                      filename: `Receipt_${selectedReceipt.id}.pdf`,
-                      image: { type: 'jpeg', quality: 0.98 },
-                      html2canvas: { scale: 2 },
-                      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-                    }).from(element).save();
+                    window.print();
                   }} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-primary bg-card border border-primary rounded hover:bg-red-50">
                     <Download className="w-4 h-4"/> PDF
                   </button>

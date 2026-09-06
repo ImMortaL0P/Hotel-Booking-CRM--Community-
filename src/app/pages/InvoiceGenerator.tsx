@@ -4,8 +4,6 @@ import { apiFetch } from '../lib/api';
 import { FileText, Plus, Printer, CheckCircle, Trash, Download, Archive, ArrowLeft, Eye } from 'lucide-react';
 import { InvoiceTemplate, InvoiceDataProps, InvoiceItem } from '../components/InvoiceTemplate';
 // @ts-ignore
-import html2pdf from 'html2pdf.js';
-
 export function InvoiceGenerator() {
   const { storedInvoices, addInvoice, addStoredInvoice } = useData();
   const [viewMode, setViewMode] = useState<'generate' | 'archive'>('generate');
@@ -104,29 +102,13 @@ export function InvoiceGenerator() {
   const printInvoice = () => window.print();
 
   const downloadPDF = () => {
-    const element = document.getElementById('invoice-capture-area');
-    if (!element) return;
-    const opt = {
-      margin:       0.5,
-      filename:     `${invoiceData.invoiceId}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2 },
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-    };
-    html2pdf().set(opt).from(element).save();
+    alert("Please select 'Save as PDF' from the destination in the print dialog.");
+    window.print();
   };
 
   const downloadPDFArchive = () => {
-    const element = document.getElementById('archive-invoice-capture-area');
-    if (!element || !selectedArchiveData) return;
-    const opt = {
-      margin:       0.5,
-      filename:     `${selectedArchiveData.invoiceId}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2 },
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-    };
-    html2pdf().set(opt).from(element).save();
+    alert("Please select 'Save as PDF' from the destination in the print dialog.");
+    window.print();
   };
 
   return (
@@ -205,7 +187,7 @@ export function InvoiceGenerator() {
                  </button>
                  <div className="flex gap-4">
                     <button onClick={downloadPDFArchive} className="px-5 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 flex gap-2 items-center">
-                      <Download className="w-4 h-4" /> Download PDF
+                      <Download className="w-4 h-4" /> Save as PDF
                     </button>
                     <button onClick={printInvoice} className="px-5 py-2.5 bg-primary text-primary-foreground font-bold rounded-lg hover:opacity-90 flex gap-2 items-center">
                       <Printer className="w-4 h-4" /> Print
@@ -295,7 +277,7 @@ export function InvoiceGenerator() {
                   New Invoice
                 </button>
                 <button onClick={downloadPDF} className="px-5 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 flex gap-2 items-center">
-                  <Download className="w-4 h-4" /> Download PDF
+                  <Download className="w-4 h-4" /> Save as PDF
                 </button>
                 <button onClick={printInvoice} className="px-5 py-2.5 bg-primary text-primary-foreground font-bold rounded-lg hover:opacity-90 flex gap-2 items-center">
                   <Printer className="w-4 h-4" /> Print

@@ -5,8 +5,6 @@ import { formatCurrency, generateId, formatDate } from '../lib/utils';
 import { WalletCards, Plus, Filter, Download, ArrowUpRight, ArrowDownRight, IndianRupee, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 // @ts-ignore
-import html2pdf from 'html2pdf.js';
-
 export function Expenses() {
   const { user, rooms, expenses, addExpense, deleteExpense, payments, bookings } = useData();
 
@@ -152,35 +150,12 @@ export function Expenses() {
 
   const handleExportPDF = () => {
     setIsGeneratingPDF(true);
-    // Wait for the next tick for React to render the table in DOM
     setTimeout(() => {
-      const element = document.getElementById('export-pdf-area');
-      if (!element) {
+      window.print();
+      setTimeout(() => {
         setIsGeneratingPDF(false);
-        return;
-      }
-  
-      const opt = {
-        margin:       0.5,
-        filename:     `Balance_Sheet_${exportFrom}_to_${exportTo}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, windowWidth: 800, logging: false },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
-        pagebreak:    { mode: ['css', 'legacy'], avoid: 'tr' }
-      };
-  
-      try {
-        html2pdf().set(opt).from(element).save().then(() => {
-          setIsGeneratingPDF(false);
-          setIsExportMode(false);
-        }).catch((err: any) => {
-          console.error("PDF generation failed", err);
-          setIsGeneratingPDF(false);
-        });
-      } catch (err) {
-        console.error("PDF generation sync error", err);
-        setIsGeneratingPDF(false);
-      }
+        setIsExportMode(false);
+      }, 1000);
     }, 500);
   };
 
@@ -238,7 +213,7 @@ export function Expenses() {
   }, [payments, expenses, bookings, rooms, exportFrom, exportTo]);
 
   return (
-    <div className="flex flex-col h-full space-y-6">
+    <div className="flex flex-col h-full space-y-6 print:hidden">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -465,7 +440,7 @@ export function Expenses() {
       )}
 
       {/* Hidden Export Area for PDF */}
-      <div style={{ position: 'absolute', top: 0, left: 0, zIndex: -100, pointerEvents: 'none' }}>
+      <div className="hidden print:block print:w-full print:m-0 print:p-0">
         {isGeneratingPDF && (
         <div id="export-pdf-area" className="p-8 bg-white text-black w-[800px]">
            <div className="text-center mb-8">

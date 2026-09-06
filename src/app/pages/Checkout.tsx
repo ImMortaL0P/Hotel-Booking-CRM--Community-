@@ -5,8 +5,6 @@ import { Receipt, Search, Printer, CheckCircle, Download } from 'lucide-react';
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { InvoiceTemplate, InvoiceDataProps } from '../components/InvoiceTemplate';
 // @ts-ignore
-import html2pdf from 'html2pdf.js';
-
 export function Checkout() {
   const { rooms, bookings, guests, payments, updateBooking, updateRoomStatus, addStoredInvoice, isLoading } = useData();
   const [selectedRoomId, setSelectedRoomId] = useState('');
@@ -138,17 +136,8 @@ export function Checkout() {
   };
 
   const downloadPDF = () => {
-    const element = document.getElementById('invoice-capture-area');
-    const dataToUse = isGenerated ? finalInvoiceData : invoiceData;
-    if (!element || !dataToUse) return;
-    const opt = {
-      margin:       0.5,
-      filename:     `${dataToUse.invoiceId}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2 },
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-    };
-    html2pdf().set(opt).from(element).save();
+    alert("Please select 'Save as PDF' from the destination dropdown natively for faster and better quality capture.");
+    window.print();
   };
 
   return (
@@ -197,7 +186,7 @@ export function Checkout() {
                 New Checkout
               </button>
               <button onClick={downloadPDF} className="px-5 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 flex gap-2 items-center">
-                <Download className="w-4 h-4" /> Download PDF
+                <Download className="w-4 h-4" /> Save as PDF
               </button>
               <button onClick={printInvoice} className="px-5 py-2.5 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-[#60171a] flex gap-2 items-center">
                 <Printer className="w-4 h-4" /> Print
