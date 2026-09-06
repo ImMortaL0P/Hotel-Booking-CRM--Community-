@@ -85,21 +85,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           <NavItem to="/checkout" icon={Receipt} label="Checkout & Bill" />
           <NavItem to="/invoices" icon={FileText} label="Custom Invoice" />
           <NavItem to="/logs" icon={History} label="Activity Logs" />
-          
-          {!collapsed && (
-            <div className="mt-8 p-4 bg-[#FAF6F0] rounded-xl border border-[#e6dfd8]">
-              <div className="flex items-center gap-2 mb-2 text-[#7B1E22]">
-                <Building className="w-4 h-4" />
-                <span className="text-xs font-bold uppercase tracking-wider">Hotel Info</span>
-              </div>
-              <p className="text-xs text-[#2d1b1c] font-medium leading-relaxed">
-                Sharda Palace<br/>
-                Shivganga Road, Deoghar<br/>
-                Jharkhand 814112
-              </p>
-              <p className="text-xs font-medium mt-2 text-[#7B1E22]">+91 79707 35251</p>
-            </div>
-          )}
         </div>
 
         {/* User Footer */}

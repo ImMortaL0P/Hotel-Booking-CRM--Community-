@@ -5,26 +5,23 @@ import { NewBookingModal } from '../components/NewBookingModal';
 
 export function Calendar() {
   const { rooms, bookings, guests } = useData();
-  const [currentDate, setCurrentDate] = useState(() => new Date(2026, 8, 1)); // September 2026
+  const [currentDate, setCurrentDate] = useState(() => new Date(2026, 8, 2)); // Sept 2, 2026
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [prefilledBooking, setPrefilledBooking] = useState<{roomId?: string, checkIn?: string, checkOut?: string}>({});
 
-  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
-  const monthName = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+  const titleDate = currentDate.toLocaleString('default', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
 
-  const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
-  const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+  const nextDay = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1));
+  const prevDay = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 1));
+  const goToToday = () => setCurrentDate(new Date(2026, 8, 2));
 
-  const days = Array.from({ length: daysInMonth }, (_, i) => {
-    const d = new Date(currentDate.getFullYear(), currentDate.getMonth(), i + 1);
-    return {
-      date: d,
-      dayNumber: i + 1,
-      dayName: d.toLocaleString('default', { weekday: 'short' }),
-      isWeekend: d.getDay() === 0 || d.getDay() === 6,
-      dateString: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-    };
-  });
+  const days = [{
+    date: currentDate,
+    dayNumber: currentDate.getDate(),
+    dayName: currentDate.toLocaleString('default', { weekday: 'short' }),
+    isWeekend: currentDate.getDay() === 0 || currentDate.getDay() === 6,
+    dateString: `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`
+  }];
 
   const hours = Array.from({ length: 24 }, (_, i) => i);
   const hourWidth = 40; // 40px per hour
@@ -49,11 +46,11 @@ export function Calendar() {
       {/* Header */}
       <div className="p-4 border-b border-[#e6dfd8] flex items-center justify-between shrink-0 bg-[#FAF6F0]">
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold text-[#2d1b1c] w-56">{monthName}</h1>
+          <h1 className="text-xl font-bold text-[#2d1b1c] w-64">{titleDate}</h1>
           <div className="flex bg-white rounded border border-[#e6dfd8] overflow-hidden shadow-sm">
-            <button onClick={prevMonth} className="px-3 py-1.5 hover:bg-gray-50 border-r border-[#e6dfd8] text-gray-600"><ChevronLeft className="w-5 h-5"/></button>
-            <button onClick={() => setCurrentDate(new Date(2026, 8, 1))} className="px-5 py-1.5 text-sm font-semibold hover:bg-gray-50 text-gray-700">Today</button>
-            <button onClick={nextMonth} className="px-3 py-1.5 hover:bg-gray-50 border-l border-[#e6dfd8] text-gray-600"><ChevronRight className="w-5 h-5"/></button>
+            <button onClick={prevDay} className="px-3 py-1.5 hover:bg-gray-50 border-r border-[#e6dfd8] text-gray-600"><ChevronLeft className="w-5 h-5"/></button>
+            <button onClick={goToToday} className="px-5 py-1.5 text-sm font-semibold hover:bg-gray-50 text-gray-700">Today</button>
+            <button onClick={nextDay} className="px-3 py-1.5 hover:bg-gray-50 border-l border-[#e6dfd8] text-gray-600"><ChevronRight className="w-5 h-5"/></button>
           </div>
         </div>
         <div className="flex items-center gap-4 text-xs font-semibold text-gray-600 bg-white px-4 py-2 rounded-lg border border-[#e6dfd8]">
@@ -65,7 +62,7 @@ export function Calendar() {
 
       {/* Wrapper for scrolling */}
       <div className="flex-1 overflow-auto relative bg-gray-50">
-        <div style={{ width: `calc(180px + ${daysInMonth * dayWidth}px)` }} className="min-w-full">
+        <div style={{ width: `calc(180px + ${days.length * dayWidth}px)` }} className="min-w-full">
 
           {/* Days Header */}
           <div className="flex border-b border-[#e6dfd8] sticky top-0 z-30 bg-white">
@@ -81,7 +78,7 @@ export function Calendar() {
                 {/* Day Label */}
                 <div className="w-full text-center py-2 border-b border-gray-100 font-bold text-gray-800 text-sm flex items-center justify-center gap-2">
                   <span className={`px-2 py-0.5 rounded ${day.dateString === '2026-09-02' ? 'bg-[#7B1E22] text-white' : ''}`}>
-                    {day.dayName}, {day.dayNumber} {monthName.split(' ')[0]}
+                    {titleDate}
                   </span>
                 </div>
                 {/* Hours Label */}
@@ -155,7 +152,7 @@ export function Calendar() {
                             const monthStartTime = days[0].date.getTime();
                             const monthEndTime = days[days.length-1].date.getTime() + (24*60*60*1000);
 
-                            // Skip if outside this month
+                            // Skip if outside this day
                             if (checkOutTime <= monthStartTime || checkInTime >= monthEndTime) return null;
 
                             // Calculate position based on hours
@@ -163,7 +160,7 @@ export function Calendar() {
                             const endOffsetHours = (checkOutTime - monthStartTime) / (1000 * 60 * 60);
 
                             const boundedStart = Math.max(0, startOffsetHours);
-                            const boundedEnd = Math.min(daysInMonth * 24, endOffsetHours);
+                            const boundedEnd = Math.min(days.length * 24, endOffsetHours);
 
                             const durationHours = boundedEnd - boundedStart;
 
