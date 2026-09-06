@@ -32,6 +32,62 @@ interface DataContextType {
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
+const LoadingScreen = () => {
+  const [logIndex, setLogIndex] = React.useState(0);
+
+  const logs = [
+    "Connecting to ShardaCRM Platform...",
+    "Render backend is sleeping. Sending wake-up signal...",
+    "Container provisioning initialized...",
+    "Starting Node.js + Express.js process...",
+    "Establishing secure connection to MongoDB Atlas...",
+    "Preparing collections for Rooms, Guests, and Bookings...",
+    "Almost there! Sever is finalizing boot..."
+  ];
+
+  React.useEffect(() => {
+    const intervals = [2500, 7000, 14000, 22000, 30000, 40000];
+    const timeouts = intervals.map((time, idx) =>
+      setTimeout(() => setLogIndex(idx + 1), time)
+    );
+    return () => timeouts.forEach(clearTimeout);
+  }, []);
+
+  return (
+    <div className="flex h-screen items-center justify-center bg-[#FAF6F0] p-6">
+      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#e6dfd8] flex flex-col items-center">
+        <div className="relative mb-6">
+          <div className="absolute inset-0 border-4 border-[#e6dfd8] rounded-full"></div>
+          <div className="w-16 h-16 border-4 border-transparent border-t-[#7B1E22] rounded-full animate-spin"></div>
+        </div>
+
+        <h2 className="text-xl font-bold text-[#2d1b1c] mb-1 text-center">Starting ShardaCRM</h2>
+        <p className="text-sm text-gray-500 mb-6 text-center">Connecting to environment</p>
+
+        <div className="w-full bg-[#1e1e1e] rounded-lg p-4 font-mono text-[11px] md:text-xs text-gray-300 mt-2 min-h-[140px] items-end justify-end shadow-inner overflow-hidden flex flex-col">
+          <div className="flex-1 w-full flex flex-col justify-end gap-1.5">
+            {logs.slice(0, logIndex + 1).map((log, i) => (
+              <div key={i} className={`flex items-start gap-2 ${i === logIndex ? 'text-green-400 font-semibold' : 'opacity-50'}`}>
+                <span className="text-gray-500 shrink-0">{'>'}</span>
+                <span className={i === logIndex ? 'animate-pulse' : ''}>{log}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {logIndex > 0 && (
+          <div className="mt-6 px-3 py-2 bg-amber-50 text-amber-800 text-[11px] rounded flex items-start gap-2 border border-amber-100">
+            <span className="shrink-0 text-amber-500 text-lg leading-none">⚠</span>
+            <p className="leading-tight">
+              Since the backend runs on Render's free tier, it sleeps after inactivity. Cold starts may take up to 50 seconds.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   
@@ -192,14 +248,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       comms, addComm, logs, invoices, addInvoice,
       isLoading
     }}>
-      {isLoading ? (
-        <div className="flex h-screen items-center justify-center bg-[#FAF6F0]">
-          <div className="text-center">
-             <div className="w-12 h-12 border-4 border-[#7B1E22] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-             <p className="text-gray-600 font-medium">Connecting to ShardaCRM Platform...</p>
-          </div>
-        </div>
-      ) : children}
+      {isLoading ? <LoadingScreen /> : children}
     </DataContext.Provider>
   );
 }
