@@ -33,7 +33,10 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://192.168')) {
+    // Determine if it's local network dev dynamically
+    const isDevNetwork = process.env.NODE_ENV !== 'production' && origin?.startsWith('http://192.168');
+
+    if (!origin || allowedOrigins.includes(origin) || isDevNetwork) {
       callback(null, true);
     } else {
       callback(new Error('CORS Policy: Access Blocked'));
@@ -51,13 +54,21 @@ const globalLimiter = rateLimit({
   message: { error: 'Too many requests from this IP, please try again after 15 minutes.' }
 });
 
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 15, // strictly limit login attempts
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many login attempts, please try again after 15 minutes.' }
+});
+
 app.use(compression());
 app.use(express.json());
 
 // Routes
 // Apply rate limiter to API routes only
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api', globalLimiter, apiRoutes);
-app.use('/api/auth', authRoutes);
 app.use('/api/channel', channelRoutes); // channel webhook has its own specific rate limits in middleware
 
 
