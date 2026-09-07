@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { AuthRequest } from '../middleware/authMiddleware.js';
 import { Room } from '../models/Room.js';
 import { Guest } from '../models/Guest.js';
 import { Booking } from '../models/Booking.js';
@@ -12,10 +13,10 @@ import { randomUUID } from 'crypto';
 import { pushAvailability, confirmChannelReservation, rejectChannelReservation } from '../services/channelManagerService.js';
 
 // Log Action Helper
-const logAction = async (req: Request, action: string, details: string) => {
+const logAction = async (req: AuthRequest, action: string, details: string) => {
   try {
-    const userId = req.headers['x-user-id'] as string || 'system';
-    const userName = req.headers['x-user-name'] as string || 'System Auto';
+    const userId = req.user?.id || 'system';
+    const userName = req.user?.name || 'System Auto';
 
     await Log.create({
       _id: `LOG-${randomUUID().slice(0, 8).toUpperCase()}`,
@@ -62,9 +63,13 @@ export const initializeData = async (req: Request, res: Response) => {
 };
 
 // Rooms
-export const updateRoom = async (req: Request, res: Response) => {
+export const updateRoom = async (req: AuthRequest, res: Response) => {
   try {
-    const updated = await Room.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { status, notes, housekeepingStatus } = req.body;
+    const updateData = { status, notes, housekeepingStatus };
+    Object.keys(updateData).forEach(key => updateData[key as keyof typeof updateData] === undefined && delete updateData[key as keyof typeof updateData]);
+
+    const updated = await Room.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!updated) return res.status(404).json({ error: 'Not found' });
     await logAction(req, 'Room Update', `Room ${updated.number} status changed to ${updated.status}`);
     res.json(updated.toJSON());
@@ -74,9 +79,13 @@ export const updateRoom = async (req: Request, res: Response) => {
 };
 
 // Guests
-export const addGuest = async (req: Request, res: Response) => {
+export const addGuest = async (req: AuthRequest, res: Response) => {
   try {
-    const guest = new Guest({ ...req.body, _id: req.body.id });
+    const { name, email, phone, idProof, idProofNumber, address, totalBookings, totalSpent, preferences, notes, channelGuestId } = req.body;
+    const guestData = { name, email, phone, idProof, idProofNumber, address, totalBookings, totalSpent, preferences, notes, channelGuestId };
+
+    // Default id based on body or new ID if missing
+    const guest = new Guest({ ...guestData, _id: req.body.id });
     await guest.save();
     await logAction(req, 'Add Guest', `Added new guest: ${guest.name}`);
     res.json(guest.toJSON());
@@ -85,9 +94,13 @@ export const addGuest = async (req: Request, res: Response) => {
   }
 };
 
-export const updateGuest = async (req: Request, res: Response) => {
+export const updateGuest = async (req: AuthRequest, res: Response) => {
   try {
-    const updated = await Guest.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { name, email, phone, idProof, idProofNumber, address, totalBookings, totalSpent, preferences, notes, channelGuestId } = req.body;
+    const updateData = { name, email, phone, idProof, idProofNumber, address, totalBookings, totalSpent, preferences, notes, channelGuestId };
+    Object.keys(updateData).forEach(key => updateData[key as keyof typeof updateData] === undefined && delete updateData[key as keyof typeof updateData]);
+
+    const updated = await Guest.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!updated) return res.status(404).json({ error: 'Not found' });
     await logAction(req, 'Update Guest', `Updated guest info: ${updated.name}`);
     res.json(updated.toJSON());
@@ -97,9 +110,12 @@ export const updateGuest = async (req: Request, res: Response) => {
 };
 
 // Bookings
-export const addBooking = async (req: Request, res: Response) => {
+export const addBooking = async (req: AuthRequest, res: Response) => {
   try {
-    const booking = new Booking({ ...req.body, _id: req.body.id });
+    const { guestId, roomId, checkIn, checkOut, adults, children, status, total, paid, balance, source, channelBookingId, channelStatus, commission, netRevenue, channelRatePlan } = req.body;
+    const bookingData = { guestId, roomId, checkIn, checkOut, adults, children, status, total, paid, balance, source, channelBookingId, channelStatus, commission, netRevenue, channelRatePlan };
+
+    const booking = new Booking({ ...bookingData, _id: req.body.id });
     await booking.save();
     await logAction(req, 'New Booking', `Created booking ${booking._id} for guest ${booking.guestId}`);
 
@@ -112,10 +128,14 @@ export const addBooking = async (req: Request, res: Response) => {
   }
 };
 
-export const updateBooking = async (req: Request, res: Response) => {
+export const updateBooking = async (req: AuthRequest, res: Response) => {
   try {
+    const { guestId, roomId, checkIn, checkOut, adults, children, status, total, paid, balance, source, channelBookingId, channelStatus, commission, netRevenue, channelRatePlan } = req.body;
+    const updateData = { guestId, roomId, checkIn, checkOut, adults, children, status, total, paid, balance, source, channelBookingId, channelStatus, commission, netRevenue, channelRatePlan };
+    Object.keys(updateData).forEach(key => updateData[key as keyof typeof updateData] === undefined && delete updateData[key as keyof typeof updateData]);
+
     const oldBooking = await Booking.findById(req.params.id);
-    const updated = await Booking.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updated = await Booking.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!updated) return res.status(404).json({ error: 'Not found' });
 
     await logAction(req, 'Update Booking', `Booking ${updated._id} status changed to ${updated.status}`);
@@ -133,7 +153,7 @@ export const updateBooking = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteBooking = async (req: Request, res: Response) => {
+export const deleteBooking = async (req: AuthRequest, res: Response) => {
   try {
     const booking = await Booking.findById(req.params.id);
     await Booking.findByIdAndDelete(req.params.id);
@@ -149,7 +169,7 @@ export const deleteBooking = async (req: Request, res: Response) => {
   }
 };
 
-export const confirmChannelBooking = async (req: Request, res: Response) => {
+export const confirmChannelBooking = async (req: AuthRequest, res: Response) => {
   try {
     const booking = await Booking.findById(req.params.id);
     if (!booking || !booking.channelBookingId) return res.status(404).json({ error: 'OTA booking not found' });
@@ -169,7 +189,7 @@ export const confirmChannelBooking = async (req: Request, res: Response) => {
   }
 };
 
-export const rejectChannelBooking = async (req: Request, res: Response) => {
+export const rejectChannelBooking = async (req: AuthRequest, res: Response) => {
   try {
     const booking = await Booking.findById(req.params.id);
     if (!booking || !booking.channelBookingId) return res.status(404).json({ error: 'OTA booking not found' });
@@ -193,9 +213,11 @@ export const rejectChannelBooking = async (req: Request, res: Response) => {
 };
 
 // Payments
-export const addPayment = async (req: Request, res: Response) => {
+export const addPayment = async (req: AuthRequest, res: Response) => {
   try {
-    const payment = new Payment({ ...req.body, _id: req.body.id });
+    const { bookingId, guestId, amount, method, status, reference } = req.body;
+    const paymentData = { bookingId, guestId, amount, method, status, reference };
+    const payment = new Payment({ ...paymentData, _id: req.body.id });
     await payment.save();
     await logAction(req, 'Add Payment', `Added payment ${payment._id} of amount ${payment.amount} for booking ${payment.bookingId}`);
     res.json(payment.toJSON());
@@ -205,9 +227,11 @@ export const addPayment = async (req: Request, res: Response) => {
 };
 
 // Comms
-export const addComm = async (req: Request, res: Response) => {
+export const addComm = async (req: AuthRequest, res: Response) => {
   try {
-    const comm = new CommRecord({ ...req.body, _id: req.body.id });
+    const { guestId, type, channel, template, status, sentAt, content } = req.body;
+    const commData = { guestId, type, channel, template, status, sentAt, content };
+    const comm = new CommRecord({ ...commData, _id: req.body.id });
     await comm.save();
     await logAction(req, 'Send Comm', `Sent ${comm.channel} to guest ${comm.guestId} - Template: ${comm.template}`);
     res.json(comm.toJSON());
@@ -217,9 +241,11 @@ export const addComm = async (req: Request, res: Response) => {
 };
 
 // Invoices
-export const addInvoice = async (req: Request, res: Response) => {
+export const addInvoice = async (req: AuthRequest, res: Response) => {
   try {
-    const invoice = new StandaloneInvoice({ ...req.body, _id: req.body.id });
+    const { invoiceNumber, customerName, customerAddress, customerGst, amount, cgst, sgst, total, date, items } = req.body;
+    const invoiceData = { invoiceNumber, customerName, customerAddress, customerGst, amount, cgst, sgst, total, date, items };
+    const invoice = new StandaloneInvoice({ ...invoiceData, _id: req.body.id });
     await invoice.save();
     await logAction(req, 'Generate Invoice', `Generated standalone invoice ${invoice._id} for ${invoice.customerName}`);
     res.json(invoice.toJSON());
@@ -228,9 +254,11 @@ export const addInvoice = async (req: Request, res: Response) => {
   }
 };
 
-export const addStoredInvoice = async (req: Request, res: Response) => {
+export const addStoredInvoice = async (req: AuthRequest, res: Response) => {
   try {
-    const invoice = new StoredInvoice({ ...req.body, _id: req.body.invoiceId });
+    const { bookingId, invoiceNumber, data } = req.body;
+    const invoiceData = { bookingId, invoiceNumber, data };
+    const invoice = new StoredInvoice({ ...invoiceData, _id: req.body.invoiceId });
     await invoice.save();
     await logAction(req, 'Store Invoice Data', `Saved full invoice data ${invoice._id}`);
     res.json(invoice.toJSON());
@@ -240,9 +268,11 @@ export const addStoredInvoice = async (req: Request, res: Response) => {
 };
 
 // Expenses
-export const addExpense = async (req: Request, res: Response) => {
+export const addExpense = async (req: AuthRequest, res: Response) => {
   try {
-    const expense = new Expense({ ...req.body, _id: req.body.id });
+    const { category, amount, date, description, approvedBy, receiptUrl } = req.body;
+    const expenseData = { category, amount, date, description, approvedBy, receiptUrl };
+    const expense = new Expense({ ...expenseData, _id: req.body.id });
     await expense.save();
     await logAction(req, 'Add Expense', `Added expense ${expense.id} of amount ₹${expense.amount} under ${expense.category}`);
     res.json(expense.toJSON());
@@ -251,7 +281,7 @@ export const addExpense = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteExpense = async (req: Request, res: Response) => {
+export const deleteExpense = async (req: AuthRequest, res: Response) => {
   try {
     await Expense.findByIdAndDelete(req.params.id);
     await logAction(req, 'Delete Expense', `Deleted expense ${req.params.id}`);

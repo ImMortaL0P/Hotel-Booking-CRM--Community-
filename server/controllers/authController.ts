@@ -26,7 +26,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, {
+    const token = jwt.sign({ id: user._id, role: user.role, name: user.name }, JWT_SECRET, {
       expiresIn: '7d'
     });
 
@@ -55,7 +55,7 @@ export const verify = async (req: Request, res: Response): Promise<void> => {
     }
 
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, JWT_SECRET) as { id: string, role: string };
+    const decoded = jwt.verify(token, JWT_SECRET) as { id: string, role: string, name: string };
 
     const user = await User.findById(decoded.id);
     if (!user) {

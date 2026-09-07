@@ -70,7 +70,7 @@ export const processChannelWebhook = async (req: Request, res: Response) => {
       existingBooking.status = 'Checked-Out'; // release inventory
       await existingBooking.save();
 
-      await logAction('Channel Sync: Cancel Booking', \`Cancelled OTA booking \${channelBookingId} (\${channelName})\`);
+      await logAction('Channel Sync: Cancel Booking', `Cancelled OTA booking ${channelBookingId} (${channelName})`);
       return res.json({ success: true, action: 'cancelled', crmBookingId: existingBooking._id });
     }
 
@@ -104,7 +104,7 @@ export const processChannelWebhook = async (req: Request, res: Response) => {
     } else {
       // Create new Guest
       guestRecord = new Guest({
-        _id: \`GST-\${randomUUID().slice(0, 6).toUpperCase()}\`,
+        _id: `GST-${randomUUID().slice(0, 6).toUpperCase()}`,
         name: payload.guest.name || 'Unknown OTA Guest',
         phone: payload.guest.phone || '0000000000',
         email: payload.guest.email || '',
@@ -113,7 +113,7 @@ export const processChannelWebhook = async (req: Request, res: Response) => {
         state: payload.guest.state || '',
       });
       await guestRecord.save();
-      await logAction('Channel Sync: New Guest', \`Created guest \${guestRecord.name} via \${channelName}\`);
+      await logAction('Channel Sync: New Guest', `Created guest ${guestRecord.name} via ${channelName}`);
     }
 
     // 2. Map Room Category
@@ -132,7 +132,7 @@ export const processChannelWebhook = async (req: Request, res: Response) => {
       }
 
       const booking = new Booking({
-        _id: \`SP-2026-\${randomUUID().slice(0, 4).toUpperCase()}\`, // Simple ID generation
+        _id: `SP-2026-${randomUUID().slice(0, 4).toUpperCase()}`, // Simple ID generation
         guestId: guestRecord._id,
         roomId: roomIdToAssign,
         checkIn: payload.booking.checkIn,
@@ -157,7 +157,7 @@ export const processChannelWebhook = async (req: Request, res: Response) => {
       });
 
       await booking.save();
-      await logAction('Channel Sync: New Booking', \`Received new booking \${channelBookingId} (\${channelName})\`);
+      await logAction('Channel Sync: New Booking', `Received new booking ${channelBookingId} (${channelName})`);
       return res.json({ success: true, action: 'created', crmBookingId: booking._id });
     }
 
@@ -185,7 +185,7 @@ export const processChannelWebhook = async (req: Request, res: Response) => {
       existingBooking.channelStatus = 'pending_confirmation';
 
       await existingBooking.save();
-      await logAction('Channel Sync: Modify Booking', \`Modified OTA booking \${channelBookingId} (\${channelName})\`);
+      await logAction('Channel Sync: Modify Booking', `Modified OTA booking ${channelBookingId} (${channelName})`);
       return res.json({ success: true, action: 'modified', crmBookingId: existingBooking._id });
     }
 
