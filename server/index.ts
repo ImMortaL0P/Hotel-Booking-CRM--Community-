@@ -65,13 +65,7 @@ const authLimiter = rateLimit({
 app.use(compression());
 app.use(express.json());
 
-// Routes
-// Apply rate limiter to API routes only
-app.use('/api/auth', authLimiter, authRoutes);
-app.use('/api', globalLimiter, apiRoutes);
-app.use('/api/channel', channelRoutes); // channel webhook has its own specific rate limits in middleware
-
-
+// Public Health Check
 app.get('/api/health', (req, res) => {
   const dbState = mongoose.connection.readyState;
   let dbStatusStr = 'Disconnected';
@@ -87,6 +81,12 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// Routes
+// Apply rate limiter to API routes only
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api', globalLimiter, apiRoutes);
+app.use('/api/channel', channelRoutes); // channel webhook has its own specific rate limits in middleware
 
 // Serve static frontend files continuously in production
 const distPath = path.join(__dirname, '../dist');
