@@ -290,3 +290,14 @@ export const deleteExpense = async (req: AuthRequest, res: Response) => {
     console.error(error); res.status(400).json({ error: error.message });
   }
 };
+
+// Logs
+export const addLog = async (req: AuthRequest, res: Response) => {
+  try {
+    const { action, details } = req.body;
+    await logAction(req, action, details);
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error(error); res.status(400).json({ error: error.message });
+  }
+};

@@ -3,6 +3,8 @@ import { Booking } from '../data/types';
 import { useData } from '../data/DataContext';
 import { formatCurrency, formatDate } from '../lib/utils';
 import { useState } from 'react';
+import { PaymentModal } from './PaymentModal';
+import { PaymentMode } from '../data/types';
 
 interface Props {
   booking: Booking | null;
@@ -12,6 +14,7 @@ interface Props {
 
 export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }: Props) {
   const { guests, rooms, bookings, updateBooking, addPayment } = useData();
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   if (!isOpen || !initialBooking) return null;
 
@@ -25,18 +28,7 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
   };
 
   const handleRecordPayment = () => {
-    const amount = parseFloat(window.prompt('Enter amount to collect:', String(booking.balance)) || '0');
-    if (amount > 0) {
-      addPayment({
-        id: `RCPT-${Math.floor(Math.random() * 9000) + 1000}`,
-        bookingId: booking.id,
-        guestId: booking.guestId,
-        date: new Date().toISOString().split('T')[0],
-        mode: 'UPI',
-        amount,
-        status: 'Completed'
-      });
-    }
+    setIsPaymentModalOpen(true);
   };
 
   return (
@@ -135,6 +127,24 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
           </div>
         </div>
       </div>
+      
+      <PaymentModal 
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        defaultAmount={booking.balance || 0}
+        onSubmit={(amount, mode) => {
+          addPayment({
+            id: `RCPT-${Math.floor(Math.random() * 9000) + 1000}`,
+            bookingId: booking.id,
+            guestId: booking.guestId,
+            date: new Date().toISOString().split('T')[0],
+            mode,
+            amount,
+            status: 'Completed'
+          });
+          updateBooking({ ...booking, paid: booking.paid + amount, balance: booking.balance - amount });
+        }}
+      />
     </div>
   );
 }

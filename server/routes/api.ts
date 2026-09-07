@@ -17,7 +17,8 @@ import {
   addInvoice,
   addExpense,
   deleteExpense,
-  addStoredInvoice
+  addStoredInvoice,
+  addLog
 } from '../controllers/dataController.js';
 import {
   getChannelConfig,
@@ -60,6 +61,10 @@ router.post('/stored-invoices', addStoredInvoice);
 // Expenses
 router.post('/expenses', addExpense);
 router.delete('/expenses/:id', deleteExpense);
+
+// Logs
+router.post('/logs', addLog);
+
 
 // Channel Manager
 router.get('/channel/config', getChannelConfig);

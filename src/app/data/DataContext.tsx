@@ -29,6 +29,7 @@ interface DataContextType {
 
   isLoading: boolean;
   logs: ActivityLog[];
+  addLog: (action: string, details: string) => Promise<void>;
   invoices: StandaloneInvoice[];
   addInvoice: (invoice: StandaloneInvoice) => void;
 
@@ -231,6 +232,19 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }).catch(console.error);
   };
 
+  const addLog = async (action: string, details: string) => {
+    try {
+      await apiFetch('/api/logs', {
+        method: 'POST',
+        headers: getHeaders(), // Needed for Authorization token
+        body: JSON.stringify({ action, details })
+      });
+      fetchData(); // refresh to fetch logs
+    } catch(err) {
+      console.error('Failed to log action', err);
+    }
+  };
+
   const updateBooking = (booking: Booking) => {
     apiFetch(`/api/bookings/${booking.id}`, {
        method: 'PUT',
@@ -347,7 +361,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       guests, addGuest, updateGuest,
       bookings, addBooking, updateBooking, deleteBooking, confirmChannelBooking, rejectChannelBooking,
       payments, addPayment,
-      comms, addComm, logs, invoices, addInvoice,
+      comms, addComm, logs, addLog, invoices, addInvoice,
       storedInvoices, addStoredInvoice,
       expenses, addExpense, deleteExpense,
       isLoading

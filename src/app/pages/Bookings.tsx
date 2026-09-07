@@ -6,10 +6,12 @@ import { BookingStatus, Booking } from '../data/types';
 import { Search, Plus, MoreHorizontal, FileText, CheckCircle2, ChevronRight, X, CreditCard, Download } from 'lucide-react';
 import { NewBookingModal } from '../components/NewBookingModal';
 import { BookingDetailDrawer } from '../components/BookingDetailDrawer';
+import { PaymentModal } from '../components/PaymentModal';
+import { PaymentMode } from '../data/types';
 import { exportToCsv } from '../lib/exportCsv';
 
 export function Bookings() {
-  const { bookings, guests, rooms, updateBooking, addPayment, confirmChannelBooking, rejectChannelBooking } = useData();
+  const { bookings, guests, rooms, updateBooking, addPayment, confirmChannelBooking, rejectChannelBooking, addLog } = useData();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = (searchParams.get('status') as BookingStatus | 'All') || 'All';
   const search = searchParams.get('search') || '';
@@ -30,6 +32,7 @@ export function Bookings() {
 
   const [isNewBookingOpen, setIsNewBookingOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [paymentModalBooking, setPaymentModalBooking] = useState<Booking | null>(null);
 
   const tabs: (BookingStatus | 'All')[] = ['All', 'Booked', 'Confirmed', 'Checked-In', 'Checked-Out'];
 
@@ -66,16 +69,7 @@ export function Bookings() {
     } else if (action === 'Check-out') {
       updateBooking({ ...b, status: 'Checked-Out' });
     } else if (action === 'Record Payment') {
-      // Very basic prompt-based flow: 
-      const amount = parseFloat(window.prompt('Enter amount to collect:', String(b.balance)) || '0');
-      if (amount > 0) {
-        addPayment({
-          id: `RCPT-${Math.floor(Math.random()*9000)+1000}`,
-          bookingId: b.id, guestId: b.guestId,
-          date: new Date().toISOString().split('T')[0],
-          mode: 'UPI', amount, status: 'Completed'
-        });
-      }
+      setPaymentModalBooking(b);
     }
   };
 
@@ -108,6 +102,7 @@ export function Bookings() {
                 };
               });
               exportToCsv('bookings_export', exportData);
+              addLog('File Download', 'Exported Bookings list to CSV');
             }}
             className="flex items-center justify-center gap-2 bg-secondary text-secondary-foreground border border-border px-4 py-2.5 rounded-lg font-medium hover:bg-muted transition-colors text-sm"
           >
@@ -252,6 +247,26 @@ export function Bookings() {
 
       {/* Booking Detail Drawer overlay */}
       <BookingDetailDrawer booking={selectedBooking} isOpen={!!selectedBooking} onClose={() => setSelectedBooking(null)} />
+      <PaymentModal 
+        isOpen={!!paymentModalBooking} 
+        onClose={() => setPaymentModalBooking(null)}
+        defaultAmount={paymentModalBooking?.balance || 0}
+        onSubmit={(amount, mode: PaymentMode) => {
+          if (paymentModalBooking) {
+            addPayment({
+              id: `RCPT-${Math.floor(Math.random() * 9000) + 1000}`,
+              bookingId: paymentModalBooking.id,
+              guestId: paymentModalBooking.guestId,
+              date: new Date().toISOString().split('T')[0],
+              mode,
+              amount,
+              status: 'Completed'
+            });
+            // Update booking balance locally (useData updates it via API eventually, but UI refresh is immediate)
+            updateBooking({ ...paymentModalBooking, paid: paymentModalBooking.paid + amount, balance: paymentModalBooking.balance - amount });
+          }
+        }}
+      />
     </div>
   );
 }

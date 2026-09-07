@@ -7,7 +7,7 @@ import { exportToCsv } from '../lib/exportCsv';
 import { apiFetch } from '../lib/api';
 // @ts-ignore
 export function Payments() {
-  const { payments, bookings, guests } = useData();
+  const { addLog, payments, bookings, guests } = useData();
   const [search, setSearch] = useState('');
   const [selectedReceipt, setSelectedReceipt] = useState<PaymentTransaction | null>(null);
 
@@ -76,6 +76,7 @@ export function Payments() {
                 };
               });
               exportToCsv('payments_export', exportData);
+              addLog('File Download', 'Exported Payments to CSV');
             }}
             className="flex items-center justify-center gap-2 bg-secondary text-secondary-foreground border border-border px-4 py-2.5 rounded-lg font-medium hover:bg-muted/50 transition-colors text-sm"
           >
@@ -218,7 +219,10 @@ export function Payments() {
                   <FileText className="w-5 h-5"/> Payment Receipt
                 </h3>
                 <div className="flex gap-2">
-                  <button onClick={() => window.print()} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-foreground bg-card border border-border rounded hover:bg-muted/50">
+                  <button onClick={() => {
+                    window.print();
+                    addLog('File Download', 'Printed Payment Receipt ' + selectedReceipt.id);
+                  }} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-foreground bg-card border border-border rounded hover:bg-muted/50">
                     <Printer className="w-4 h-4"/> Print
                   </button>
                   <button onClick={() => {
@@ -236,9 +240,11 @@ export function Payments() {
                            console.log("Receipt archived to drive");
                            // trigger native print alongside saving
                            window.print();
+                           addLog('File Download', 'Downloaded PDF Payment Receipt ' + selectedReceipt.id);
                        }).catch(err => {
                            console.error(err);
                            window.print();
+                           addLog('File Download', 'Downloaded PDF Payment Receipt ' + selectedReceipt.id);
                        });
                     }
                   }} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-primary bg-card border border-primary rounded hover:bg-red-50">

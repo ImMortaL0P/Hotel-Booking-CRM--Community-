@@ -6,7 +6,7 @@ import { exportToCsv } from '../lib/exportCsv';
 import { Search, Crown, RotateCcw, TrendingUp, Users, MapPin, CreditCard, Clock, FileText, X, Phone, Mail, Download } from 'lucide-react';
 
 export function GuestProfiles() {
-  const { guests, bookings, rooms } = useData();
+  const { addLog, guests, bookings, rooms } = useData();
   const [activeTab, setActiveTab] = useState<'All' | 'VIP' | 'Repeat' | 'New'>('All');
   const [search, setSearch] = useState('');
   const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
@@ -64,6 +64,7 @@ export function GuestProfiles() {
                 VIP: g.isVIP ? 'Yes' : 'No'
               }));
               exportToCsv('guests_export', exportData);
+              addLog('File Download', 'Exported Guests list to CSV');
             }}
             className="flex items-center justify-center gap-2 bg-secondary text-secondary-foreground border border-border px-4 py-2.5 rounded-lg font-medium hover:bg-muted transition-colors text-sm"
           >

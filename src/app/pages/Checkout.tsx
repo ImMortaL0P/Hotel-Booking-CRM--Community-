@@ -6,7 +6,7 @@ import { format, differenceInDays, parseISO } from 'date-fns';
 import { InvoiceTemplate, InvoiceDataProps } from '../components/InvoiceTemplate';
 // @ts-ignore
 export function Checkout() {
-  const { rooms, bookings, guests, payments, updateBooking, updateRoomStatus, addStoredInvoice, isLoading } = useData();
+  const { rooms, bookings, guests, payments, updateBooking, updateRoomStatus, addStoredInvoice, isLoading, addLog } = useData();
   const [selectedRoomId, setSelectedRoomId] = useState('');
   const [isGenerated, setIsGenerated] = useState(false);
   const [finalInvoiceData, setFinalInvoiceData] = useState<InvoiceDataProps | null>(null);
@@ -144,8 +144,13 @@ export function Checkout() {
   };
 
   const downloadPDF = () => {
-    alert("Please select 'Save as PDF' from the destination dropdown natively for faster and better quality capture.");
+    import('sonner').then(({ toast }) => toast.info("Please select 'Save as PDF' from the destination dropdown natively for faster and better quality capture."));
     window.print();
+    if (finalInvoiceData) {
+      addLog('File Download', `Downloaded PDF checkout invoice for ${finalInvoiceData.guest.name}`);
+    } else if (guest) {
+      addLog('File Download', `Downloaded PDF checkout invoice for ${guest.name}`);
+    }
   };
 
   return (

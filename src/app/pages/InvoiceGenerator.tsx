@@ -5,7 +5,7 @@ import { FileText, Plus, Printer, CheckCircle, Trash, Download, Archive, ArrowLe
 import { InvoiceTemplate, InvoiceDataProps, InvoiceItem } from '../components/InvoiceTemplate';
 // @ts-ignore
 export function InvoiceGenerator() {
-  const { storedInvoices, addInvoice, addStoredInvoice } = useData();
+  const { storedInvoices, addInvoice, addStoredInvoice, addLog } = useData();
   const [viewMode, setViewMode] = useState<'generate' | 'archive'>('generate');
   const [selectedArchiveData, setSelectedArchiveData] = useState<InvoiceDataProps | null>(null);
 
@@ -107,13 +107,17 @@ export function InvoiceGenerator() {
   const printInvoice = () => window.print();
 
   const downloadPDF = () => {
-    alert("Please select 'Save as PDF' from the destination in the print dialog.");
+    import('sonner').then(({ toast }) => toast.info("Please select 'Save as PDF' from the destination in the print dialog."));
     window.print();
+    addLog('File Download', `Downloaded PDF invoice for ${customerName || 'customer'}`);
   };
 
   const downloadPDFArchive = () => {
-    alert("Please select 'Save as PDF' from the destination in the print dialog.");
+    import('sonner').then(({ toast }) => toast.info("Please select 'Save as PDF' from the destination in the print dialog."));
     window.print();
+    if (selectedArchiveData) {
+      addLog('File Download', `Downloaded PDF archive invoice for ${selectedArchiveData.guest.name}`);
+    }
   };
 
   return (

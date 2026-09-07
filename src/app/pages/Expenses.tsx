@@ -166,6 +166,7 @@ export function Expenses() {
          }).then(() => console.log('Expense saved to drive')).catch(console.error);
       }
       window.print();
+      addLog('File Download', 'Exported Balance Sheet / Expense PDF');
       setTimeout(() => {
         setIsGeneratingPDF(false);
         setIsExportMode(false);
