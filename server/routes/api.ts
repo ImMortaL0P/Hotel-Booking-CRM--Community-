@@ -1,4 +1,5 @@
 import express from 'express';
+import { requireAuth } from '../middleware/authMiddleware.js';
 import { saveInvoiceFile } from '../controllers/invoiceArchiveController.js';
 import { saveDocument, searchDocuments } from '../controllers/documentController.js';
 import {
@@ -26,6 +27,9 @@ import {
 } from '../controllers/channelController.js';
 
 const router = express.Router();
+
+// Secure all API routes
+router.use(requireAuth);
 
 router.get('/initialize', initializeData);
 

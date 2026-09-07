@@ -4,7 +4,7 @@ import { Room, Guest, Booking, PaymentTransaction, CommRecord, User, ActivityLog
 
 interface DataContextType {
   user: User | null;
-  login: (user: User) => void;
+  login: (user: User, token: string) => void;
   logout: () => void;
 
   rooms: Room[];
@@ -113,41 +113,74 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const loadInitialData = async () => {
+    try {
+      const data = await apiFetch('/api/initialize');
+      setRooms(data.rooms || []);
+      setGuests(data.guests || []);
+      setBookings(data.bookings || []);
+      setPayments(data.payments || []);
+      setComms(data.comms || []);
+      setLogs(data.logs || []);
+      setInvoices(data.invoices || []);
+      setStoredInvoices(data.storedInvoices || []);
+      setExpenses(data.expenses || []);
+    } catch (err) {
+      console.error('Failed to load initial data from Atlas', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    apiFetch('/api/initialize')
-      .then(data => {
-        setRooms(data.rooms || []);
-        setGuests(data.guests || []);
-        setBookings(data.bookings || []);
-        setPayments(data.payments || []);
-        setComms(data.comms || []);
-        setLogs(data.logs || []);
-        setInvoices(data.invoices || []);
-        setStoredInvoices(data.storedInvoices || []);
-        setExpenses(data.expenses || []);
+    const initApp = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          try {
+            const verifyRes = await apiFetch('/api/auth/verify');
+            if (verifyRes.user) {
+              setUser(verifyRes.user);
+              await loadInitialData();
+              return;
+            }
+          } catch (e) {
+            localStorage.removeItem('token');
+          }
+        }
         setIsLoading(false);
-      })
-      .catch(err => {
-        console.error('Failed to load initial data from Atlas', err);
+      } catch (err) {
+        console.error('Initialization error:', err);
         setIsLoading(false);
-      });
+      }
+    };
+    initApp();
   }, []);
 
   // Sync room statuses based on bookings automatically
   useEffect(() => {
     if (isLoading || rooms.length === 0) return;
-    
+
     // Auto sync logic simplified
     setRooms(prevRooms => prevRooms.map(room => {
       const activeBooking = bookings.find(b => b.roomId === room.id && (b.status === 'Checked-In'));
       if (activeBooking) return { ...room, status: 'Occupied' as const };
-            
+
       return { ...room, status: room.status === 'Occupied' ? 'Available' : room.status };
     }));
   }, [bookings, isLoading]); // only reruns when bookings change
 
-  const login = (userData: User) => setUser(userData);
-  const logout = () => setUser(null);
+  const login = async (userData: User, token: string) => {
+    localStorage.setItem('token', token);
+    setUser(userData);
+    setIsLoading(true);
+    await loadInitialData();
+  };
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+  };
 
   // Helper to add user headers
   const getHeaders = () => {

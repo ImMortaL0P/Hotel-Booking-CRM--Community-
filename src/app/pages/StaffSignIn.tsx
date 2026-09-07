@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Eye, EyeOff, MapPin, Phone, Clock, Bed } from 'lucide-react';
 import { useData } from '../data/DataContext';
-import { Role } from '../data/types';
+import { apiFetch } from '../lib/api';
 import logoUrl from '../../assets/logo.png';
 
 export function StaffSignIn() {
@@ -10,33 +10,33 @@ export function StaffSignIn() {
   const [password, setPassword] = useState('');
   const [showPwd, setShowPwd] = useState(false);
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Official accounts
-  const accounts = [
-    { name: 'Mangalam', role: 'superadmin' as Role, userId: 'mangalam', passHash: 'S3Vra3U0MDQj' },
-    { name: 'Harsh Chandra', role: 'owner' as Role, userId: 'harsh', passHash: 'SGFyc2gjMTIz' },
-    { name: 'Arya Chandra', role: 'owner' as Role, userId: 'arya', passHash: 'RWt0YSMxNDM=' },
-    { name: 'Front Desk', role: 'front-desk' as Role, userId: 'frontdesk1', passHash: 'c2hhcmRhIzMyMQ==' }
-  ];
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userId || !password) return;
 
-    // Find matched account
-    const acc = accounts.find(a => a.userId === userId && a.passHash === btoa(password));
+    setError('');
+    setIsLoading(true);
 
-    if (acc) {
-      setError('');
-      login({
-        id: acc.userId,
-        name: acc.name,
-        email: `${acc.userId}@shardapalace.in`,
-        role: acc.role,
-        avatar: acc.name.charAt(0).toUpperCase()
+    try {
+      const result = await apiFetch('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          userId: userId.trim(),
+          password
+        })
       });
-    } else {
-      setError('Invalid User ID or Password.');
+
+      if (result.token && result.user) {
+        login(result.user, result.token);
+      } else {
+        setError('Unexpected response from server.');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Invalid User ID or Password.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -143,8 +143,12 @@ export function StaffSignIn() {
               <label htmlFor="keep" className="ml-2 text-sm text-foreground">Keep me signed in</label>
             </div>
 
-            <button type="submit" className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-medium hover:opacity-90 transition-colors mt-2">
-              Sign Into Dashboard
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-medium hover:opacity-90 transition-colors mt-2 disabled:opacity-50"
+            >
+              {isLoading ? 'Signing In...' : 'Sign Into Dashboard'}
             </button>
           </form>
 

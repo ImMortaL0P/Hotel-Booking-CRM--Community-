@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { HashRouter, Routes, Route, Navigate } from 'react-router';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { useData } from './data/DataContext';
 import { StaffSignIn } from './pages/StaffSignIn';
 import { AppShell } from './components/AppShell';
@@ -32,15 +32,15 @@ export default function App() {
 
   if (!user) {
     return (
-      <HashRouter>
+      <BrowserRouter>
         <StaffSignIn />
         <Toaster />
-      </HashRouter>
+      </BrowserRouter>
     );
   }
 
   return (
-    <HashRouter>
+    <BrowserRouter>
       <AppShell>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
@@ -61,6 +61,6 @@ export default function App() {
         </Suspense>
       </AppShell>
       <Toaster />
-    </HashRouter>
+    </BrowserRouter>
   );
 }

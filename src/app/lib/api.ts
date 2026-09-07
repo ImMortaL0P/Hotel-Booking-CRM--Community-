@@ -18,11 +18,14 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     toastId = toast.loading('Waking up the server (this may take up to 60+ seconds)...');
   }, 8000);
 
+  const token = localStorage.getItem('token');
+
   try {
     const response = await fetch(url, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         ...options.headers,
       },
       signal: controller.signal

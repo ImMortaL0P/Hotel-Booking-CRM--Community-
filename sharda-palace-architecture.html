@@ -9,20 +9,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .print-break { page-break-inside: avoid; }
+        .page-break-avoid { break-inside: avoid; page-break-inside: avoid; }
+        .page-break-before { break-before: page; page-break-before: always; }
+
         @media print {
             body { background-color: #ffffff; }
             .no-print { display: none !important; }
-            .shadow-lg { box-shadow: none !important; border: 1px solid #e2e8f0; }
+            .shadow-lg, .shadow-sm, .shadow-xl { box-shadow: none !important; border: 1px solid #e2e8f0; }
+            .print-border { border: 1px solid #e2e8f0; }
+            .bg-emerald-50 { background-color: #ecfdf5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
-        /* Flowchart line */
         .flow-line::after {
             content: '';
             position: absolute;
-            top: 50%;
-            left: 100%;
-            width: 2rem;
-            height: 2px;
+            top: 50%; left: 100%;
+            width: 2rem; height: 2px;
             background-color: #cbd5e1;
             z-index: 0;
         }
@@ -33,244 +34,397 @@
     <!-- Print Button -->
     <div class="max-w-[210mm] mx-auto mb-4 text-right no-print">
         <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg shadow transition-colors inline-flex items-center gap-2">
-            <i class="fa-solid fa-file-pdf"></i> Save as PDF
+            <i class="fa-solid fa-file-pdf"></i> Export to PDF
         </button>
-        <p class="text-xs text-slate-500 mt-2">Recommended: Set paper size to A4 and margins to Default in print dialogue.</p>
+        <p class="text-xs text-slate-500 mt-2">Set paper size to A4 and margins to Default/None.</p>
     </div>
 
-    <!-- Main Document Container -->
-    <div class="max-w-[210mm] mx-auto bg-white shadow-xl min-h-screen relative overflow-hidden">
+    <!-- Main Document -->
+    <div class="max-w-[210mm] mx-auto bg-white shadow-xl min-h-screen relative overflow-hidden align-top">
 
-        <!-- Header -->
-        <header class="bg-slate-900 text-white p-10 print-break relative overflow-hidden">
+        <!-- Header Hero -->
+        <header class="bg-slate-900 text-white p-10 relative overflow-hidden page-break-avoid">
             <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
             <div class="absolute bottom-0 left-0 -ml-16 -mb-16 w-48 h-48 bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
 
             <div class="relative z-10">
-                <p class="text-indigo-400 font-bold tracking-widest uppercase text-sm mb-2">Systems Architecture & Deployment Plan</p>
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="bg-indigo-500/20 text-indigo-300 font-bold tracking-wider uppercase text-[10px] px-3 py-1 rounded-full border border-indigo-400/30">Architecture & Technical Blueprint</span>
+                    <span class="bg-emerald-500/20 text-emerald-300 font-bold tracking-wider uppercase text-[10px] px-3 py-1 rounded-full border border-emerald-400/30">Client Handoff Protocol</span>
+                </div>
                 <h1 class="text-4xl font-extrabold mb-4 leading-tight">Sharda Palace<br><span class="text-white/80 font-light">Custom CRM Integration</span></h1>
-                <p class="text-slate-300 max-w-xl text-sm leading-relaxed">
-                    An enterprise-grade, custom-built hotel management system designed for 100% data ownership, military-grade cloud security, and zero-commission native OTA integration.
+                <p class="text-slate-300 max-w-xl text-sm leading-relaxed mb-6">
+                    An enterprise-grade, custom-built hotel management system designed to eliminate SaaS licensing fees while offering 100% data ownership, automated OTA synchronization, and military-grade cloud security.
                 </p>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-slate-700/50">
+                    <div>
+                        <div class="text-[10px] text-slate-400 uppercase tracking-wide">Property</div>
+                        <div class="text-sm font-semibold text-white">Sharda Palace, Deoghar</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-slate-400 uppercase tracking-wide">Infrastructure</div>
+                        <div class="text-sm font-semibold text-white">Severless Cloud</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-slate-400 uppercase tracking-wide">Sync Method</div>
+                        <div class="text-sm font-semibold text-white">Beds24 Bridge API</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-slate-400 uppercase tracking-wide">Data Ownership</div>
+                        <div class="text-sm font-semibold text-emerald-400">100% Proprietary</div>
+                    </div>
+                </div>
             </div>
         </header>
 
-        <div class="p-10 space-y-12">
+        <div class="p-10 space-y-10">
 
-            <!-- Tech Stack Section -->
-            <section class="print-break">
-                <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-                    <i class="fa-solid fa-layer-group text-indigo-500"></i> Modern Cloud Stack
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Deep Tech Stack -->
+            <section class="page-break-avoid">
+                <div class="mb-5 border-b border-slate-100 pb-2">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-microchip text-indigo-500 text-lg"></i> Core Infrastructure Stack
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">The application is decoupled into three heavily optimized layers for speed and reliability.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Frontend -->
-                    <div class="p-6 bg-slate-50 rounded-xl border border-slate-100 flex gap-4">
-                        <div class="w-12 h-12 bg-white shadow-sm rounded-lg flex items-center justify-center shrink-0 border border-slate-200">
-                            <i class="fa-brands fa-react text-2xl text-blue-500"></i>
+                    <div class="p-5 bg-slate-50 rounded-xl border border-slate-100 flex gap-4 print-border">
+                        <div class="w-10 h-10 bg-white shadow-sm rounded-lg flex items-center justify-center shrink-0 border border-slate-200">
+                            <i class="fa-brands fa-react text-xl text-blue-500"></i>
                         </div>
                         <div>
-                            <h3 class="font-bold text-slate-800 mb-1">Frontend App</h3>
-                            <p class="text-xs text-slate-500 font-medium mb-2 uppercase tracking-wide">Hosted on Vercel Edge Network</p>
-                            <p class="text-sm text-slate-600 leading-relaxed">Built with React.js and Tailwind CSS. Hosted globally on Vercel to guarantee lightning-fast load times and automatic protection against DDoS attacks.</p>
+                            <h3 class="font-bold text-slate-800 text-sm mb-1">Frontend App (Vercel)</h3>
+                            <p class="text-xs text-slate-600 leading-relaxed mb-2">Built with React.js + Vite + Tailwind CSS. Hosted on Vercel's Edge Network.</p>
+                            <ul class="text-[10px] text-slate-500 list-disc pl-3 space-y-1">
+                                <li>Global CDN distribution for instant loading</li>
+                                <li>Intelligent client-side routing (React Router)</li>
+                                <li>Dark/Light persistent thematic UI</li>
+                            </ul>
                         </div>
                     </div>
                     <!-- Backend -->
-                    <div class="p-6 bg-slate-50 rounded-xl border border-slate-100 flex gap-4">
-                        <div class="w-12 h-12 bg-white shadow-sm rounded-lg flex items-center justify-center shrink-0 border border-slate-200">
-                            <i class="fa-brands fa-node-js text-2xl text-green-600"></i>
+                    <div class="p-5 bg-slate-50 rounded-xl border border-slate-100 flex gap-4 print-border">
+                        <div class="w-10 h-10 bg-white shadow-sm rounded-lg flex items-center justify-center shrink-0 border border-slate-200">
+                            <i class="fa-brands fa-node-js text-xl text-green-600"></i>
                         </div>
                         <div>
-                            <h3 class="font-bold text-slate-800 mb-1">Backend Server</h3>
-                            <p class="text-xs text-slate-500 font-medium mb-2 uppercase tracking-wide">Hosted on Render</p>
-                            <p class="text-sm text-slate-600 leading-relaxed">Node.js processing engine. Secured with strict CORS validation and Rate Limiting to ensure only your official website and authorized OTAs can access data.</p>
+                            <h3 class="font-bold text-slate-800 text-sm mb-1">Node API Server (Render)</h3>
+                            <p class="text-xs text-slate-600 leading-relaxed mb-2">Express.js processing engine deployed on Render's efficient cloud instances.</p>
+                            <ul class="text-[10px] text-slate-500 list-disc pl-3 space-y-1">
+                                <li>Engineered to run efficiently on Phase-1 Free tiers</li>
+                                <li>Designed to auto-scale seamlessly past 10-room usage</li>
+                                <li>Generates custom PDF invoices via Puppeteer logic</li>
+                            </ul>
                         </div>
                     </div>
                     <!-- Database -->
-                    <div class="p-6 bg-slate-50 rounded-xl border border-slate-100 flex gap-4">
-                        <div class="w-12 h-12 bg-white shadow-sm rounded-lg flex items-center justify-center shrink-0 border border-slate-200">
-                            <i class="fa-solid fa-leaf text-2xl text-green-500"></i>
+                    <div class="p-5 bg-slate-50 rounded-xl border border-slate-100 flex gap-4 print-border">
+                        <div class="w-10 h-10 bg-white shadow-sm rounded-lg flex items-center justify-center shrink-0 border border-slate-200">
+                            <i class="fa-solid fa-leaf text-xl text-green-500"></i>
                         </div>
                         <div>
-                            <h3 class="font-bold text-slate-800 mb-1">Database</h3>
-                            <p class="text-xs text-slate-500 font-medium mb-2 uppercase tracking-wide">MongoDB Atlas Cloud</p>
-                            <p class="text-sm text-slate-600 leading-relaxed">Enterprise NoSQL database providing data encryption at rest. Firewalled to reject all connections except those coming from the Render Backend.</p>
+                            <h3 class="font-bold text-slate-800 text-sm mb-1">Database (MongoDB Atlas)</h3>
+                            <p class="text-xs text-slate-600 leading-relaxed mb-2">Enterprise NoSQL database providing encrypted cloud storage at AWS Mumbai.</p>
+                            <ul class="text-[10px] text-slate-500 list-disc pl-3 space-y-1">
+                                <li>Strict IP-Allowlisting prevents external hijacking</li>
+                                <li>Mongoose strict schemas ensure clean guest metadata</li>
+                                <li>Infinite scalability without SQL migration headaches</li>
+                            </ul>
                         </div>
                     </div>
                     <!-- Storage -->
-                    <div class="p-6 bg-slate-50 rounded-xl border border-slate-100 flex gap-4">
-                        <div class="w-12 h-12 bg-white shadow-sm rounded-lg flex items-center justify-center shrink-0 border border-slate-200">
-                            <i class="fa-brands fa-google-drive text-2xl text-blue-500"></i>
+                    <div class="p-5 bg-slate-50 rounded-xl border border-slate-100 flex gap-4 print-border">
+                        <div class="w-10 h-10 bg-white shadow-sm rounded-lg flex items-center justify-center shrink-0 border border-slate-200">
+                            <i class="fa-brands fa-google-drive text-xl text-blue-500"></i>
                         </div>
                         <div>
-                            <h3 class="font-bold text-slate-800 mb-1">Document Storage</h3>
-                            <p class="text-xs text-slate-500 font-medium mb-2 uppercase tracking-wide">Google Drive API</p>
-                            <p class="text-sm text-slate-600 leading-relaxed">Automated generation and secure off-site archiving of Guest Logs, Invoices, and Checkout PDFs for zero-cost unlimited storage.</p>
+                            <h3 class="font-bold text-slate-800 text-sm mb-1">Backup & Files (Google Cloud)</h3>
+                            <p class="text-xs text-slate-600 leading-relaxed mb-2">Integrated Google Drive API acting as a zero-cost immutable file server.</p>
+                            <ul class="text-[10px] text-slate-500 list-disc pl-3 space-y-1">
+                                <li>Automatically generates branded Invoice PDFs on checkout</li>
+                                <li>Synchronous upload to designated CRM drive folder</li>
+                                <li>Maintains long-standing financial archives safely</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- Channel Manager Flow -->
-            <section class="print-break bg-indigo-50/50 -mx-10 px-10 py-8 border-y border-indigo-100">
-                <h2 class="text-2xl font-bold text-slate-800 mb-2 flex items-center gap-3">
-                    <i class="fa-solid fa-network-wired text-indigo-500"></i> The Channel Integration Engine
-                </h2>
-                <p class="text-sm text-slate-600 mb-8 max-w-2xl">
-                    By leveraging <strong>Beds24</strong> as a certified API bridge, Sharda Palace bypasses massive PCI compliance costs while achieving flawless bidirectional syncing with global OTAs.
-                </p>
+            <!-- Security Architecture -->
+            <section class="page-break-avoid bg-slate-800 rounded-2xl p-6 text-white relative overflow-hidden print-border">
+                <div class="absolute opacity-10 right-0 max-w-sm -mt-10 pointer-events-none">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4Zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8Z"/></svg>
+                </div>
+                <div class="relative z-10">
+                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved text-emerald-400"></i> Defense & Server Security
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <div class="text-emerald-400 mb-1"><i class="fa-solid fa-ban text-sm"></i></div>
+                            <h4 class="font-semibold text-sm mb-1">CORS Lockdown</h4>
+                            <p class="text-[10px] text-slate-300">Backend API expressly rejects all queries globally unless the request originates strictly from the certified Vercel Frontend domain. Prevents cross-site API hijacking.</p>
+                        </div>
+                        <div>
+                            <div class="text-emerald-400 mb-1"><i class="fa-solid fa-helmet-safety text-sm"></i></div>
+                            <h4 class="font-semibold text-sm mb-1">Helmet Protection</h4>
+                            <p class="text-[10px] text-slate-300">Enforces strict HTTP headers to block Clickjacking, Cross-Site Scripting (XSS), and sniffed MIME types directly from the Express middleware.</p>
+                        </div>
+                        <div>
+                            <div class="text-emerald-400 mb-1"><i class="fa-solid fa-stopwatch text-sm"></i></div>
+                            <h4 class="font-semibold text-sm mb-1">Rate & Brute-force Limiting</h4>
+                            <p class="text-[10px] text-slate-300">Express-Rate-Limit throttles rogue IP addresses attempting DDoS attacks, locking out abusive traffic automatically to preserve API resources.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Deep Channel Management Flow -->
+            <!-- Use page-break-before to ensure this big visual block gets a clean page if needed -->
+            <section class="page-break-avoid page-break-before bg-indigo-50/50 -mx-10 px-10 py-8 border-y border-indigo-100">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3">
+                        <i class="fa-solid fa-network-wired text-indigo-500"></i> The Channel Integration Engine
+                    </h2>
+                    <p class="text-sm text-slate-600 mt-2 max-w-2xl leading-relaxed">
+                        Booking.com and Agoda require extensive, rigid PCI-DSS validations to connect directly via raw API. By using <strong>Beds24</strong> as an authorized intermediary proxy, we bridge their global networks into the Sharda CRM securely, instantly, and at a fraction of the cost.
+                    </p>
+                </div>
 
                 <!-- Infographic Flow -->
-                <div class="flex flex-col md:flex-row items-center justify-between gap-6 px-4">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-4 px-2 mb-8">
 
                     <!-- OTA Box -->
-                    <div class="w-full md:w-1/3 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 text-center relative z-10">
-                        <div class="flex justify-center gap-3 mb-4 text-3xl">
+                    <div class="w-full md:w-[28%] bg-white p-4 rounded-xl shadow-sm border border-slate-200 text-center relative z-10 print-border">
+                        <div class="flex justify-center gap-2 mb-2 text-2xl">
                             <i class="fa-brands fa-airbnb text-rose-500"></i>
-                            <span class="text-blue-900 font-bold text-xl leading-none pt-1">Booking.com</span>
+                            <span class="text-blue-900 font-bold text-lg leading-none pt-1">OTA Networks</span>
                         </div>
-                        <h4 class="font-bold text-slate-700 text-sm mb-1">Global OTAs</h4>
-                        <p class="text-xs text-slate-500">Guest completes a reservation online.</p>
+                        <p class="text-[10px] text-slate-500">Source of commercial guest reservations (Booking.com, Agoda, MakeMyTrip).</p>
                     </div>
 
                     <!-- Arrows -->
-                    <div class="flex md:flex-col items-center justify-center shrink-0 text-indigo-400 gap-2">
-                        <div class="flex items-center text-xs font-semibold px-2"><i class="fa-solid fa-arrow-right-long text-xl mr-2"></i> Webhook</div>
-                        <div class="flex items-center text-xs font-semibold px-2"><i class="fa-solid fa-arrow-left-long text-xl mr-2"></i> Inventory</div>
+                    <div class="flex md:flex-col items-center justify-center shrink-0 text-indigo-400 gap-1 opacity-70">
+                        <div class="flex items-center text-[10px] font-semibold"><i class="fa-solid fa-arrow-right-long mr-1"></i> HTTPS Webhook</div>
+                        <div class="flex items-center text-[10px] font-semibold"><i class="fa-solid fa-arrow-left-long mr-1"></i> Inventory Sync</div>
                     </div>
 
                     <!-- Beds 24 Box -->
-                    <div class="w-full md:w-1/3 bg-slate-900 text-white p-5 rounded-2xl shadow-lg border border-slate-800 text-center relative z-10">
-                        <div class="w-12 h-12 mx-auto bg-indigo-500 rounded-full flex items-center justify-center mb-3">
-                            <i class="fa-solid fa-bolt text-xl text-white"></i>
+                    <div class="w-full md:w-[32%] bg-slate-900 text-white p-4 rounded-xl shadow-lg border border-slate-800 text-center relative z-10 print-border">
+                        <div class="w-10 h-10 mx-auto bg-indigo-500 rounded-full flex items-center justify-center mb-2">
+                            <i class="fa-solid fa-bolt text-lg text-white"></i>
                         </div>
-                        <h4 class="font-bold text-white text-sm mb-1">Beds24 Channel Bridge</h4>
-                        <p class="text-[11px] text-slate-300">PCI-certified gateway. Translates proprietary OTA code into clean JSON.</p>
+                        <h4 class="font-bold text-white text-sm mb-1">Beds24 API Bridge</h4>
+                        <p class="text-[10px] text-slate-300">Certified gateway maintaining absolute PCI compliance. Decodes proprietary OTA XML into clean JSON data for our system.</p>
                     </div>
 
                     <!-- Arrows -->
-                    <div class="flex md:flex-col items-center justify-center shrink-0 text-indigo-400 gap-2">
-                        <div class="flex items-center text-xs font-semibold px-2"><i class="fa-solid fa-arrow-right-long text-xl mr-2"></i> Auto-Sync</div>
-                        <div class="flex items-center text-xs font-semibold px-2"><i class="fa-solid fa-arrow-left-long text-xl mr-2"></i> Deltas</div>
+                    <div class="flex md:flex-col items-center justify-center shrink-0 text-indigo-400 gap-1 opacity-70">
+                        <div class="flex items-center text-[10px] font-semibold"><i class="fa-solid fa-arrow-right-long mr-1"></i> Data Transfer</div>
+                        <div class="flex items-center text-[10px] font-semibold"><i class="fa-solid fa-arrow-left-long mr-1"></i> Room Deltas</div>
                     </div>
 
                     <!-- CRM Box -->
-                    <div class="w-full md:w-1/3 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 text-center relative z-10">
-                        <div class="w-12 h-12 mx-auto bg-emerald-100 rounded-full flex items-center justify-center mb-3">
-                            <img src="https://cdn-icons-png.flaticon.com/512/3755/3755238.png" class="w-6 h-6 opacity-70" alt="CRM">
+                    <div class="w-full md:w-[28%] bg-white p-4 rounded-xl shadow-sm border border-slate-200 text-center relative z-10 print-border">
+                        <div class="w-10 h-10 mx-auto bg-emerald-100 rounded-full flex items-center justify-center mb-2">
+                            <img src="https://cdn-icons-png.flaticon.com/512/3755/3755238.png" class="w-5 h-5 opacity-70" alt="CRM">
                         </div>
                         <h4 class="font-bold text-slate-700 text-sm mb-1">Sharda Palace CRM</h4>
-                        <p class="text-xs text-slate-500">Auto-creates booking, de-duplicates guest, triggers UI alerts instantly.</p>
+                        <p class="text-[10px] text-slate-500">Auto-creates booking profiles, calculates remaining inventory, triggers dashboard UI alerts.</p>
                     </div>
                 </div>
 
-                <!-- Feature list -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 px-4">
+                <!-- Deeper Feature Mechanics -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 bg-white rounded-xl p-5 border border-indigo-100 shadow-sm print-border">
                     <div class="flex items-start gap-3">
-                        <i class="fa-solid fa-circle-check text-emerald-500 mt-0.5"></i>
+                        <div class="mt-1 bg-emerald-100 p-1.5 rounded text-emerald-600"><i class="fa-solid fa-ban"></i></div>
                         <div>
                             <span class="font-bold text-slate-700 text-sm block">Zero Double Bookings</span>
-                            <span class="text-xs text-slate-500">Walk-in bookings automatically deduct inventory from Booking.com in seconds.</span>
+                            <span class="text-xs text-slate-500 leading-tight block mt-1">If a receptionist creates a "Walk-In" booking, the Node server instantly computes a delta and pushes availability closures to Booking.com, removing manual calendar blocks.</span>
                         </div>
                     </div>
                     <div class="flex items-start gap-3">
-                        <i class="fa-solid fa-circle-check text-emerald-500 mt-0.5"></i>
+                        <div class="mt-1 bg-blue-100 p-1.5 rounded text-blue-600"><i class="fa-solid fa-users-viewfinder"></i></div>
                         <div>
-                            <span class="font-bold text-slate-700 text-sm block">Automated Deduplication</span>
-                            <span class="text-xs text-slate-500">CRM matches OTA clients to existing CRM guests via Phone or Email hashes.</span>
+                            <span class="font-bold text-slate-700 text-sm block">Deduplication Logic</span>
+                            <span class="text-xs text-slate-500 leading-tight block mt-1">Incoming OTA API data is mapped against existing Guest records via Phone or Email hashes. Repeat visitors are automatically sorted into their historic CRM profile.</span>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="mt-1 bg-amber-100 p-1.5 rounded text-amber-600"><i class="fa-solid fa-arrows-rotate"></i></div>
+                        <div>
+                            <span class="font-bold text-slate-700 text-sm block">Modification Webhooks</span>
+                            <span class="text-xs text-slate-500 leading-tight block mt-1">If a guest alters their dates on Agoda, the Webhook triggers an immediate background overwrite on the CRM booking, alerting staff of the length-of-stay change.</span>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="mt-1 bg-purple-100 p-1.5 rounded text-purple-600"><i class="fa-solid fa-chart-pie"></i></div>
+                        <div>
+                            <span class="font-bold text-slate-700 text-sm block">Revenue Tagging</span>
+                            <span class="text-xs text-slate-500 leading-tight block mt-1">OTA Bookings are injected with specific `commission` and `netRevenue` metrics inside the MongoDB database for crystal-clear end-of-month profit calculation.</span>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- Costing Section -->
-            <section class="print-break">
-                <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-                    <i class="fa-solid fa-wallet text-emerald-500"></i> Live Running Costs (SaaS vs Custom)
-                </h2>
+            <!-- Cost Comparison Engine -->
+            <section class="page-break-avoid">
+                <div class="mb-5 border-b border-slate-100 pb-2 flex justify-between items-end">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-file-invoice-dollar text-emerald-500 text-lg"></i> Financial Analysis
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">SaaS vs. Custom Deployment OPEX comparison per month.</p>
+                    </div>
+                    <div class="text-right text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded hidden md:block border border-emerald-100 print-border">
+                        Total Ownership = 0% Commission
+                    </div>
+                </div>
 
-                <div class="overflow-hidden rounded-xl border border-slate-200 shadow-sm mb-4">
+                <div class="overflow-hidden rounded-xl border border-slate-200 shadow-sm print-border">
                     <table class="w-full text-left text-sm">
                         <thead class="bg-slate-50 border-b border-slate-200">
                             <tr>
-                                <th class="p-4 font-semibold text-slate-700">Infrastructure Service</th>
-                                <th class="p-4 font-semibold text-slate-700">Enterprise Plan Equivalent</th>
-                                <th class="p-4 font-semibold text-slate-700 text-right">Your Monthly Cost</th>
+                                <th class="p-3 md:p-4 font-semibold text-slate-700 w-1/2">Component / Service Requirement</th>
+                                <th class="p-3 md:p-4 font-semibold text-slate-700 border-l border-slate-200 text-center bg-slate-100">Market Rate (SaaS)</th>
+                                <th class="p-3 md:p-4 font-semibold text-slate-900 border-l border-slate-200 text-right bg-emerald-50/50">Deployed Strategy</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             <tr>
-                                <td class="p-4">
-                                    <div class="font-medium text-slate-800">Frontend App Hosting (Vercel)</div>
-                                    <div class="text-xs text-slate-500 mt-1">Unlimited visitors, Global Edge CDN, Free SSL</div>
+                                <td class="p-3 md:p-4">
+                                    <div class="font-bold text-slate-800">Frontend Presentation</div>
+                                    <div class="text-[10px] text-slate-500 mt-1">Hosting, HTML serving, UI compilation, CDN serving</div>
                                 </td>
-                                <td class="p-4 text-slate-500">~$20/mo</td>
-                                <td class="p-4 text-right font-bold text-emerald-600">₹0 <span class="font-normal text-xs text-slate-400 block">Free Tier</span></td>
+                                <td class="p-3 md:p-4 text-slate-500 text-center border-l border-slate-200 bg-slate-50">₹1,500/mo <span class="text-[9px] block">(Hosting plans)</span></td>
+                                <td class="p-3 md:p-4 text-right border-l border-slate-200 bg-emerald-50/30">
+                                    <span class="font-bold text-emerald-600">₹0</span>
+                                    <span class="font-normal text-[10px] text-slate-500 block">Vercel Auto-Scaling Global Edge</span>
+                                </td>
                             </tr>
                             <tr>
-                                <td class="p-4">
-                                    <div class="font-medium text-slate-800">Database Storage (MongoDB Atlas)</div>
-                                    <div class="text-xs text-slate-500 mt-1">512MB capacity (Enough for decades of text data)</div>
+                                <td class="p-3 md:p-4">
+                                    <div class="font-bold text-slate-800">Database & Analytics Storage</div>
+                                    <div class="text-[10px] text-slate-500 mt-1">Stochastic data retention, JSON logs, query routing</div>
                                 </td>
-                                <td class="p-4 text-slate-500">~$30/mo</td>
-                                <td class="p-4 text-right font-bold text-emerald-600">₹0 <span class="font-normal text-xs text-slate-400 block">Free Tier (M0)</span></td>
+                                <td class="p-3 md:p-4 text-slate-500 text-center border-l border-slate-200 bg-slate-50">₹2,500/mo <span class="text-[9px] block">(AWS RDS / SQL)</span></td>
+                                <td class="p-3 md:p-4 text-right border-l border-slate-200 bg-emerald-50/30">
+                                    <span class="font-bold text-emerald-600">₹0</span>
+                                    <span class="font-normal text-[10px] text-slate-500 block">Mongo Atlas Enterprise Space (M0)</span>
+                                </td>
                             </tr>
                             <tr>
-                                <td class="p-4">
-                                    <div class="font-medium text-slate-800">API Backend Server (Render)</div>
-                                    <div class="text-xs text-slate-500 mt-1">Keeps the webhook server awake 24/7 without cold starts</div>
+                                <td class="p-3 md:p-4">
+                                    <div class="font-bold text-slate-800">Backend Server Computing</div>
+                                    <div class="text-[10px] text-slate-500 mt-1">Webhook listener & background CRON tasks</div>
                                 </td>
-                                <td class="p-4 text-slate-500">~$25/mo</td>
-                                <td class="p-4 text-right font-bold text-slate-700">~₹600 <span class="font-normal text-xs text-slate-400 block">($7/mo Starter)</span></td>
+                                <td class="p-3 md:p-4 text-slate-500 text-center border-l border-slate-200 bg-slate-50">₹3,000/mo <span class="text-[9px] block">(AWS EC2 / DigitalOcean)</span></td>
+                                <td class="p-3 md:p-4 text-right border-l border-slate-200 bg-emerald-50/30">
+                                    <span class="font-bold text-emerald-600">₹0</span>
+                                    <span class="font-normal text-[10px] text-slate-500 block">Render Free Tier (Phase 1)</span>
+                                    <span class="font-normal text-[8.5px] text-emerald-700/70 block mt-0.5">*Scales to paid tier post-10-room cap</span>
+                                </td>
                             </tr>
                             <tr>
-                                <td class="p-4">
-                                    <div class="font-medium text-slate-800">Channel Manager Plugin (Beds24)</div>
-                                    <div class="text-xs text-slate-500 mt-1">PCI Compliance bridge for 3-Room Property</div>
+                                <td class="p-3 md:p-4">
+                                    <div class="font-bold text-slate-800">PMS & Channel Management</div>
+                                    <div class="text-[10px] text-slate-500 mt-1">Booking.com Agoda API Bridge, Calendar Sync</div>
                                 </td>
-                                <td class="p-4 text-slate-500">~$150/mo</td>
-                                <td class="p-4 text-right font-bold text-slate-700">~₹1,200 <span class="font-normal text-xs text-slate-400 block">(€12-€15/mo)</span></td>
+                                <td class="p-3 md:p-4 text-slate-500 text-center border-l border-slate-200 bg-slate-50">₹15,000/mo <span class="text-[9px] block">(Typical Hotelogix Plan)</span></td>
+                                <td class="p-3 md:p-4 text-right border-l border-slate-200 bg-emerald-50/30">
+                                    <span class="font-bold text-slate-700">~₹1,200</span>
+                                    <span class="font-normal text-[10px] text-slate-500 block">Pure API Cost via Beds24 Engine</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 md:p-4">
+                                    <div class="font-bold text-slate-800">Custom Domain Name</div>
+                                    <div class="text-[10px] text-slate-500 mt-1">shardacrm.in (Independent digital footprint)</div>
+                                </td>
+                                <td class="p-3 md:p-4 text-slate-500 text-center border-l border-slate-200 bg-slate-50">₹1,000/mo <span class="text-[9px] block">(SaaS Whitelabel Premium)</span></td>
+                                <td class="p-3 md:p-4 text-right border-l border-slate-200 bg-emerald-50/30">
+                                    <span class="font-bold text-slate-700">~₹58</span>
+                                    <span class="font-normal text-[10px] text-slate-500 block">₹700/year (Domain Registrar)</span>
+                                </td>
                             </tr>
                         </tbody>
-                        <tfoot class="bg-slate-900 text-white">
+                        <tfoot class="bg-indigo-950 text-white">
                             <tr>
-                                <td colspan="2" class="p-4 font-bold text-right text-sm">TOTAL ESTIMATED RUN RATE:</td>
-                                <td class="p-4 text-right text-lg font-extrabold text-emerald-400">~₹1,800 <span class="text-xs font-normal text-slate-300">/ month</span></td>
+                                <td class="p-4 font-semibold text-right text-sm">MONTHLY OPEX PROJECTION:</td>
+                                <td class="p-4 text-center border-l border-indigo-900 border-r text-red-300 font-bold">~₹23,000 / month</td>
+                                <td class="p-4 text-right text-lg font-extrabold text-emerald-400">~₹1,258 <span class="text-[10px] uppercase tracking-wide font-normal text-indigo-300 block">Phase 1 Running Cost</span></td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
-                <p class="text-xs text-slate-500 italic px-2"><i class="fa-solid fa-circle-info mr-1"></i> Note: Comparable off-the-shelf PMS software (Hotelogix, Cloudbeds) averages ₹15,000+ per month and restricts data ownership. You maintain 100% IP rights and source code control.</p>
+
+                <!-- Custom Domain Callout block -->
+                <div class="mt-5 bg-emerald-50 rounded-xl p-5 border border-emerald-100 flex flex-col md:flex-row gap-4 items-start print-border">
+                    <div class="bg-emerald-100 p-2.5 rounded-full text-emerald-600 shrink-0">
+                        <i class="fa-solid fa-globe"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-emerald-900 text-sm mb-1">The Custom Domain Advantage (<span class="text-indigo-600 font-mono">shardacrm.in</span>)</h4>
+                        <p class="text-[11.5px] text-emerald-800 leading-relaxed">
+                            For a negligible cost of ₹700/year (~₹58/mo), attaching a custom domain provides a massive strategic edge over SaaS alternatives. Instead of your frontdesk logging into a generic third-party portal (like <em>app.cloudbeds.com/sharda</em>), your entire system operates natively at <strong>shardacrm.in</strong>. This establishes immediate localized brand authority, shields your internal tech stack from outside vendors, fully prevents "SaaS Lock-in", and unlocks root control for professional corporate email routing. Crucially, this allows all automated guest communications—such as booking confirmations, custom invoices, and pre-arrival emails—to be dispatched directly from a verified address like <strong>manager@shardacrm.in</strong> instead of a generic public email account, significantly boosting guest trust, deliverability, and overall hotel prestige.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-4 flex items-start gap-2 text-[11px] text-slate-500 px-1">
+                    <i class="fa-solid fa-circle-info mt-0.5"></i>
+                    <p>Over a standard 3-year Phase 1 operating period, Sharda Palace retains approximately <strong>₹7,82,000</strong> purely in avoided SaaS/subscription costs, directly bolstering net operational profit while owning completely un-watermarked, independent intellectual property.</p>
+                </div>
             </section>
 
-            <!-- Deployment Handoff -->
-            <section class="print-break border border-indigo-100 rounded-2xl bg-white shadow-sm overflow-hidden mb-12">
-                <div class="bg-indigo-50 border-b border-indigo-100 p-5">
-                    <h2 class="text-lg font-bold text-indigo-900 flex items-center gap-2">
-                        <i class="fa-solid fa-rocket text-indigo-500"></i> Phase 3: Launch & Handoff Plan
+            <!-- Comprehensive Deployment & Handoff -->
+            <section class="page-break-avoid page-break-before border border-slate-200 rounded-2xl bg-white shadow-sm overflow-hidden mb-10 print-border">
+                <div class="bg-slate-50 border-b border-slate-200 p-5">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-rocket text-indigo-500"></i> Client Deliverable & Handoff Checklist
                     </h2>
+                    <p class="text-xs text-slate-500 mt-1">Structured 5-step operational transfer protocol ensuring the client assumes complete technical isolation.</p>
                 </div>
-                <div class="p-6">
-                    <ol class="relative border-l border-slate-200 ml-3 space-y-6">
-                        <li class="mb-4 ml-6">
-                            <span class="absolute flex items-center justify-center w-6 h-6 bg-indigo-100 rounded-full -left-3 ring-4 ring-white">
-                                <span class="text-xs font-bold text-indigo-700">1</span>
-                            </span>
-                            <h3 class="font-semibold text-slate-800 text-sm">Client Account Provisioning</h3>
-                            <p class="text-sm text-slate-500 mt-1">Creation of dedicated Vercel, Render, and MongoDB Atlas accounts under official hotel email to ensure permanent client ownership.</p>
+                <div class="p-8">
+                    <ol class="relative border-l-2 border-indigo-100 space-y-6">
+                        <!-- Step 1 -->
+                        <li class="ml-8">
+                            <span class="absolute flex items-center justify-center w-8 h-8 bg-indigo-100 rounded-full -left-4 ring-4 ring-white text-indigo-600 font-bold text-sm">1</span>
+                            <h3 class="font-bold text-slate-800 text-sm">Account Abstraction & Domain Association</h3>
+                            <p class="text-xs text-slate-500 mt-1 mb-2">We setup official client-owned accounts. The architectural codebase is migrated out of developer sandboxes into the client's official Vercel/Render accounts containing their billing logic and the private <strong>shardacrm.in</strong> domain.</p>
+                            <div class="bg-slate-50 p-2 rounded text-[10px] font-mono text-slate-600 border border-slate-100">Deliverables: Domain verification, DNS TXT and CNAME Records injected for seamless internal routing.</div>
                         </li>
-                        <li class="mb-4 ml-6">
-                            <span class="absolute flex items-center justify-center w-6 h-6 bg-indigo-100 rounded-full -left-3 ring-4 ring-white">
-                                <span class="text-xs font-bold text-indigo-700">2</span>
-                            </span>
-                            <h3 class="font-semibold text-slate-800 text-sm">Beds24 & OTA Mapping</h3>
-                            <p class="text-sm text-slate-500 mt-1">Registration on Beds24. Authorization of Beds24 within the Booking.com / Agoda Extranets.</p>
+
+                        <!-- Step 2 -->
+                        <li class="ml-8">
+                            <span class="absolute flex items-center justify-center w-8 h-8 bg-indigo-100 rounded-full -left-4 ring-4 ring-white text-indigo-600 font-bold text-sm">2</span>
+                            <h3 class="font-bold text-slate-800 text-sm">Secrets Validation & Environment Injection</h3>
+                            <p class="text-xs text-slate-500 mt-1 mb-2">Because the code is engineered for SaaS mobility, no database passwords exist in source files. We inject the client's unique MongoDB URIs, JWT signing keys, and Google Drive Service Tokens strictly into the deployment dashboards.</p>
+                            <div class="bg-slate-50 p-2 rounded text-[10px] font-mono text-slate-600 border border-slate-100">Protection logic: <span class="bg-slate-200 px-1 rounded text-slate-700">process.env.MONGODB_URI</span> remains invisible to code-readers.</div>
                         </li>
-                        <li class="mb-4 ml-6">
-                            <span class="absolute flex items-center justify-center w-6 h-6 bg-indigo-100 rounded-full -left-3 ring-4 ring-white">
-                                <span class="text-xs font-bold text-indigo-700">3</span>
-                            </span>
-                            <h3 class="font-semibold text-slate-800 text-sm">Systems Go-Live & Key Injection</h3>
-                            <p class="text-sm text-slate-500 mt-1">Environment variables (Database connection strings, API secrets) securely injected into the Render dashboard. Full End-to-End reservation simulation.</p>
+
+                        <!-- Step 3 -->
+                        <li class="ml-8">
+                            <span class="absolute flex items-center justify-center w-8 h-8 bg-indigo-100 rounded-full -left-4 ring-4 ring-white text-indigo-600 font-bold text-sm">3</span>
+                            <h3 class="font-bold text-slate-800 text-sm">Beds24 & Extranet API Approval Handshake</h3>
+                            <p class="text-xs text-slate-500 mt-1 mb-2">Client initiates their Booking.com Extranet portal. We route an API access request authorizing Beds24 to act as the legal connectivity provider. Room codes and pricing rate plans are systematically mapped between the systems.</p>
+                        </li>
+
+                        <!-- Step 4 -->
+                        <li class="ml-8">
+                            <span class="absolute flex items-center justify-center w-8 h-8 bg-indigo-100 rounded-full -left-4 ring-4 ring-white text-indigo-600 font-bold text-sm">4</span>
+                            <h3 class="font-bold text-slate-800 text-sm">Dry-Run Simulation & Interoperability Diagnostic</h3>
+                            <p class="text-xs text-slate-500 mt-1 mb-2">Pre-launch environment diagnostics. We deploy a "fake" test booking through the OTA platform, confirming the Webhook bounces the correct cryptographic signatures through Render, hitting MongoDB, and rendering live in the React UI.</p>
+                        </li>
+
+                        <!-- Step 5 -->
+                        <li class="ml-8">
+                            <span class="absolute flex items-center justify-center w-8 h-8 bg-emerald-100 rounded-full -left-4 ring-4 ring-white text-emerald-600 font-bold text-sm"><i class="fa-solid fa-check"></i></span>
+                            <h3 class="font-bold text-slate-800 text-sm">End-User Operational Handoff</h3>
+                            <p class="text-xs text-slate-500 mt-1 mb-2">Generation of the Master Admin credentials. We log out of all developer access. Client takes total, autonomous control of the repository, servers, and the CRM application.</p>
                         </li>
                     </ol>
                 </div>

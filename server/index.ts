@@ -10,6 +10,7 @@ import rateLimit from 'express-rate-limit';
 import { connectDB } from './db.js';
 import apiRoutes from './routes/api.js';
 import channelRoutes from './routes/channel.js';
+import authRoutes from './routes/auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -56,7 +57,9 @@ app.use(express.json());
 // Routes
 // Apply rate limiter to API routes only
 app.use('/api', globalLimiter, apiRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/channel', channelRoutes); // channel webhook has its own specific rate limits in middleware
+
 
 app.get('/api/health', (req, res) => {
   const dbState = mongoose.connection.readyState;
