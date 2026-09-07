@@ -215,8 +215,8 @@ export const rejectChannelBooking = async (req: AuthRequest, res: Response) => {
 // Payments
 export const addPayment = async (req: AuthRequest, res: Response) => {
   try {
-    const { bookingId, guestId, amount, method, status, reference } = req.body;
-    const paymentData = { bookingId, guestId, amount, method, status, reference };
+    const { bookingId, guestId, amount, mode, date, status } = req.body;
+    const paymentData = { bookingId, guestId, amount, mode, date, status };
     const payment = new Payment({ ...paymentData, _id: req.body.id });
     await payment.save();
     await logAction(req, 'Add Payment', `Added payment ${payment._id} of amount ${payment.amount} for booking ${payment.bookingId}`);
