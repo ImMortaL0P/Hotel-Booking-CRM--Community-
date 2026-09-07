@@ -7,6 +7,7 @@ import compression from 'compression';
 import mongoose from 'mongoose';
 import { connectDB } from './db.js';
 import apiRoutes from './routes/api.js';
+import channelRoutes from './routes/channel.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,6 +25,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api', apiRoutes);
+app.use('/api/channel', channelRoutes);
 
 app.get('/api/health', (req, res) => {
   const dbState = mongoose.connection.readyState;

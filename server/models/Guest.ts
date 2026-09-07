@@ -13,7 +13,8 @@ const guestSchema = new mongoose.Schema({
   lastStay: { type: String },
   totalSpent: { type: Number, default: 0 },
   isVIP: { type: Boolean, default: false },
-  avatarInitial: { type: String }
+  avatarInitial: { type: String },
+  channelGuestId: { type: String, default: null }
 }, {
   timestamps: true,
   toJSON: {

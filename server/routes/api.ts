@@ -9,6 +9,8 @@ import {
   addBooking,
   updateBooking,
   deleteBooking,
+  confirmChannelBooking,
+  rejectChannelBooking,
   addPayment,
   addComm,
   addInvoice,
@@ -16,6 +18,12 @@ import {
   deleteExpense,
   addStoredInvoice
 } from '../controllers/dataController.js';
+import {
+  getChannelConfig,
+  updateChannelConfig,
+  testChannelConnection,
+  triggerFullSync
+} from '../controllers/channelController.js';
 
 const router = express.Router();
 
@@ -32,6 +40,8 @@ router.put('/guests/:id', updateGuest);
 router.post('/bookings', addBooking);
 router.put('/bookings/:id', updateBooking);
 router.delete('/bookings/:id', deleteBooking);
+router.post('/bookings/:id/confirm-channel', confirmChannelBooking);
+router.post('/bookings/:id/reject-channel', rejectChannelBooking);
 
 // Payments
 router.post('/payments', addPayment);
@@ -46,6 +56,12 @@ router.post('/stored-invoices', addStoredInvoice);
 // Expenses
 router.post('/expenses', addExpense);
 router.delete('/expenses/:id', deleteExpense);
+
+// Channel Manager
+router.get('/channel/config', getChannelConfig);
+router.put('/channel/config', updateChannelConfig);
+router.post('/channel/test', testChannelConnection);
+router.post('/channel/full-sync', triggerFullSync);
 
 // Save invoice file (HTML to github folder) // Keeping for backwards compatibility
 router.post('/save-invoice-file', saveInvoiceFile);

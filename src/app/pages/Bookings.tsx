@@ -9,7 +9,7 @@ import { BookingDetailDrawer } from '../components/BookingDetailDrawer';
 import { exportToCsv } from '../lib/exportCsv';
 
 export function Bookings() {
-  const { bookings, guests, rooms, updateBooking, addPayment } = useData();
+  const { bookings, guests, rooms, updateBooking, addPayment, confirmChannelBooking, rejectChannelBooking } = useData();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = (searchParams.get('status') as BookingStatus | 'All') || 'All';
   const search = searchParams.get('search') || '';
@@ -187,6 +187,11 @@ export function Bookings() {
                   <td className="px-4 py-3">
                     <p className="font-medium text-foreground">{guest?.name}</p>
                     <p className="text-xs text-muted-foreground">{guest?.phone}</p>
+                    {b.source && b.source !== 'Direct' && (
+                       <span className="inline-block mt-1 text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded border border-blue-200">
+                         {b.source}
+                       </span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <p className="text-foreground">Room {room?.number}</p>
@@ -207,9 +212,17 @@ export function Bookings() {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md ${getStatusColor(b.status)}`}>
-                      {b.status}
-                    </span>
+                    <div className="flex flex-col gap-1 items-start">
+                      <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md ${getStatusColor(b.status)}`}>
+                        {b.status}
+                      </span>
+                      {b.channelStatus === 'pending_confirmation' && (
+                        <div className="flex gap-1 mt-1 z-10" onClick={e => e.stopPropagation()}>
+                          <button onClick={() => confirmChannelBooking(b.id)} className="text-[10px] bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded">Confirm</button>
+                          <button onClick={() => rejectChannelBooking(b.id)} className="text-[10px] bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">Reject</button>
+                        </div>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="relative inline-block text-left" onClick={e => e.stopPropagation()}>

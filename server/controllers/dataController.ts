@@ -9,6 +9,7 @@ import { StandaloneInvoice } from '../models/StandaloneInvoice.js';
 import { StoredInvoice } from '../models/StoredInvoice.js';
 import { Expense } from '../models/Expense.js';
 import { randomUUID } from 'crypto';
+import { pushAvailability, confirmChannelReservation, rejectChannelReservation } from '../services/channelManagerService.js';
 
 // Log Action Helper
 const logAction = async (req: Request, action: string, details: string) => {
@@ -101,6 +102,10 @@ export const addBooking = async (req: Request, res: Response) => {
     const booking = new Booking({ ...req.body, _id: req.body.id });
     await booking.save();
     await logAction(req, 'New Booking', `Created booking ${booking._id} for guest ${booking.guestId}`);
+
+    // Trigger outbound sync in background (fire and forget)
+    pushAvailability(booking.checkIn, booking.checkOut).catch(console.error);
+
     res.json(booking.toJSON());
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -109,9 +114,19 @@ export const addBooking = async (req: Request, res: Response) => {
 
 export const updateBooking = async (req: Request, res: Response) => {
   try {
+    const oldBooking = await Booking.findById(req.params.id);
     const updated = await Booking.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!updated) return res.status(404).json({ error: 'Not found' });
+
     await logAction(req, 'Update Booking', `Booking ${updated._id} status changed to ${updated.status}`);
+
+    // Trigger outbound sync in background if dates or status changed
+    if (oldBooking) {
+      const minStart = oldBooking.checkIn < updated.checkIn ? oldBooking.checkIn : updated.checkIn;
+      const maxEnd = oldBooking.checkOut > updated.checkOut ? oldBooking.checkOut : updated.checkOut;
+      pushAvailability(minStart, maxEnd).catch(console.error);
+    }
+
     res.json(updated.toJSON());
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -120,9 +135,58 @@ export const updateBooking = async (req: Request, res: Response) => {
 
 export const deleteBooking = async (req: Request, res: Response) => {
   try {
+    const booking = await Booking.findById(req.params.id);
     await Booking.findByIdAndDelete(req.params.id);
     await logAction(req, 'Delete Booking', `Deleted booking ${req.params.id}`);
+
+    if (booking) {
+      pushAvailability(booking.checkIn, booking.checkOut).catch(console.error);
+    }
+
     res.json({ success: true });
+  } catch (error: any) {
+    console.error(error); res.status(400).json({ error: error.message });
+  }
+};
+
+export const confirmChannelBooking = async (req: Request, res: Response) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    if (!booking || !booking.channelBookingId) return res.status(404).json({ error: 'OTA booking not found' });
+
+    booking.channelStatus = 'confirmed';
+    booking.status = 'Confirmed';
+    await booking.save();
+
+    await logAction(req, 'Confirm OTA Booking', `Confirmed OTA Booking ${booking._id}`);
+
+    // Notify channel manager
+    confirmChannelReservation(booking.channelBookingId, booking._id).catch(console.error);
+
+    res.json(booking.toJSON());
+  } catch (error: any) {
+    console.error(error); res.status(400).json({ error: error.message });
+  }
+};
+
+export const rejectChannelBooking = async (req: Request, res: Response) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    if (!booking || !booking.channelBookingId) return res.status(404).json({ error: 'OTA booking not found' });
+
+    booking.channelStatus = 'rejected';
+    booking.status = 'Checked-Out'; // release room
+    await booking.save();
+
+    await logAction(req, 'Reject OTA Booking', `Rejected OTA Booking ${booking._id}`);
+
+    // Notify channel manager
+    rejectChannelReservation(booking.channelBookingId).catch(console.error);
+
+    // Release inventory
+    pushAvailability(booking.checkIn, booking.checkOut).catch(console.error);
+
+    res.json(booking.toJSON());
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
   }

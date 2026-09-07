@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useData } from '../data/DataContext';
-import { IDProofType, PaymentMode, RoomCategory } from '../data/types';
+import { IDProofType, PaymentMode, RoomCategory, BookingSource } from '../data/types';
 import { formatCurrency, generateId } from '../lib/utils';
 import { X, Calendar, User, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
@@ -44,6 +44,10 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
   const [advancePaid, setAdvancePaid] = useState<number>(0);
   const [paymentMode, setPaymentMode] = useState<PaymentMode>('UPI');
   const [notes, setNotes] = useState('');
+
+  // Channel Integration
+  const [source, setSource] = useState<BookingSource>('Direct');
+  const [channelBookingId, setChannelBookingId] = useState('');
 
   // Autofill if guest matches phone
   useEffect(() => {
@@ -160,7 +164,12 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
       balance,
       status: 'Confirmed',
       createdAt: new Date().toISOString(),
-      notes
+      notes,
+      source,
+      channelBookingId: source !== 'Direct' ? channelBookingId : null,
+      channelStatus: source !== 'Direct' ? 'confirmed' : null,
+      commission: 0,
+      netRevenue: total
     });
 
     if (advancePaid > 0) {
@@ -268,6 +277,38 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
               <Calendar className="w-4 h-4" /> 2. Room & Stay Details
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-foreground/80 mb-1">Booking Source *</label>
+                <select
+                  value={source}
+                  onChange={e => setSource(e.target.value as BookingSource)}
+                  className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary"
+                >
+                  <option value="Direct">Direct (Walk-in / Phone)</option>
+                  <option value="Booking.com">Booking.com</option>
+                  <option value="Agoda">Agoda</option>
+                  <option value="MakeMyTrip">MakeMyTrip</option>
+                  <option value="Airbnb">Airbnb</option>
+                  <option value="Website">Website</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              {source !== 'Direct' ? (
+                <div>
+                  <label className="block text-xs font-medium text-foreground/80 mb-1">External Booking ID (Optional)</label>
+                  <input
+                    type="text"
+                    value={channelBookingId}
+                    onChange={e => setChannelBookingId(e.target.value)}
+                    placeholder="e.g. BKG-12345678"
+                    className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+              ) : (
+                <div className="hidden md:block"></div>
+              )}
+
               <div>
                 <label className="block text-xs font-medium text-foreground/80 mb-1">Room Category *</label>
                 <select

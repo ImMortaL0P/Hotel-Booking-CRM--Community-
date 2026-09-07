@@ -16,6 +16,7 @@ const Checkout = lazy(() => import('./pages/Checkout').then(m => ({ default: m.C
 const InvoiceGenerator = lazy(() => import('./pages/InvoiceGenerator').then(m => ({ default: m.InvoiceGenerator })));
 const Expenses = lazy(() => import('./pages/Expenses').then(m => ({ default: m.Expenses })));
 const Logs = lazy(() => import('./pages/Logs').then(m => ({ default: m.Logs })));
+const ChannelSettings = lazy(() => import('./components/ChannelSettings').then(m => ({ default: m.ChannelSettings })));
 
 const LoadingFallback = () => (
   <div className="h-full flex items-center justify-center bg-background">
@@ -54,6 +55,7 @@ export default function App() {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/invoices" element={<InvoiceGenerator />} />
             <Route path="/expenses" element={<Expenses />} />
+            <Route path="/channel-settings" element={<ChannelSettings />} />
             <Route path="/logs" element={<Logs />} />
           </Routes>
         </Suspense>

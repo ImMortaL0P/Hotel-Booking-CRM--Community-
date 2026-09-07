@@ -22,7 +22,7 @@ import {
   Globe,
   Search
 } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
 import { NewBookingModal } from '../components/NewBookingModal';
 import { useNavigate } from 'react-router';
 import { format } from 'date-fns';
@@ -95,6 +95,33 @@ export function Dashboard() {
       Maintenance: maintenance
     };
   });
+
+  // Channel Analytics calculation
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  const currentMonthBookings = bookings.filter(b => {
+    const d = new Date(b.createdAt);
+    return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+  });
+
+  const channelStatsBySource = currentMonthBookings.reduce((acc, b) => {
+    const src = b.source || 'Direct';
+    if (!acc[src]) {
+      acc[src] = { count: 0, revenue: 0, commission: 0, netRevenue: 0 };
+    }
+    acc[src].count += 1;
+    acc[src].revenue += b.total;
+    acc[src].commission += b.commission || 0;
+    acc[src].netRevenue += b.netRevenue || b.total;
+    return acc;
+  }, {} as Record<string, { count: number, revenue: number, commission: number, netRevenue: number }>);
+
+  const channelPieData = Object.keys(channelStatsBySource).map(src => ({
+    name: src,
+    value: channelStatsBySource[src].count
+  }));
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DFF', '#FF6B6B', '#4AD9D9'];
 
   // Upcoming Arrivals
   const upcomingArrivals = bookings
@@ -231,6 +258,76 @@ export function Dashboard() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      </div>
+
+      {/* Channel Analytics */}
+      <div className="bg-card p-6 rounded-lg border border-border">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-bold text-card-foreground">Channel Performance (This Month)</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="h-64 flex items-center justify-center">
+            {channelPieData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={channelPieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {channelPieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="text-sm text-muted-foreground flex items-center justify-center h-full">No bookings this month</div>
+            )}
+          </div>
+          <div className="lg:col-span-3">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-border text-xs font-semibold text-muted-foreground uppercase">
+                    <th className="pb-3">Source Channel</th>
+                    <th className="pb-3 text-center">Bookings</th>
+                    <th className="pb-3 text-right">Gross Revenue</th>
+                    <th className="pb-3 text-right">Commission</th>
+                    <th className="pb-3 text-right">Net Revenue</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  {Object.entries(channelStatsBySource)
+                    .sort((a, b) => b[1].count - a[1].count)
+                    .map(([source, stats], idx) => (
+                    <tr key={source} className="hover:bg-muted/50">
+                      <td className="py-3 font-medium text-foreground flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></span>
+                        {source}
+                      </td>
+                      <td className="py-3 text-center text-foreground">{stats.count}</td>
+                      <td className="py-3 text-right font-medium text-foreground">{formatCurrency(stats.revenue)}</td>
+                      <td className="py-3 text-right text-destructive">{formatCurrency(stats.commission)}</td>
+                      <td className="py-3 text-right font-bold text-primary">{formatCurrency(stats.netRevenue)}</td>
+                    </tr>
+                  ))}
+                  {Object.keys(channelStatsBySource).length === 0 && (
+                     <tr>
+                       <td colSpan={5} className="py-4 text-center text-muted-foreground">No channel data available for this month.</td>
+                     </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>

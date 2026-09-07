@@ -38,9 +38,14 @@ export interface Guest {
   isVIP: boolean;
   notes?: string;
   avatarInitial: string;
+  channelGuestId?: string | null;
 }
 
 export type BookingStatus = 'Booked' | 'Confirmed' | 'Checked-In' | 'Checked-Out';
+
+export type BookingSource = 'Direct' | 'Booking.com' | 'Agoda' | 'MakeMyTrip' | 'Airbnb' | 'Website' | 'Other';
+
+export type ChannelSyncStatus = 'pending_confirmation' | 'confirmed' | 'rejected' | 'cancelled' | null;
 
 export interface Booking {
   id: string;      // SP-2026-###
@@ -59,6 +64,12 @@ export interface Booking {
   status: BookingStatus;
   createdAt: string;
   notes?: string;
+  source?: BookingSource;
+  channelBookingId?: string | null;
+  channelStatus?: ChannelSyncStatus;
+  commission?: number;
+  netRevenue?: number;
+  channelRatePlan?: string | null;
 }
 
 export type PaymentMode = 'Cash' | 'UPI' | 'Card' | 'Bank Transfer';

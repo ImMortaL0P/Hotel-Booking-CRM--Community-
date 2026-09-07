@@ -149,6 +149,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           {['manager', 'owner', 'superadmin'].includes(user?.role || '') && (
             <NavItem to="/expenses" icon={WalletCards} label="Expenses & Ledger" />
           )}
+          {['manager', 'owner', 'superadmin'].includes(user?.role || '') && (
+            <NavItem to="/channel-settings" icon={Globe} label="Channel Settings" />
+          )}
 
           <NavItem to="/logs" icon={History} label="Activity Logs" />
         </div>

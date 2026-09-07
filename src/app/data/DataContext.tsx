@@ -18,6 +18,8 @@ interface DataContextType {
   addBooking: (booking: Booking) => void;
   updateBooking: (booking: Booking) => void;
   deleteBooking: (bookingId: string) => void;
+  confirmChannelBooking: (bookingId: string) => void;
+  rejectChannelBooking: (bookingId: string) => void;
 
   payments: PaymentTransaction[];
   addPayment: (payment: PaymentTransaction) => void;
@@ -215,6 +217,24 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }).catch(console.error);
   };
 
+  const confirmChannelBooking = (bookingId: string) => {
+    apiFetch(`/api/bookings/${bookingId}/confirm-channel`, {
+      method: 'POST',
+      headers: getHeaders()
+    }).then(updated => {
+      setBookings(prev => prev.map(b => b.id === bookingId ? updated : b));
+    }).catch(console.error);
+  };
+
+  const rejectChannelBooking = (bookingId: string) => {
+    apiFetch(`/api/bookings/${bookingId}/reject-channel`, {
+      method: 'POST',
+      headers: getHeaders()
+    }).then(updated => {
+      setBookings(prev => prev.map(b => b.id === bookingId ? updated : b));
+    }).catch(console.error);
+  };
+
   const addPayment = (payment: PaymentTransaction) => {
     apiFetch(`/api/payments`, {
        method: 'POST',
@@ -292,7 +312,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       user, login, logout,
       rooms, updateRoomStatus,
       guests, addGuest, updateGuest,
-      bookings, addBooking, updateBooking, deleteBooking,
+      bookings, addBooking, updateBooking, deleteBooking, confirmChannelBooking, rejectChannelBooking,
       payments, addPayment,
       comms, addComm, logs, invoices, addInvoice,
       storedInvoices, addStoredInvoice,

@@ -16,7 +16,13 @@ const bookingSchema = new mongoose.Schema({
   balance: { type: Number, required: true },
   status: { type: String, required: true, enum: ['Booked', 'Confirmed', 'Checked-In', 'Checked-Out'], index: true },
   createdAt: { type: String, required: true },
-  notes: { type: String }
+  notes: { type: String },
+  source: { type: String, enum: ['Direct', 'Booking.com', 'Agoda', 'MakeMyTrip', 'Airbnb', 'Website', 'Other'], default: 'Direct' },
+  channelBookingId: { type: String, default: null },
+  channelStatus: { type: String, enum: ['pending_confirmation', 'confirmed', 'rejected', 'cancelled', null], default: null },
+  commission: { type: Number, default: 0 },
+  netRevenue: { type: Number, default: 0 },
+  channelRatePlan: { type: String, default: null }
 }, {
   timestamps: true,
   toJSON: {

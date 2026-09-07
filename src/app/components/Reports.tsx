@@ -1,10 +1,15 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Badge } from './ui/badge';
-import { DollarSign, TrendingUp, TrendingDown, ArrowUpRight, Calendar } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, ArrowUpRight, Calendar, Globe } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend } from 'recharts';
+import { useData } from '../data/DataContext';
+import { formatCurrency, formatDate } from '../lib/utils';
 
 export function Reports() {
+  const [activeTab, setActiveTab] = useState<'financial' | 'channel'>('financial');
+  const { bookings } = useData();
   const revenueData = [
     { month: 'Jan', revenue: 15000, expenses: 8000, profit: 7000 },
     { month: 'Feb', revenue: 18000, expenses: 9000, profit: 9000 },
@@ -42,14 +47,74 @@ export function Reports() {
   const ytdExpenses = 120000;
   const ytdProfit = ytdRevenue - ytdExpenses;
 
+  // Channel Analytics calculation
+  const [channelDateRange, setChannelDateRange] = useState('all');
+  const filteredBookings = bookings.filter(b => {
+    if (channelDateRange === 'all') return true;
+    const now = new Date();
+    const bDate = new Date(b.createdAt);
+    if (channelDateRange === 'this_month') {
+      return bDate.getMonth() === now.getMonth() && bDate.getFullYear() === now.getFullYear();
+    }
+    if (channelDateRange === 'last_month') {
+      const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      return bDate.getMonth() === lm.getMonth() && bDate.getFullYear() === lm.getFullYear();
+    }
+    if (channelDateRange === 'this_year') {
+      return bDate.getFullYear() === now.getFullYear();
+    }
+    return true;
+  });
+
+  const channelStatsBySource = filteredBookings.reduce((acc, b) => {
+    const src = b.source || 'Direct';
+    if (!acc[src]) {
+      acc[src] = { count: 0, revenue: 0, commission: 0, netRevenue: 0 };
+    }
+    acc[src].count += 1;
+    acc[src].revenue += b.total;
+    acc[src].commission += b.commission || 0;
+    acc[src].netRevenue += b.netRevenue || b.total;
+    return acc;
+  }, {} as Record<string, { count: number, revenue: number, commission: number, netRevenue: number }>);
+
+  const channelPieData = Object.keys(channelStatsBySource).map(src => ({
+    name: src,
+    value: channelStatsBySource[src].count
+  }));
+
+  const channelRevenueData = Object.keys(channelStatsBySource).map(src => ({
+    name: src,
+    Revenue: channelStatsBySource[src].revenue,
+    NetRevenue: channelStatsBySource[src].netRevenue,
+    Commission: channelStatsBySource[src].commission
+  }));
+
   return (
     <div>
-      <div className="mb-8">
-        <h1>Financial Reports</h1>
-        <p className="text-muted-foreground">Track revenue, expenses, and financial performance</p>
+      <div className="mb-4">
+        <h1>Reports & Analytics</h1>
+        <p className="text-muted-foreground">Track revenue, expenses, and channel performance</p>
       </div>
 
-      {/* Stats */}
+      <div className="flex gap-4 mb-8">
+        <button
+          onClick={() => setActiveTab('financial')}
+          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === 'financial' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+        >
+          <DollarSign className="w-4 h-4 inline-block mr-2" /> Financial Reports
+        </button>
+        <button
+          onClick={() => setActiveTab('channel')}
+          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === 'channel' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+        >
+          <Globe className="w-4 h-4 inline-block mr-2" /> Channel Performance
+        </button>
+      </div>
+
+      {activeTab === 'financial' && (
+        <>
+          {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card className="group cursor-pointer transition-all duration-300 hover:shadow-sm hover:-translate-y-2 hover:border-green-300">
           <CardContent className="p-6">
@@ -248,6 +313,112 @@ export function Reports() {
           </div>
         </CardContent>
       </Card>
+      </>
+      )}
+
+      {activeTab === 'channel' && (
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-bold">Channel Manager Performance</h2>
+            <select
+              value={channelDateRange}
+              onChange={(e) => setChannelDateRange(e.target.value)}
+              className="text-sm px-3 py-2 border border-border rounded-md"
+            >
+              <option value="all">All Time</option>
+              <option value="this_month">This Month</option>
+              <option value="last_month">Last Month</option>
+              <option value="this_year">This Year</option>
+            </select>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Bookings by Channel</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={channelPieData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={100}
+                      label
+                    >
+                      {channelPieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Revenue & Commissions (₹)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={channelRevenueData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip formatter={(value: number) => `₹${value.toLocaleString()}`} />
+                    <Legend />
+                    <Bar dataKey="Revenue" fill="#3b82f6" />
+                    <Bar dataKey="NetRevenue" fill="#10b981" />
+                    <Bar dataKey="Commission" fill="#ef4444" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Channel Performance Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-muted text-muted-foreground p-4">
+                    <tr>
+                      <th className="px-4 py-3 font-semibold rounded-tl-lg">Source Channel</th>
+                      <th className="px-4 py-3 font-semibold text-right">Bookings</th>
+                      <th className="px-4 py-3 font-semibold text-right">Gross Revenue</th>
+                      <th className="px-4 py-3 font-semibold text-right">OTA Commission</th>
+                      <th className="px-4 py-3 font-semibold text-right rounded-tr-lg">Net Revenue</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(channelStatsBySource).map(([src, stats]) => (
+                      <tr key={src} className="border-b border-border/50 hover:bg-muted/30">
+                        <td className="px-4 py-3 font-medium text-foreground">{src}</td>
+                        <td className="px-4 py-3 text-right">{stats.count}</td>
+                        <td className="px-4 py-3 text-right">₹{stats.revenue.toLocaleString()}</td>
+                        <td className="px-4 py-3 text-right text-red-500">₹{stats.commission.toLocaleString()}</td>
+                        <td className="px-4 py-3 text-right text-green-600 font-medium">₹{stats.netRevenue.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                    {Object.keys(channelStatsBySource).length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="py-6 text-center text-muted-foreground">No bookings found for the selected date range.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
