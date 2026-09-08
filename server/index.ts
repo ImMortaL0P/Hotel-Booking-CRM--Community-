@@ -3,6 +3,12 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
+// Load env before importing routes that depend on it!
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config();
+
 import compression from 'compression';
 import mongoose from 'mongoose';
 import helmet from 'helmet';
@@ -12,10 +18,6 @@ import apiRoutes from './routes/api.js';
 import channelRoutes from './routes/channel.js';
 import authRoutes from './routes/auth.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-dotenv.config();
 const PORT = process.env.PORT || 5000;
 
 // Initialize express

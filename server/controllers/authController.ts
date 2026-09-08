@@ -2,10 +2,9 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-development-only-change-in-prod';
-
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
+    const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-development-only-change-in-prod';
     const { userId, password } = req.body;
     
     if (!userId || !password) {
@@ -48,6 +47,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
 export const verify = async (req: Request, res: Response): Promise<void> => {
   try {
+    const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-development-only-change-in-prod';
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       res.status(401).json({ message: 'No token provided' });

@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-development-only-change-in-prod';
-
 export interface AuthRequest extends Request {
   user?: {
     id: string;
@@ -13,6 +11,7 @@ export interface AuthRequest extends Request {
 
 export const requireAuth = (req: AuthRequest, res: Response, next: NextFunction): void => {
   try {
+    const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-development-only-change-in-prod';
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       res.status(401).json({ message: 'Authentication required' });
