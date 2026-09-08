@@ -36,6 +36,11 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     if (toastId) toast.dismiss(toastId);
 
     if (!response.ok) {
+      if (response.status === 401) {
+         localStorage.removeItem('token');
+         localStorage.removeItem('user');
+         window.location.href = '/login'; // Or just force a reload so App.tsx returns to login
+      }
       throw new Error(`API error: ${response.status} ${response.statusText}`);
     }
     
