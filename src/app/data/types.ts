@@ -41,11 +41,11 @@ export interface Guest {
   channelGuestId?: string | null;
 }
 
-export type BookingStatus = 'Booked' | 'Confirmed' | 'Checked-In' | 'Checked-Out';
+export type BookingStatus = 'Booked' | 'Confirmed' | 'Checked-In' | 'Checked-Out' | 'Cancelled' | 'No Show';
 
 export type BookingSource = 'Direct' | 'Booking.com' | 'Agoda' | 'MakeMyTrip' | 'Airbnb' | 'Website' | 'Other';
 
-export type ChannelSyncStatus = 'pending_confirmation' | 'confirmed' | 'rejected' | 'cancelled' | null;
+export type ChannelSyncStatus = 'pending_confirmation' | 'confirmed' | 'rejected' | 'cancelled' | 'ok' | 'no_show' | 'cancelled_by_guest' | null;
 
 export interface Booking {
   id: string;      // SP-2026-###
@@ -70,6 +70,16 @@ export interface Booking {
   commission?: number;
   netRevenue?: number;
   channelRatePlan?: string | null;
+  bookedBy?: string | null;
+  bookerCountry?: string | null;
+  device?: string | null;
+  unitType?: string | null;
+  channelRoomsCount?: number;
+  extraCharges?: {
+    amount: number;
+    reason: string;
+    date: string;
+  }[];
 }
 
 export type PaymentMode = 'Cash' | 'UPI' | 'Card' | 'Bank Transfer';

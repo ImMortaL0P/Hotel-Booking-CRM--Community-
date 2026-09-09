@@ -14,15 +14,25 @@ const bookingSchema = new mongoose.Schema({
   total: { type: Number, required: true },
   paid: { type: Number, required: true, default: 0 },
   balance: { type: Number, required: true },
-  status: { type: String, required: true, enum: ['Booked', 'Confirmed', 'Checked-In', 'Checked-Out'], index: true },
+  status: { type: String, required: true, enum: ['Booked', 'Confirmed', 'Checked-In', 'Checked-Out', 'Cancelled', 'No Show'], index: true },
   createdAt: { type: String, required: true },
   notes: { type: String },
   source: { type: String, enum: ['Direct', 'Booking.com', 'Agoda', 'MakeMyTrip', 'Airbnb', 'Website', 'Other'], default: 'Direct' },
   channelBookingId: { type: String, default: null },
-  channelStatus: { type: String, enum: ['pending_confirmation', 'confirmed', 'rejected', 'cancelled', null], default: null },
+  channelStatus: { type: String, enum: ['pending_confirmation', 'confirmed', 'rejected', 'cancelled', 'ok', 'no_show', 'cancelled_by_guest', null], default: null },
   commission: { type: Number, default: 0 },
   netRevenue: { type: Number, default: 0 },
-  channelRatePlan: { type: String, default: null }
+  channelRatePlan: { type: String, default: null },
+  bookedBy: { type: String, default: null },
+  bookerCountry: { type: String, default: null },
+  device: { type: String, default: null },
+  unitType: { type: String, default: null },
+  channelRoomsCount: { type: Number, default: 1 },
+  extraCharges: [{
+    amount: { type: Number, required: true },
+    reason: { type: String, required: true },
+    date: { type: String, required: true }
+  }]
 }, {
   timestamps: true,
   toJSON: {

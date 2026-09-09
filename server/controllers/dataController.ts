@@ -12,6 +12,13 @@ import { Expense } from '../models/Expense.js';
 import { randomUUID } from 'crypto';
 import { pushAvailability, confirmChannelReservation, rejectChannelReservation } from '../services/channelManagerService.js';
 
+function titleCase(str: string) {
+  if (!str) return str;
+  return str.toLowerCase().split(' ').map(word =>
+    word.charAt(0).toUpperCase() + word.slice(1)
+  ).join(' ');
+}
+
 // Log Action Helper
 const logAction = async (req: AuthRequest, action: string, details: string) => {
   try {
@@ -81,7 +88,9 @@ export const updateRoom = async (req: AuthRequest, res: Response) => {
 // Guests
 export const addGuest = async (req: AuthRequest, res: Response) => {
   try {
-    const { name, email, phone, idProof, idProofNumber, address, totalBookings, totalSpent, preferences, notes, channelGuestId } = req.body;
+    let { name, email, phone, idProof, idProofNumber, address, totalBookings, totalSpent, preferences, notes, channelGuestId } = req.body;
+    if (name) name = titleCase(name);
+
     const guestData = { name, email, phone, idProof, idProofNumber, address, totalBookings, totalSpent, preferences, notes, channelGuestId };
 
     // Default id based on body or new ID if missing
@@ -96,7 +105,9 @@ export const addGuest = async (req: AuthRequest, res: Response) => {
 
 export const updateGuest = async (req: AuthRequest, res: Response) => {
   try {
-    const { name, email, phone, idProof, idProofNumber, address, totalBookings, totalSpent, preferences, notes, channelGuestId } = req.body;
+    let { name, email, phone, idProof, idProofNumber, address, totalBookings, totalSpent, preferences, notes, channelGuestId } = req.body;
+    if (name) name = titleCase(name);
+
     const updateData = { name, email, phone, idProof, idProofNumber, address, totalBookings, totalSpent, preferences, notes, channelGuestId };
     Object.keys(updateData).forEach(key => updateData[key as keyof typeof updateData] === undefined && delete updateData[key as keyof typeof updateData]);
 
@@ -112,8 +123,8 @@ export const updateGuest = async (req: AuthRequest, res: Response) => {
 // Bookings
 export const addBooking = async (req: AuthRequest, res: Response) => {
   try {
-    const { guestId, roomId, checkIn, checkOut, adults, children, status, total, paid, balance, source, channelBookingId, channelStatus, commission, netRevenue, channelRatePlan } = req.body;
-    const bookingData = { guestId, roomId, checkIn, checkOut, adults, children, status, total, paid, balance, source, channelBookingId, channelStatus, commission, netRevenue, channelRatePlan };
+    const { guestId, roomId, checkIn, checkOut, adults, children, status, total, paid, balance, source, channelBookingId, channelStatus, commission, netRevenue, channelRatePlan, extraCharges, bookedBy, bookerCountry, device, unitType } = req.body;
+    const bookingData = { guestId, roomId, checkIn, checkOut, adults, children, status, total, paid, balance, source, channelBookingId, channelStatus, commission, netRevenue, channelRatePlan, extraCharges, bookedBy, bookerCountry, device, unitType };
 
     const booking = new Booking({ ...bookingData, _id: req.body.id });
     await booking.save();
@@ -130,8 +141,8 @@ export const addBooking = async (req: AuthRequest, res: Response) => {
 
 export const updateBooking = async (req: AuthRequest, res: Response) => {
   try {
-    const { guestId, roomId, checkIn, checkOut, adults, children, status, total, paid, balance, source, channelBookingId, channelStatus, commission, netRevenue, channelRatePlan } = req.body;
-    const updateData = { guestId, roomId, checkIn, checkOut, adults, children, status, total, paid, balance, source, channelBookingId, channelStatus, commission, netRevenue, channelRatePlan };
+    const { guestId, roomId, checkIn, checkOut, adults, children, status, total, paid, balance, source, channelBookingId, channelStatus, commission, netRevenue, channelRatePlan, extraCharges, bookedBy, bookerCountry, device, unitType } = req.body;
+    const updateData = { guestId, roomId, checkIn, checkOut, adults, children, status, total, paid, balance, source, channelBookingId, channelStatus, commission, netRevenue, channelRatePlan, extraCharges, bookedBy, bookerCountry, device, unitType };
     Object.keys(updateData).forEach(key => updateData[key as keyof typeof updateData] === undefined && delete updateData[key as keyof typeof updateData]);
 
     const oldBooking = await Booking.findById(req.params.id);

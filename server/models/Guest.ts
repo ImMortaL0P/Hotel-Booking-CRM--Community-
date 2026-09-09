@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const guestSchema = new mongoose.Schema({
   _id: { type: String, required: true },
   name: { type: String, required: true },
-  phone: { type: String, required: true, index: true },
+  phone: { type: String, index: true },
   email: { type: String },
   idProofType: { type: String, enum: ['Aadhaar', 'Voter ID', 'PAN', 'Driving Licence', 'Passport'] },
   idProofNumber: { type: String, index: true },

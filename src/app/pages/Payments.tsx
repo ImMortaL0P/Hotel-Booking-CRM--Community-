@@ -13,14 +13,12 @@ export function Payments() {
 
   // Stats
   const todayStr = new Date().toDateString();
-  const todaysCollections = payments.filter(p => new Date(p.date).toDateString() === todayStr && p.status === 'Success').reduce((sum, p) => sum + p.amount, 0);
-  const thisMonthCollections = payments.filter(p => p.status === 'Success').reduce((sum, p) => sum + p.amount, 0); // Mock all for now as this month
-  
-  const pendingCollections = bookings.reduce((sum, b) => {
-    const paid = payments.filter(p => p.bookingId === b.id && p.status === 'Success').reduce((s, p) => s + p.amount, 0);
-    const balance = b.total - paid;
-    return balance > 0 ? sum + balance : sum;
-  }, 0);
+  const checkedOutBookings = bookings.filter(b => b.status === 'Checked-Out');
+
+  const totalCheckedOutCollections = checkedOutBookings.reduce((sum, b) => sum + (b.total || 0), 0);
+  const totalCommission = checkedOutBookings.reduce((sum, b) => sum + (b.commission || 0), 0);
+
+  const pendingCollections = bookings.reduce((sum, b) => b.balance > 0 ? sum + b.balance : sum, 0);
 
   const filteredPayments = payments.filter(p => {
     if (search) {
@@ -89,12 +87,12 @@ export function Payments() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 shrink-0 print:hidden">
         <div className="bg-card p-5 rounded-lg border border-border border-l-4 border-l-green-600 flex flex-col justify-between">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Collected This Month</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Collections</span>
             <div className="w-8 h-8 text-green-600 flex items-center justify-center">
               <Wallet className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-3xl font-bold text-foreground">{formatCurrency(thisMonthCollections)}</div>
+          <div className="text-3xl font-bold text-foreground">{formatCurrency(totalCheckedOutCollections)}</div>
         </div>
 
         <div className="bg-card p-5 rounded-lg border border-border border-l-4 border-l-red-600 flex flex-col justify-between shadow-sm relative overflow-hidden">
@@ -109,12 +107,12 @@ export function Payments() {
 
         <div className="bg-card p-5 rounded-lg border border-border border-l-4 border-l-blue-600 flex flex-col justify-between">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Today's Collections</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Commission</span>
             <div className="w-8 h-8 text-blue-600 flex items-center justify-center">
               <IndianRupee className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-3xl font-bold text-foreground">{formatCurrency(todaysCollections)}</div>
+          <div className="text-3xl font-bold text-foreground">{formatCurrency(totalCommission)}</div>
         </div>
 
         <div className="bg-card p-5 rounded-lg border border-border border-l-4 border-l-muted-foreground flex flex-col justify-between">

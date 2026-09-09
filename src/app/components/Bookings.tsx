@@ -181,6 +181,7 @@ export function Bookings() {
             <SelectItem value="checked-in">Checked In</SelectItem>
             <SelectItem value="checked-out">Checked Out</SelectItem>
             <SelectItem value="cancelled">Cancelled</SelectItem>
+            <SelectItem value="no show">No Show</SelectItem>
           </SelectContent>
         </Select>
       </div>

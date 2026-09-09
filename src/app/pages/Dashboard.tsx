@@ -78,8 +78,9 @@ export function Dashboard() {
   const availableRooms = rooms.filter(r => r.status === 'Available').length;
   const occupancyPercent = Math.round((occupiedRooms / rooms.length) * 100);
 
-  const pendingBookings = bookings.filter(b => b.balance > 0);
-  const totalPendingAmount = pendingBookings.reduce((sum, b) => sum + b.balance, 0);
+  const checkedOutBookings = bookings.filter(b => b.status === 'Checked-Out');
+  const totalCollections = checkedOutBookings.reduce((sum, b) => sum + (b.total || 0), 0);
+  const totalCommission = checkedOutBookings.reduce((sum, b) => sum + (b.commission || 0), 0);
 
   // Chart data: Room Occupancy by Type
   const categories = ['Double Bed Room', 'Family Bed Room'] as const;
@@ -97,14 +98,26 @@ export function Dashboard() {
   });
 
   // Channel Analytics calculation
-  const currentMonth = new Date().getMonth();
-  const currentYear = new Date().getFullYear();
-  const currentMonthBookings = bookings.filter(b => {
-    const d = new Date(b.createdAt);
-    return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+  // Local state for date filtering
+  const defaultStartDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+  const defaultEndDate = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0];
+
+  const [channelStartDate, setChannelStartDate] = useState(defaultStartDate);
+  const [channelEndDate, setChannelEndDate] = useState(defaultEndDate);
+
+  const filteredChannelBookings = bookings.filter(b => {
+    // Using checking date for channel performance is often better,
+    // but preserving historical createdAt mapping - we'll safely parse the date.
+    let bDate = "";
+    try {
+      bDate = new Date(b.createdAt).toISOString().split('T')[0];
+    } catch {
+      bDate = b.createdAt.split('T')[0];
+    }
+    return bDate >= channelStartDate && bDate <= channelEndDate;
   });
 
-  const channelStatsBySource = currentMonthBookings.reduce((acc, b) => {
+  const channelStatsBySource = filteredChannelBookings.reduce((acc, b) => {
     const src = b.source || 'Direct';
     if (!acc[src]) {
       acc[src] = { count: 0, revenue: 0, commission: 0, netRevenue: 0 };
@@ -147,7 +160,7 @@ export function Dashboard() {
           onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2.5 rounded-lg font-medium hover:opacity-90 transition-colors shadow-sm self-start md:self-auto"
         >
-          <Plus className="w-4 h-4" /> + New Booking
+          <Plus className="w-4 h-4" /> New Booking
         </button>
       </div>
 
@@ -193,14 +206,15 @@ export function Dashboard() {
           </div>
         </div>
 
-        {/* Card 4 - Tinted Red */}
-        <div className="bg-card p-5 rounded-lg border-l-4 border-l-destructive border-y border-r border-border flex flex-col justify-between">
+        {/* Card 4 - Tinted Primary */}
+        <div className="bg-card p-5 rounded-lg border-l-4 border-l-primary border-y border-r border-border flex flex-col justify-between">
           <div>
-            <span className="text-xs font-semibold text-destructive uppercase tracking-wider">Pending Collections</span>
-            <div className="text-3xl font-bold text-destructive mt-2">{formatCurrency(totalPendingAmount)}</div>
+            <span className="text-xs font-semibold text-primary uppercase tracking-wider">Total Collection</span>
+            <div className="text-3xl font-bold text-primary mt-2">{formatCurrency(totalCollections)}</div>
           </div>
-          <div className="text-xs text-destructive/80 mt-3">
-            {pendingBookings.length} guests with balance
+          <div className="text-xs text-muted-foreground mt-3 flex justify-between">
+            <span>{checkedOutBookings.length} guests checked out</span>
+            <span className="font-semibold text-red-600">Com: {formatCurrency(totalCommission)}</span>
           </div>
         </div>
       </div>
@@ -264,8 +278,23 @@ export function Dashboard() {
 
       {/* Channel Analytics */}
       <div className="bg-card p-6 rounded-lg border border-border">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-bold text-card-foreground">Channel Performance (This Month)</h2>
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
+          <h2 className="text-base font-bold text-card-foreground">Channel Performance</h2>
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={channelStartDate}
+              onChange={(e) => setChannelStartDate(e.target.value)}
+              className="px-2 py-1.5 text-sm border border-border rounded bg-background text-foreground"
+            />
+            <span className="text-muted-foreground text-sm">to</span>
+            <input
+              type="date"
+              value={channelEndDate}
+              onChange={(e) => setChannelEndDate(e.target.value)}
+              className="px-2 py-1.5 text-sm border border-border rounded bg-background text-foreground"
+            />
+          </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="h-64 flex items-center justify-center">
@@ -290,7 +319,7 @@ export function Dashboard() {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="text-sm text-muted-foreground flex items-center justify-center h-full">No bookings this month</div>
+              <div className="text-sm text-muted-foreground flex items-center justify-center h-full">No bookings found for selected dates</div>
             )}
           </div>
           <div className="lg:col-span-3">
@@ -322,7 +351,7 @@ export function Dashboard() {
                   ))}
                   {Object.keys(channelStatsBySource).length === 0 && (
                      <tr>
-                       <td colSpan={5} className="py-4 text-center text-muted-foreground">No channel data available for this month.</td>
+                       <td colSpan={5} className="py-4 text-center text-muted-foreground">No channel data available for the selected dates.</td>
                      </tr>
                   )}
                 </tbody>
