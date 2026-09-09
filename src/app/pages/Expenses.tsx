@@ -1,15 +1,17 @@
 import { useState, useMemo } from 'react';
 import { useData } from '../data/DataContext';
 import { apiFetch } from '../lib/api';
-import { ExpenseCategory, Expense, PaymentTransaction } from '../data/types';
+import { ExpenseCategory, Expense, PaymentTransaction, PaymentMode } from '../data/types';
 import { formatCurrency, generateId, formatDate } from '../lib/utils';
 import { WalletCards, Plus, Filter, Download, ArrowUpRight, ArrowDownRight, IndianRupee, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import { buildProfitLossReportHtml } from '../lib/profitLossReport';
 // @ts-ignore
 export function Expenses() {
-  const { user, rooms, expenses, addExpense, deleteExpense, payments, bookings } = useData();
+  const { user, rooms, expenses, addExpense, deleteExpense, payments, bookings, addPayment, guests, addLog } = useData();
 
   const [isAddMode, setIsAddMode] = useState(false);
+  const [isIncomeMode, setIsIncomeMode] = useState(false);
   const [isExportMode, setIsExportMode] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [exportFrom, setExportFrom] = useState(() => {
@@ -23,6 +25,14 @@ export function Expenses() {
   const [category, setCategory] = useState<ExpenseCategory>('Staff Payment');
   const [description, setDescription] = useState('');
   const [roomId, setRoomId] = useState(''); // Empty = Property Wide
+
+  // Income form state
+  const [incomeAmount, setIncomeAmount] = useState<number>('');
+  const [incomeDate, setIncomeDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [incomeDescription, setIncomeDescription] = useState('');
+  const [incomeMode, setIncomeMode] = useState<PaymentMode>('Cash');
+  const [incomeRoomId, setIncomeRoomId] = useState('');
+  const [incomeGuestId, setIncomeGuestId] = useState('');
 
   // Filters
   const [fromDate, setFromDate] = useState(() => {
@@ -50,15 +60,17 @@ export function Expenses() {
       const d = p.date.split('T')[0];
       if (d >= fromDate && d <= toDate) {
         const b = bookingMap.get(p.bookingId);
-        if (!filterRoom || b?.roomId === filterRoom) {
+        const isManual = !b;
+        const incRoomId = b?.roomId ?? p.roomId ?? null;
+        if (!filterRoom || incRoomId === filterRoom) {
           entries.push({
             type: 'INCOME',
             date: d,
             amount: p.amount,
-            source: 'Room Booking',
-            roomId: b?.roomId,
-            roomNum: b?.roomId ? roomMap.get(b.roomId) : null,
-            description: `Payment for booking ${p.bookingId} via ${p.mode}`,
+            source: isManual ? 'Other Income' : 'Room Booking',
+            roomId: incRoomId,
+            roomNum: incRoomId ? roomMap.get(incRoomId) : null,
+            description: isManual ? (p.description || `Income via ${p.mode}`) : `Payment for booking ${p.bookingId} via ${p.mode}`,
             id: p.id
           });
         }
@@ -114,6 +126,32 @@ export function Expenses() {
     setRoomId('');
   };
 
+  const handleAddIncome = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!incomeAmount || incomeAmount <= 0) return toast.error("Enter a valid amount");
+    if (!incomeDescription.trim()) return toast.error("Please enter a description for the income");
+
+    const income: PaymentTransaction = {
+      id: generateId('RCPT'),
+      bookingId: '-',                        // manual income, not tied to a booking
+      guestId: incomeGuestId || '-',         // optional guest link
+      date: incomeDate,
+      mode: incomeMode,
+      amount: Number(incomeAmount),
+      status: 'Completed',
+      description: incomeDescription.trim(),
+      roomId: incomeRoomId || null
+    };
+
+    addPayment(income);
+    toast.success("Income recorded successfully");
+    setIsIncomeMode(false);
+    setIncomeAmount('');
+    setIncomeDescription('');
+    setIncomeRoomId('');
+    setIncomeGuestId('');
+  };
+
   const handleExportCSV = () => {
     const eTotalIncome = exportEntries.filter(e => e.type === 'INCOME').reduce((sum, e) => sum + e.amount, 0);
     const eTotalExpense = exportEntries.filter(e => e.type === 'EXPENSE').reduce((sum, e) => sum + e.amount, 0);
@@ -153,25 +191,38 @@ export function Expenses() {
     setIsGeneratingPDF(true);
     setTimeout(() => {
       const area = document.getElementById('export-pdf-area');
+      const html = buildProfitLossReportHtml({
+        rooms,
+        bookings,
+        payments,
+        expenses,
+        fromDate: exportFrom,
+        toDate: exportTo,
+        filterRoomId: filterRoom || undefined,
+      });
       if (area) {
-         const html = `<!DOCTYPE html><html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="p-4 bg-white text-black print:m-0 w-[800px] mx-auto">${area.outerHTML}</body></html>`;
-         const expenseId = `EXP-RPT-${Math.floor(Math.random()*100000)}`;
-         apiFetch('/api/documents/save', {
-           method: 'POST',
-           body: JSON.stringify({
-              html,
-              filename: expenseId,
-              type: 'Expense'
-           })
-         }).then(() => console.log('Expense saved to drive')).catch(console.error);
+        // Render the P&L report body inside the hidden print area so window.print() outputs it
+        area.innerHTML = html;
       }
-      window.print();
-      addLog('File Download', 'Exported Balance Sheet / Expense PDF');
-      setTimeout(() => {
-        setIsGeneratingPDF(false);
-        setIsExportMode(false);
-      }, 1000);
-    }, 500); // give react time to render the hidden block
+      const reportId = `PL-RPT-${Math.floor(Math.random()*100000)}`;
+      apiFetch('/api/documents/save', {
+        method: 'POST',
+        body: JSON.stringify({
+           html,
+           filename: reportId,
+           type: 'Expense'
+        })
+      }).then(() => console.log('Profit & Loss report saved to drive')).catch(err => {
+        console.error('Could not archive P&L report:', err);
+      }).finally(() => {
+        window.print();
+        addLog('File Download', 'Exported Profit & Loss PDF report').catch(() => {});
+        setTimeout(() => {
+          setIsGeneratingPDF(false);
+          setIsExportMode(false);
+        }, 1000);
+      });
+    }, 300); // give react time to render the hidden block
   };
 
   const exportEntries = useMemo(() => {
@@ -191,15 +242,17 @@ export function Expenses() {
         const d = p.date.split('T')[0];
         if (d >= exportFrom && d <= exportTo) {
            const b = bookingMap.get(p.bookingId);
-           const rNum = b?.roomId ? roomMap.get(b.roomId) : null;
+           const isManual = !b;
+           const incRoomId = b?.roomId ?? p.roomId ?? null;
+           const rNum = incRoomId ? roomMap.get(incRoomId) : null;
            entries.push({
                type: 'INCOME',
                date: d,
                amount: p.amount,
-               source: 'Room Booking',
-               roomId: b?.roomId,
+               source: isManual ? 'Other Income' : 'Room Booking',
+               roomId: incRoomId,
                roomNum: rNum,
-               description: `Payment for booking ${p.bookingId} via ${p.mode}`,
+               description: isManual ? (p.description || `Income via ${p.mode}`) : `Payment for booking ${p.bookingId} via ${p.mode}`,
                id: p.id
            });
         }
@@ -247,12 +300,20 @@ export function Expenses() {
           >
             <Download className="w-4 h-4" /> Export Report
           </button>
-          <button
-            onClick={() => setIsAddMode(true)}
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 font-medium text-sm transition-colors shadow-sm"
-          >
-            <Plus className="w-4 h-4" /> Add Expense
-          </button>
+          <div className="flex flex-col gap-2 flex-1 md:flex-none">
+            <button
+              onClick={() => setIsAddMode(true)}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 font-medium text-sm transition-colors shadow-sm"
+            >
+              <Plus className="w-4 h-4" /> Add Expense
+            </button>
+            <button
+              onClick={() => setIsIncomeMode(true)}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-sm transition-colors shadow-sm"
+            >
+              <Plus className="w-4 h-4" /> Add Income
+            </button>
+          </div>
         </div>
       </div>
 
@@ -420,12 +481,69 @@ export function Expenses() {
         </div>
       )}
 
+      {/* Add Income Modal */}
+      {isIncomeMode && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-card rounded-lg shadow-lg w-full max-w-md border border-border">
+            <div className="p-4 border-b border-border">
+               <h3 className="text-lg font-bold">Add Income</h3>
+            </div>
+            <form onSubmit={handleAddIncome} className="p-4 space-y-4">
+               <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1">Date *</label>
+                  <input type="date" required value={incomeDate} onChange={e => setIncomeDate(e.target.value)} className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary" />
+               </div>
+               <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1">Amount (₹) *</label>
+                  <input type="number" min="1" required value={incomeAmount} onChange={e => setIncomeAmount(Number(e.target.value))} className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary" placeholder="Enter amount" />
+               </div>
+               <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1">Income Source / Description *</label>
+                  <input type="text" required value={incomeDescription} onChange={e => setIncomeDescription(e.target.value)} className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary" placeholder="e.g. Parking, Laundry, Advance, Other income..." />
+               </div>
+               <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1">Payment Mode</label>
+                  <select value={incomeMode} onChange={e => setIncomeMode(e.target.value as PaymentMode)} className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary">
+                    <option value="Cash">Cash</option>
+                    <option value="UPI">UPI</option>
+                    <option value="Card">Card</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                  </select>
+               </div>
+               <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1">Room Assignment (Optional)</label>
+                  <select value={incomeRoomId} onChange={e => setIncomeRoomId(e.target.value)} className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary">
+                    <option value="">-- Property Wide (Not tied to a room) --</option>
+                    {rooms.map(r => (
+                      <option key={r.id} value={r.id}>Room {r.number}</option>
+                    ))}
+                  </select>
+               </div>
+               <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1">Guest (Optional — updates their Lifetime Value)</label>
+                  <select value={incomeGuestId} onChange={e => setIncomeGuestId(e.target.value)} className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary">
+                    <option value="">-- Not linked to a guest --</option>
+                    {guests.map(g => (
+                      <option key={g.id} value={g.id}>{g.name} ({g.phone})</option>
+                    ))}
+                  </select>
+               </div>
+
+               <div className="pt-2 flex justify-end gap-2">
+                 <button type="button" onClick={() => setIsIncomeMode(false)} className="px-4 py-2 text-sm border border-border rounded-md font-medium">Cancel</button>
+                 <button type="submit" className="px-4 py-2 text-sm bg-green-600 text-white rounded-md font-medium">Save Income</button>
+               </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Export Report Modal */}
       {isExportMode && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-card rounded-lg shadow-lg w-full max-w-md border border-border">
             <div className="p-4 border-b border-border">
-               <h3 className="text-lg font-bold">Export Balance Sheet</h3>
+               <h3 className="text-lg font-bold">Export Profit &amp; Loss Report</h3>
             </div>
             <div className="p-4 space-y-4">
                <div className="flex gap-4">
@@ -441,7 +559,7 @@ export function Expenses() {
 
                <div className="pt-4 flex flex-col gap-2">
                  <button onClick={handleExportPDF} disabled={isGeneratingPDF} className="flex items-center justify-center gap-2 px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md font-bold">
-                   <Download className="w-4 h-4" /> {isGeneratingPDF ? 'Generating...' : 'Download PDF (Balance Sheet)'}
+                   <Download className="w-4 h-4" /> {isGeneratingPDF ? 'Generating...' : 'Download PDF (Profit & Loss)'}
                  </button>
                  <button onClick={handleExportCSV} className="flex items-center justify-center gap-2 px-4 py-2 text-sm border border-border bg-card text-foreground rounded-md font-bold">
                    <FileText className="w-4 h-4" /> Download CSV

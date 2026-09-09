@@ -2,12 +2,14 @@ import mongoose from 'mongoose';
 
 const paymentSchema = new mongoose.Schema({
   _id: { type: String, required: true },
-  bookingId: { type: String, required: true },
-  guestId: { type: String, required: true },
+  bookingId: { type: String, default: '-' },
+  guestId: { type: String, default: '-' },
   date: { type: String, required: true },
   mode: { type: String, required: true, enum: ['Cash', 'UPI', 'Card', 'Bank Transfer'] },
   amount: { type: Number, required: true },
-  status: { type: String, required: true, enum: ['Completed', 'Pending', 'Failed', 'Refunded'] }
+  status: { type: String, required: true, enum: ['Completed', 'Pending', 'Failed', 'Refunded'] },
+  description: { type: String, default: '' },
+  roomId: { type: String, default: null }
 }, {
   timestamps: true,
   toJSON: {

@@ -52,6 +52,23 @@ export const initializeData = async (req: Request, res: Response) => {
     const storedInvoices = await StoredInvoice.find().sort({ createdAt: -1 });
     const expenses = await Expense.find().sort({ date: -1 });
 
+    // Recompute each guest's lifetime value (LTV) as the sum of Completed
+    // payments actually received from them — keeps totalSpent in sync with
+    // the payments ledger (income) every time data is initialized.
+    const spendByGuest = new Map<string, number>();
+    for (const p of payments) {
+      if (p.status === 'Completed' && p.guestId && p.guestId !== '-') {
+        spendByGuest.set(p.guestId, (spendByGuest.get(p.guestId) || 0) + p.amount);
+      }
+    }
+    for (const g of guests) {
+      const computed = spendByGuest.get(g.id) || 0;
+      if (g.totalSpent !== computed) {
+        g.totalSpent = computed;
+        await g.save();
+      }
+    }
+
     // Convert to JSON (triggers the transform we wrote)
     res.json({
       rooms: rooms.map(r => r.toJSON()),
@@ -226,8 +243,8 @@ export const rejectChannelBooking = async (req: AuthRequest, res: Response) => {
 // Payments
 export const addPayment = async (req: AuthRequest, res: Response) => {
   try {
-    const { bookingId, guestId, amount, mode, date, status } = req.body;
-    const paymentData = { bookingId, guestId, amount, mode, date, status };
+    const { bookingId, guestId, amount, mode, date, status, description, roomId } = req.body;
+    const paymentData = { bookingId, guestId, amount, mode, date, status, description, roomId };
     const payment = new Payment({ ...paymentData, _id: req.body.id });
     await payment.save();
     await logAction(req, 'Add Payment', `Added payment ${payment._id} of amount ${payment.amount} for booking ${payment.bookingId}`);

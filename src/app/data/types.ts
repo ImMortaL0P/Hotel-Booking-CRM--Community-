@@ -92,6 +92,8 @@ export interface PaymentTransaction {
   mode: PaymentMode;
   amount: number;
   status: 'Completed' | 'Pending' | 'Refunded';
+  description?: string;
+  roomId?: string | null;
 }
 
 export type CommsChannel = 'Email' | 'WhatsApp' | 'SMS';
