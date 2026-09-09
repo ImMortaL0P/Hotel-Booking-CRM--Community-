@@ -36,22 +36,23 @@ export function Bookings() {
 
   const tabs: (BookingStatus | 'All')[] = ['All', 'Booked', 'Confirmed', 'Checked-In', 'Checked-Out'];
 
-  const filteredBookings = bookings.filter(b => {
-    if (activeTab !== 'All' && b.status !== activeTab) return false;
-    
-    if (search) {
-      const g = guests.find(g => g.id === b.guestId);
-      const r = rooms.find(r => r.id === b.roomId);
-      const query = search.toLowerCase();
-      if (!b.id.toLowerCase().includes(query) &&
-          (!g || !g.name.toLowerCase().includes(query)) &&
-          (!g || !g.phone.includes(query)) &&
-          (!r || !r.number.includes(query))) {
-        return false;
+  const filteredBookings = bookings
+    .filter(b => {
+      if (activeTab !== 'All' && b.status !== activeTab) return false;
+      if (search) {
+        const g = guests.find(g => g.id === b.guestId);
+        const r = rooms.find(r => r.id === b.roomId);
+        const query = search.toLowerCase();
+        if (!b.id.toLowerCase().includes(query) &&
+            (!g || !g.name.toLowerCase().includes(query)) &&
+            (!g || !g.phone.includes(query)) &&
+            (!r || !r.number.includes(query))) {
+          return false;
+        }
       }
-    }
-    return true;
-  });
+      return true;
+    })
+    .sort((a, b) => (b.checkIn || b.createdAt || '').localeCompare(a.checkIn || a.createdAt || ''));
 
   const getStatusColor = (s: string) => {
     switch (s) {
@@ -163,9 +164,11 @@ export function Bookings() {
               <th className="px-4 py-3"><input type="checkbox" className="rounded" /></th>
               <th className="px-4 py-3">Booking ID</th>
               <th className="px-4 py-3">Guest & Phone</th>
+              <th className="px-4 py-3">Source</th>
               <th className="px-4 py-3">Room</th>
               <th className="px-4 py-3">Check In/Out</th>
               <th className="px-4 py-3 text-right">Total (₹)</th>
+              <th className="px-4 py-3 text-right">Commission</th>
               <th className="px-4 py-3 text-right">Balance</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3"></th>
@@ -182,10 +185,25 @@ export function Bookings() {
                   <td className="px-4 py-3">
                     <p className="font-medium text-foreground">{guest?.name}</p>
                     <p className="text-xs text-muted-foreground">{guest?.phone}</p>
-                    {b.source && b.source !== 'Direct' && (
-                       <span className="inline-block mt-1 text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded border border-blue-200">
-                         {b.source}
-                       </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    {b.source && b.source !== 'Direct' ? (
+                      <div>
+                        <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded border border-blue-200 font-medium">
+                          {b.source}
+                        </span>
+                        {b.channelBookingId && (
+                          <p className="text-[10px] text-muted-foreground mt-1 font-mono">#{b.channelBookingId}</p>
+                        )}
+                        {b.bookedBy && (
+                          <p className="text-[10px] text-muted-foreground truncate max-w-[120px]" title={b.bookedBy}>{b.bookedBy}</p>
+                        )}
+                        {b.bookerCountry && (
+                          <p className="text-[10px] text-muted-foreground uppercase">{b.bookerCountry}</p>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Direct</span>
                     )}
                   </td>
                   <td className="px-4 py-3">
@@ -198,6 +216,13 @@ export function Bookings() {
                   </td>
                   <td className="px-4 py-3 text-right font-medium text-foreground">
                     {formatCurrency(b.total)}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {(b.commission && b.commission > 0) ? (
+                      <span className="text-xs text-orange-600 font-medium">{formatCurrency(b.commission)}</span>
+                    ) : (
+                      <span className="text-muted-foreground/60">—</span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-right">
                     {b.balance > 0 ? (

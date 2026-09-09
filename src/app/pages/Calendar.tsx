@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useData } from '../data/DataContext';
-import { ChevronLeft, ChevronRight, Search, Clock, Users, CalendarDays, Key, LogIn, LogOut, DoorOpen } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Users, LogIn, LogOut, DoorOpen } from 'lucide-react';
 import { NewBookingModal } from '../components/NewBookingModal';
 import { BookingDetailDrawer } from '../components/BookingDetailDrawer';
 import { Booking } from '../data/types';
@@ -215,6 +215,11 @@ export function Calendar() {
                                 const [datePart, timePart] = dtStr.split('T');
                                 const [y, m, d] = datePart.split('-');
                                 const [h, min] = timePart.split(':');
+                                // 00:00 time means the date has no time (e.g. Excel date-only import)
+                                // → apply the default hour instead of midnight
+                                if (h === '00' && (min === '00' || !min)) {
+                                  return new Date(Number(y), Number(m) - 1, Number(d), defaultHour, 0, 0).getTime();
+                                }
                                 return new Date(Number(y), Number(m) - 1, Number(d), Number(h), Number(min), 0).getTime();
                               }
                               const [y, m, d] = dtStr.split('T')[0].split('-');
@@ -247,15 +252,19 @@ export function Calendar() {
                             const leftPos = boundedStart * hourWidth;
                             const width = durationHours * hourWidth;
 
+                            const isGreyStatus = booking.status === 'Checked-Out' || booking.status === 'Cancelled' || booking.status === 'No Show';
+
                             const bgColor = booking.status === 'Booked' ? 'bg-amber-500 hover:bg-amber-600' :
                                            booking.status === 'Confirmed' ? 'bg-blue-500 hover:bg-blue-600' :
                                            booking.status === 'Checked-In' ? 'bg-green-500 hover:bg-green-600' :
-                                           'bg-muted hover:opacity-80'; // Checked-Out
+                                           'bg-slate-400 hover:bg-slate-500'; // Checked-Out - visible grey
+
+                            const textColor = isGreyStatus ? 'text-slate-900' : 'text-primary-foreground';
 
                             return (
                               <div
                                 key={booking.id}
-                                className={`absolute top-[10px] h-[80px] ${bgColor} text-primary-foreground shadow-md text-xs leading-tight p-2.5 overflow-hidden z-10 cursor-pointer transition-all group/booking border border-white/20`}
+                                className={`absolute top-[10px] h-[80px] ${bgColor} ${textColor} shadow-md text-xs leading-tight p-2 overflow-hidden z-10 cursor-pointer transition-all group/booking border border-white/20`}
                                 style={{
                                   left: `${leftPos}px`,
                                   width: `${width}px`,
@@ -266,45 +275,24 @@ export function Calendar() {
                                   opacity: 0.98
                                 }}
                                 onClick={(e) => { e.stopPropagation(); setSelectedBooking(booking); }}
+                                title={`${guestName} • ${booking.status} • ${booking.nights} night(s) • ${booking.adults}A${booking.children > 0 ? ` ${booking.children}C` : ''}\nIn: ${new Date(checkInTime).toLocaleString('default', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}\nOut: ${new Date(checkOutTime).toLocaleString('default', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`}
                               >
                                 <div className="flex flex-col h-full justify-between">
-                                  {/* Top Row: Name and ID */}
-                                  <div className="flex justify-between items-start gap-2">
-                                    <div className="font-bold text-sm truncate flex items-center gap-1.5">
-                                      <Users className="w-3.5 h-3.5 opacity-90" />
-                                      {guestName}
-                                    </div>
-                                    <div className="bg-black/20 px-1.5 py-0.5 rounded text-[10px] font-mono shrink-0">
-                                      {booking.id.split('-').pop()}
-                                    </div>
+                                  {/* Top: Guest Name */}
+                                  <div className="font-bold text-sm truncate leading-tight">
+                                    {guestName}
                                   </div>
 
-                                  {/* Middle Row: Status and Stay details */}
-                                  <div className="flex gap-4 items-center mt-1 text-primary-foreground/90">
-                                    <div className="flex items-center gap-1 text-[11px]">
-                                      <CalendarDays className="w-3 h-3 opacity-75" />
-                                      {booking.nights} Night{booking.nights > 1 ? 's' : ''}
-                                    </div>
-                                    <div className="flex items-center gap-1 text-[11px]">
-                                      <Users className="w-3 h-3 opacity-75" />
-                                      {booking.adults}A {booking.children > 0 ? `${booking.children}C` : ''}
-                                    </div>
-                                    <div className="flex items-center gap-1 text-[11px] font-medium">
-                                      <Key className="w-3 h-3 opacity-75" />
-                                      {booking.status}
-                                    </div>
+                                  {/* Middle: Status + Nights */}
+                                  <div className="flex items-center gap-2 text-[11px] opacity-90">
+                                    <span className="font-medium">{booking.nights}N</span>
+                                    <span className="opacity-60">•</span>
+                                    <span>{booking.status}</span>
                                   </div>
 
-                                  {/* Bottom Row: Check-in / out specific times */}
-                                  <div className="mt-auto pt-1 border-t border-white/20 flex justify-between items-center text-[10px] text-primary-foreground/80">
-                                    <div className="flex items-center gap-1 font-medium">
-                                      <Clock className="w-3 h-3" />
-                                      In: {new Date(checkInTime).toLocaleString('default', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'})}
-                                    </div>
-                                    <div className="flex items-center gap-1 font-medium">
-                                      Out: {new Date(checkOutTime).toLocaleString('default', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'})}
-                                      <Clock className="w-3 h-3" />
-                                    </div>
+                                  {/* Bottom: Check-in/out dates */}
+                                  <div className="text-[10px] opacity-75 truncate">
+                                    {new Date(checkInTime).toLocaleString('default', { month: 'short', day: 'numeric' })} → {new Date(checkOutTime).toLocaleString('default', { month: 'short', day: 'numeric' })}
                                   </div>
                                 </div>
                               </div>

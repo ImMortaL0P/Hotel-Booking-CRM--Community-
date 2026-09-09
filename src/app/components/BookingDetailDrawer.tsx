@@ -78,6 +78,19 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
     setIsPaymentModalOpen(true);
   };
 
+  // Parse a stay datetime, treating a midnight (00:00) value as "no time given"
+  // and applying house defaults: 12:00 PM check-in, 11:00 AM check-out.
+  const formatStayDateTime = (dtStr: string, defaultHour: number) => {
+    if (dtStr.includes('T')) {
+      const [datePart, timePart] = dtStr.split('T');
+      const [h, min] = timePart.split(':');
+      const isMidnight = h === '00' && (min === '00' || !min);
+      const hour = isMidnight ? defaultHour : Number(h);
+      return new Date(`${datePart}T${String(hour).padStart(2, '0')}:${isMidnight ? '00' : min}:00`).toLocaleString('default', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    }
+    return formatDate(dtStr);
+  };
+
   return (
     <div className="fixed inset-0 z-[100] flex justify-end">
       <div className="absolute inset-0 bg-black/30" onClick={onClose}></div>
@@ -125,12 +138,12 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
 
               <div className="text-muted-foreground">Check-in</div>
               <div className="text-right font-medium">
-                {booking.checkIn.includes('T') ? new Date(booking.checkIn).toLocaleString('default', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : formatDate(booking.checkIn)}
+                {formatStayDateTime(booking.checkIn, 12)}
               </div>
 
               <div className="text-muted-foreground">Check-out</div>
               <div className="text-right font-medium">
-                {booking.checkOut.includes('T') ? new Date(booking.checkOut).toLocaleString('default', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : formatDate(booking.checkOut)}
+                {formatStayDateTime(booking.checkOut, 11)}
               </div>
 
               <div className="text-muted-foreground">Occupancy</div>

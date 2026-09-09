@@ -8,7 +8,7 @@ const expenseSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['Staff Payment', 'Maintenance', 'Furniture', 'Utility', 'Inventory', 'Other']
+    enum: ['Staff Payment', 'Maintenance', 'Furniture', 'Utility', 'Inventory', 'Commission', 'Other']
   },
   description: { type: String },
   roomId: { type: String }, // Optional: If the expense is tied to a specific room

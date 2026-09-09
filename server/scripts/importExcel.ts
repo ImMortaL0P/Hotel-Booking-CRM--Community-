@@ -8,6 +8,7 @@ import { Guest } from '../models/Guest.js';
 import { Booking } from '../models/Booking.js';
 import { Payment } from '../models/Payment.js';
 import { CommRecord } from '../models/CommRecord.js';
+import { Expense } from '../models/Expense.js';
 
 dotenv.config();
 
@@ -18,11 +19,12 @@ const generateId = (prefix: string) => `${prefix}-${Math.random().toString(36).s
 const importExcel = async () => {
     try {
         await connectDB();
-        console.log('Clearing existing bookings, guests, payments and comm records...');
+        console.log('Clearing existing bookings, guests, payments, expenses, and comm records...');
         try { await Booking.collection.drop(); } catch (e) {}
         try { await Guest.collection.drop(); } catch (e) {}
         try { await Payment.collection.drop(); } catch (e) {}
         try { await CommRecord.collection.drop(); } catch (e) {}
+        try { await Expense.collection.drop(); } catch (e) {}
 
         console.log('Reading Excel file...');
         const wb = xlsx.readFile(EXCEL_PATH);
@@ -42,7 +44,13 @@ const importExcel = async () => {
             rooms = await Room.find({});
         }
 
+        const room101 = rooms.find(r => r.number === '101');
+        const room102 = rooms.find(r => r.number === '102');
+        const room103 = rooms.find(r => r.number === '103');
+
         let doubleRoomIndex = 0;
+        let paymentCount = 0;
+        let expenseCount = 0;
 
         for (const row of data as any[]) {
             // Guest processing
@@ -79,8 +87,18 @@ const importExcel = async () => {
             if (channelStatus === 'cancelled_by_guest') status = 'Cancelled';
             else if (channelStatus === 'no_show') status = 'No Show';
 
-            const room = rooms[roomIndex % rooms.length];
-            roomIndex++;
+            // Room assignment based on Unit type
+            const unitType = (row['Unit type'] || '').toLowerCase();
+            let assignedRoom = room101; // default
+            if (unitType.includes('family') && !unitType.includes('double')) {
+                assignedRoom = room103;
+            } else if (unitType.includes('double')) {
+                assignedRoom = doubleRoomIndex % 2 === 0 ? room101 : room102;
+                doubleRoomIndex++;
+            } else {
+                assignedRoom = doubleRoomIndex % 2 === 0 ? room101 : room102;
+                doubleRoomIndex++;
+            }
 
             const bookedOnStr = row['Booked on'];
             const createdAt = bookedOnStr ? new Date(bookedOnStr).toISOString() : new Date().toISOString();
@@ -91,7 +109,7 @@ const importExcel = async () => {
             const booking = new Booking({
                 _id: generateId('bk'),
                 guestId: guest._id,
-                roomId: room._id,
+                roomId: assignedRoom._id,
                 checkIn: checkInD.toISOString(),
                 checkOut: checkOutD.toISOString(),
                 adults: parseInt(row['Adults']) || 2,
@@ -100,8 +118,8 @@ const importExcel = async () => {
                 subtotal: price,
                 gst: 0,
                 total: price,
-                paid: 0,
-                balance: price,
+                paid: status === 'Confirmed' ? price : 0,
+                balance: status === 'Confirmed' ? 0 : price,
                 status: status,
                 createdAt: createdAt,
                 source: 'Booking.com',
@@ -118,9 +136,39 @@ const importExcel = async () => {
             });
 
             await booking.save();
+
+            // Create Payment record for confirmed bookings (INCOME in ledger)
+            if (status === 'Confirmed' && price > 0) {
+                const payment = new Payment({
+                    _id: generateId('RCPT'),
+                    bookingId: booking._id,
+                    guestId: guest._id,
+                    date: checkInD.toISOString(),
+                    mode: 'Cash',
+                    amount: price,
+                    status: 'Completed'
+                });
+                await payment.save();
+                paymentCount++;
+            }
+
+            // Create Expense record for commission (EXPENSE in ledger)
+            if (commission > 0) {
+                const expense = new Expense({
+                    _id: generateId('EXP'),
+                    date: checkInD.toISOString().split('T')[0],
+                    amount: commission,
+                    category: 'Commission',
+                    description: `Booking.com commission for booking ${row['Book Number'] || 'N/A'} (${guest.name}, ${assignedRoom.number})`,
+                    roomId: assignedRoom._id,
+                    recordedBy: 'System Import'
+                });
+                await expense.save();
+                expenseCount++;
+            }
         }
 
-        console.log('Import successfully completed!');
+        console.log(`Import completed! ${paymentCount} payments created, ${expenseCount} expense records created.`);
         process.exit(0);
     } catch (err) {
         console.error('Import failed:', err);

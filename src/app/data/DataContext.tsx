@@ -119,7 +119,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       const data = await apiFetch('/api/initialize');
       setRooms(data.rooms || []);
       setGuests(data.guests || []);
-      setBookings(data.bookings || []);
+      setBookings((data.bookings || []).sort((a: any, b: any) => (b.checkIn || b.createdAt || '').localeCompare(a.checkIn || a.createdAt || '')));
       setPayments(data.payments || []);
       setComms(data.comms || []);
       setLogs(data.logs || []);

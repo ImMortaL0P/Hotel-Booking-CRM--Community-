@@ -114,7 +114,7 @@ export interface ActivityLog {
   timestamp: string;
 }
 
-export type ExpenseCategory = 'Staff Payment' | 'Maintenance' | 'Furniture' | 'Utility' | 'Inventory' | 'Other';
+export type ExpenseCategory = 'Staff Payment' | 'Maintenance' | 'Furniture' | 'Utility' | 'Inventory' | 'Commission' | 'Other';
 
 export interface Expense {
   id: string;

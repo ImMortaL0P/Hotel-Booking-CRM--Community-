@@ -1,15 +1,102 @@
 import { useState } from 'react';
 import { useData } from '../data/DataContext';
-import { formatCurrency, formatDate } from '../lib/utils';
-import { Guest } from '../data/types';
+import { formatCurrency, formatDate, generateId } from '../lib/utils';
+import { Guest, IDProofType } from '../data/types';
 import { exportToCsv } from '../lib/exportCsv';
-import { Search, Crown, RotateCcw, TrendingUp, Users, MapPin, CreditCard, Clock, FileText, X, Phone, Mail, Download } from 'lucide-react';
+import { Search, Crown, RotateCcw, TrendingUp, Users, MapPin, CreditCard, Clock, FileText, X, Phone, Mail, Download, Plus, Pencil } from 'lucide-react';
+import { toast } from 'sonner';
 
 export function GuestProfiles() {
-  const { addLog, guests, bookings, rooms } = useData();
+  const { addLog, guests, bookings, rooms, addGuest, updateGuest } = useData();
   const [activeTab, setActiveTab] = useState<'All' | 'VIP' | 'Repeat' | 'New'>('All');
   const [search, setSearch] = useState('');
   const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
+
+  // Form state
+  const [formName, setFormName] = useState('');
+  const [formPhone, setFormPhone] = useState('');
+  const [formEmail, setFormEmail] = useState('');
+  const [formCity, setFormCity] = useState('');
+  const [formState, setFormState] = useState('');
+  const [formIdProofType, setFormIdProofType] = useState<IDProofType>('Aadhaar');
+  const [formIdProofNumber, setFormIdProofNumber] = useState('');
+  const [formNotes, setFormNotes] = useState('');
+
+  const openAddForm = () => {
+    setEditingGuest(null);
+    setFormName('');
+    setFormPhone('');
+    setFormEmail('');
+    setFormCity('');
+    setFormState('');
+    setFormIdProofType('Aadhaar');
+    setFormIdProofNumber('');
+    setFormNotes('');
+    setIsFormOpen(true);
+  };
+
+  const openEditForm = (guest: Guest) => {
+    setEditingGuest(guest);
+    setFormName(guest.name);
+    setFormPhone(guest.phone);
+    setFormEmail(guest.email === '-' ? '' : guest.email);
+    setFormCity(guest.city);
+    setFormState(guest.state);
+    setFormIdProofType(guest.idProofType);
+    setFormIdProofNumber(guest.idProofNumber);
+    setFormNotes(guest.notes || '');
+    setIsFormOpen(true);
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formName.trim() || !formPhone.trim()) {
+      toast.error('Name and phone are required');
+      return;
+    }
+
+    const avatarInitial = formName.trim().split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+
+    if (editingGuest) {
+      const updated: Guest = {
+        ...editingGuest,
+        name: formName.trim(),
+        phone: formPhone.trim(),
+        email: formEmail.trim() || '-',
+        city: formCity.trim(),
+        state: formState.trim(),
+        idProofType: formIdProofType,
+        idProofNumber: formIdProofNumber.trim(),
+        notes: formNotes.trim() || undefined,
+        avatarInitial
+      };
+      updateGuest(updated);
+      toast.success('Guest updated successfully');
+      if (selectedGuest?.id === editingGuest.id) setSelectedGuest(updated);
+    } else {
+      const newGuest: Guest = {
+        id: generateId('gst'),
+        name: formName.trim(),
+        phone: formPhone.trim(),
+        email: formEmail.trim() || '-',
+        city: formCity.trim(),
+        state: formState.trim(),
+        idProofType: formIdProofType,
+        idProofNumber: formIdProofNumber.trim(),
+        totalStays: 0,
+        lastStay: '',
+        totalSpent: 0,
+        isVIP: false,
+        notes: formNotes.trim() || undefined,
+        avatarInitial
+      };
+      addGuest(newGuest);
+      toast.success('Guest added successfully');
+    }
+    setIsFormOpen(false);
+  };
 
   const vipGuests = guests.filter(g => g.isVIP);
   const repeatGuests = guests.filter(g => g.totalStays > 1);
@@ -43,6 +130,12 @@ export function GuestProfiles() {
           </p>
         </div>
         <div className="flex items-center gap-4">
+          <button
+            onClick={openAddForm}
+            className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors text-sm"
+          >
+            <Plus className="w-4 h-4" /> Add Guest
+          </button>
           <div className="flex items-center gap-2 bg-card border border-primary text-primary px-4 py-2 rounded-lg shadow-sm">
             <span className="text-xs uppercase tracking-wider font-bold">Lifetime Value</span>
             <span className="text-lg font-bold text-foreground">{formatCurrency(totalLTV)}</span>
@@ -223,6 +316,13 @@ export function GuestProfiles() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="text-xl font-bold text-foreground">{selectedGuest.name}</h3>
+                    <button
+                      onClick={() => openEditForm(selectedGuest)}
+                      className="p-1.5 bg-muted hover:bg-muted-foreground/20 rounded-md transition-colors"
+                      title="Edit Guest"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
                     {selectedGuest.isVIP && (
                       <span className="bg-yellow-100 text-yellow-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase flex items-center gap-1">
                         <Crown className="w-3 h-3" /> VIP
@@ -288,6 +388,128 @@ export function GuestProfiles() {
               </div>
 
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add/Edit Guest Modal */}
+      {isFormOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setIsFormOpen(false)}></div>
+          <div className="relative bg-card rounded-xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-card border-b border-border px-6 py-4 flex items-center justify-between z-10">
+              <h2 className="text-lg font-bold text-foreground">
+                {editingGuest ? 'Edit Guest' : 'Add New Guest'}
+              </h2>
+              <button onClick={() => setIsFormOpen(false)} className="p-2 hover:bg-muted rounded-lg transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <form onSubmit={handleFormSubmit} className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-foreground mb-1">Full Name *</label>
+                  <input
+                    type="text"
+                    value={formName}
+                    onChange={(e) => setFormName(e.target.value)}
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:border-primary bg-background text-foreground"
+                    placeholder="Enter guest name"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Phone *</label>
+                  <input
+                    type="tel"
+                    value={formPhone}
+                    onChange={(e) => setFormPhone(e.target.value)}
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:border-primary bg-background text-foreground"
+                    placeholder="Phone number"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={formEmail}
+                    onChange={(e) => setFormEmail(e.target.value)}
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:border-primary bg-background text-foreground"
+                    placeholder="Email address"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">City</label>
+                  <input
+                    type="text"
+                    value={formCity}
+                    onChange={(e) => setFormCity(e.target.value)}
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:border-primary bg-background text-foreground"
+                    placeholder="City"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">State</label>
+                  <input
+                    type="text"
+                    value={formState}
+                    onChange={(e) => setFormState(e.target.value)}
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:border-primary bg-background text-foreground"
+                    placeholder="State"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">ID Proof Type</label>
+                  <select
+                    value={formIdProofType}
+                    onChange={(e) => setFormIdProofType(e.target.value as IDProofType)}
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:border-primary bg-background text-foreground"
+                  >
+                    <option value="Aadhaar">Aadhaar</option>
+                    <option value="Voter ID">Voter ID</option>
+                    <option value="PAN">PAN</option>
+                    <option value="Driving Licence">Driving Licence</option>
+                    <option value="Passport">Passport</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">ID Number</label>
+                  <input
+                    type="text"
+                    value={formIdProofNumber}
+                    onChange={(e) => setFormIdProofNumber(e.target.value)}
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:border-primary bg-background text-foreground"
+                    placeholder="ID proof number"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-foreground mb-1">Notes</label>
+                  <textarea
+                    value={formNotes}
+                    onChange={(e) => setFormNotes(e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:border-primary bg-background text-foreground resize-none"
+                    placeholder="Any additional notes about the guest..."
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 pt-4 border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => setIsFormOpen(false)}
+                  className="px-4 py-2 text-sm font-medium text-foreground bg-muted hover:bg-muted/80 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-lg transition-colors"
+                >
+                  {editingGuest ? 'Update Guest' : 'Add Guest'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

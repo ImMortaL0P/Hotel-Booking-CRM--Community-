@@ -44,7 +44,7 @@ export const initializeData = async (req: Request, res: Response) => {
   try {
     const rooms = await Room.find();
     const guests = await Guest.find();
-    const bookings = await Booking.find();
+    const bookings = await Booking.find().sort({ checkIn: -1, createdAt: -1 });
     const payments = await Payment.find();
     const comms = await CommRecord.find();
     const logs = await Log.find().sort({ timestamp: -1 }).limit(100);

@@ -139,6 +139,7 @@ export function Dashboard() {
   // Upcoming Arrivals
   const upcomingArrivals = bookings
     .filter(b => b.status === 'Confirmed' || b.status === 'Booked')
+    .sort((a, b) => (a.checkIn || '').localeCompare(b.checkIn || ''))
     .slice(0, 4);
 
   return (
@@ -387,7 +388,7 @@ export function Dashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
-                {bookings.slice(0, 5).map(b => {
+                {[...bookings].sort((a, b) => (b.checkIn || b.createdAt || '').localeCompare(a.checkIn || a.createdAt || '')).slice(0, 5).map(b => {
                   const guest = guests.find(g => g.id === b.guestId);
                   const room = rooms.find(r => r.id === b.roomId);
                   return (
