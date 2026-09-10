@@ -65,7 +65,9 @@ const authLimiter = rateLimit({
 });
 
 app.use(compression());
-app.use(express.json());
+// 10mb body limit: P&L / invoice export HTML documents (a multi-month report's
+// ledger detail can exceed the default 100kb) are POSTed here as JSON.
+app.use(express.json({ limit: '10mb' }));
 
 // Public Health Check
 app.get('/api/health', (req, res) => {
