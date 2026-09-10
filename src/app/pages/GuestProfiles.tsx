@@ -110,10 +110,15 @@ export function GuestProfiles() {
 
     if (search) {
       const query = search.toLowerCase();
-      if (!g.name.toLowerCase().includes(query) &&
-          !g.phone.includes(query) &&
-          !g.id.toLowerCase().includes(query) &&
-          !g.city.toLowerCase().includes(query)) {
+      // Guard against missing fields (e.g. OTA imports without a city/phone)
+      const name = (g.name || '').toLowerCase();
+      const phone = g.phone || '';
+      const id = (g.id || '').toLowerCase();
+      const city = (g.city || '').toLowerCase();
+      if (!name.includes(query) &&
+          !phone.includes(query) &&
+          !id.includes(query) &&
+          !city.includes(query)) {
         return false;
       }
     }
