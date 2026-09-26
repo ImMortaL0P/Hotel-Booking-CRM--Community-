@@ -19,4 +19,7 @@ const roomSchema = new mongoose.Schema({
   }
 });
 
+// Incremental sync (/api/sync) reads rows changed since a timestamp
+roomSchema.index({ updatedAt: 1 });
+
 export const Room = mongoose.model('Room', roomSchema);

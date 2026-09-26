@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
+import { useSearchParams } from 'react-router';
 import { useData } from '../data/DataContext';
 import { ChevronLeft, ChevronRight, Users, LogIn, LogOut, DoorOpen } from 'lucide-react';
 import { NewBookingModal } from '../components/NewBookingModal';
@@ -7,7 +8,12 @@ import { Booking } from '../data/types';
 
 export function Calendar() {
   const { rooms, bookings, guestById } = useData();
-  const [currentDate, setCurrentDate] = useState(() => new Date());
+  // ?date=YYYY-MM-DD opens the timeline on that day (used by links from Email Import)
+  const [searchParams] = useSearchParams();
+  const [currentDate, setCurrentDate] = useState(() => {
+    const m = searchParams.get('date')?.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : new Date();
+  });
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [prefilledBooking, setPrefilledBooking] = useState<{roomId?: string, checkIn?: string, checkOut?: string}>({});
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);

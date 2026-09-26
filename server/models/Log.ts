@@ -18,4 +18,7 @@ const logSchema = new mongoose.Schema({
   }
 });
 
+// Incremental sync polls logs by creation time
+logSchema.index({ createdAt: 1 });
+
 export const Log = mongoose.model('Log', logSchema);

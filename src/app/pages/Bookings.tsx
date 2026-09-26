@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useDeferredValue, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import { useData } from '../data/DataContext';
-import { formatCurrency, formatDate } from '../lib/utils';
+import { formatCurrency, formatDate, generateId } from '../lib/utils';
 import { BookingStatus, Booking } from '../data/types';
 import { Search, Plus, MoreHorizontal, FileText, CheckCircle2, ChevronRight, X, CreditCard, Download } from 'lucide-react';
 import { NewBookingModal } from '../components/NewBookingModal';
@@ -9,6 +9,7 @@ import { BookingDetailDrawer } from '../components/BookingDetailDrawer';
 import { PaymentModal } from '../components/PaymentModal';
 import { PaymentMode } from '../data/types';
 import { exportToCsv } from '../lib/exportCsv';
+import { useProgressiveList } from '../lib/useProgressiveList';
 
 export function Bookings() {
   const { bookings, guestById, roomById, updateBooking, addPayment, confirmChannelBooking, rejectChannelBooking, addLog } = useData();
@@ -110,7 +111,9 @@ export function Bookings() {
 
   // Memoized so a keystroke's urgent render (input update) reuses the rows;
   // they're only rebuilt when the deferred filter result changes.
-  const tableRows = useMemo(() => filteredBookings.map(b => {
+  const { visible: visibleBookings, hasMore, remaining, sentinelRef } = useProgressiveList(filteredBookings, `${activeTab}|${deferredSearch}`);
+
+  const tableRows = useMemo(() => visibleBookings.map(b => {
     const guest = guestById.get(b.guestId);
     const room = roomById.get(b.roomId);
     return (
@@ -198,7 +201,7 @@ export function Bookings() {
         </td>
       </tr>
     )
-  }), [filteredBookings, guestById, roomById]); // eslint-disable-line react-hooks/exhaustive-deps
+  }), [visibleBookings, guestById, roomById]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="space-y-6 h-full flex flex-col relative">
@@ -302,6 +305,11 @@ export function Bookings() {
           </thead>
           <tbody className="divide-y divide-border/50">
             {tableRows}
+            {hasMore && (
+              <tr ref={sentinelRef}>
+                <td colSpan={11} className="px-4 py-4 text-center text-xs text-muted-foreground">Loading {remaining} more…</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -317,16 +325,14 @@ export function Bookings() {
         onSubmit={(amount, mode: PaymentMode) => {
           if (paymentModalBooking) {
             addPayment({
-              id: `RCPT-${Math.floor(Math.random() * 9000) + 1000}`,
+              id: generateId('RCPT'),
               bookingId: paymentModalBooking.id,
               guestId: paymentModalBooking.guestId,
               date: new Date().toISOString().split('T')[0],
               mode,
               amount,
               status: 'Completed'
-            });
-            // Update booking balance locally (useData updates it via API eventually, but UI refresh is immediate)
-            updateBooking({ ...paymentModalBooking, paid: paymentModalBooking.paid + amount, balance: paymentModalBooking.balance - amount });
+            }); // the server applies it to the booking balance and returns the updated booking
           }
         }}
       />

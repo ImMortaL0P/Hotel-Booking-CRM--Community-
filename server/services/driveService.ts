@@ -1,4 +1,5 @@
-import { google, drive_v3 } from 'googleapis';
+// Drive-only client: the full `googleapis` bundle is ~200 MB and added >1s to cold starts
+import { auth, drive as driveApi, drive_v3 } from '@googleapis/drive';
 import { Readable } from 'stream';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -12,7 +13,7 @@ dotenv.config({ path: path.join(__dirname, '../.env') });
 const ROOT_FOLDER_ID = '1QvuBir3YVU9ottO3nxXd09TNhUjADIi2';
 
 // Set up Google Auth using OAuth2
-const oauth2Client = new google.auth.OAuth2(
+const oauth2Client = new auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET
 );
@@ -21,7 +22,7 @@ oauth2Client.setCredentials({
   refresh_token: process.env.GOOGLE_REFRESH_TOKEN
 });
 
-const drive = google.drive({ version: 'v3', auth: oauth2Client });
+const drive = driveApi({ version: 'v3', auth: oauth2Client });
 
 // Cache folder IDs to avoid multiple lookups
 let invoiceFolderId: string | null = null;
