@@ -19,7 +19,8 @@ function titleCase(str: string) {
   ).join(' ');
 }
 
-// Log Action Helper
+// Log Action Helper — never throws. Route handlers fire it without awaiting so
+// the audit write doesn't add a DB round trip to every mutation's latency.
 const logAction = async (req: AuthRequest, action: string, details: string) => {
   try {
     const userId = req.user?.id || 'system';
@@ -42,15 +43,18 @@ const logAction = async (req: AuthRequest, action: string, details: string) => {
 // Fetch all initial data
 export const initializeData = async (req: Request, res: Response) => {
   try {
-    const rooms = await Room.find();
-    const guests = await Guest.find();
-    const bookings = await Booking.find().sort({ checkIn: -1, createdAt: -1 });
-    const payments = await Payment.find();
-    const comms = await CommRecord.find();
-    const logs = await Log.find().sort({ timestamp: -1 }).limit(100);
-    const invoices = await StandaloneInvoice.find().sort({ createdAt: -1 });
-    const storedInvoices = await StoredInvoice.find().sort({ createdAt: -1 });
-    const expenses = await Expense.find().sort({ date: -1 });
+    // Independent collections — fetch concurrently instead of 9 serial round trips
+    const [rooms, guests, bookings, payments, comms, logs, invoices, storedInvoices, expenses] = await Promise.all([
+      Room.find(),
+      Guest.find(),
+      Booking.find().sort({ checkIn: -1, createdAt: -1 }),
+      Payment.find(),
+      CommRecord.find(),
+      Log.find().sort({ timestamp: -1 }).limit(100),
+      StandaloneInvoice.find().sort({ createdAt: -1 }),
+      StoredInvoice.find().sort({ createdAt: -1 }),
+      Expense.find().sort({ date: -1 })
+    ]);
 
     // Recompute each guest's lifetime value (LTV) as the sum of Completed
     // payments actually received from them — keeps totalSpent in sync with
@@ -61,13 +65,16 @@ export const initializeData = async (req: Request, res: Response) => {
         spendByGuest.set(p.guestId, (spendByGuest.get(p.guestId) || 0) + p.amount);
       }
     }
+    const guestUpdates = [];
     for (const g of guests) {
       const computed = spendByGuest.get(g.id) || 0;
       if (g.totalSpent !== computed) {
-        g.totalSpent = computed;
-        await g.save();
+        g.totalSpent = computed; // reflected in this response
+        guestUpdates.push({ updateOne: { filter: { _id: g._id }, update: { $set: { totalSpent: computed } } } });
       }
     }
+    // One bulk write instead of a save() round trip per drifted guest
+    if (guestUpdates.length) await Guest.bulkWrite(guestUpdates, { ordered: false });
 
     // Convert to JSON (triggers the transform we wrote)
     res.json({
@@ -95,7 +102,7 @@ export const updateRoom = async (req: AuthRequest, res: Response) => {
 
     const updated = await Room.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!updated) return res.status(404).json({ error: 'Not found' });
-    await logAction(req, 'Room Update', `Room ${updated.number} status changed to ${updated.status}`);
+    void logAction(req, 'Room Update', `Room ${updated.number} status changed to ${updated.status}`);
     res.json(updated.toJSON());
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -113,7 +120,7 @@ export const addGuest = async (req: AuthRequest, res: Response) => {
     // Default id based on body or new ID if missing
     const guest = new Guest({ ...guestData, _id: req.body.id });
     await guest.save();
-    await logAction(req, 'Add Guest', `Added new guest: ${guest.name}`);
+    void logAction(req, 'Add Guest', `Added new guest: ${guest.name}`);
     res.json(guest.toJSON());
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -130,7 +137,7 @@ export const updateGuest = async (req: AuthRequest, res: Response) => {
 
     const updated = await Guest.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!updated) return res.status(404).json({ error: 'Not found' });
-    await logAction(req, 'Update Guest', `Updated guest info: ${updated.name}`);
+    void logAction(req, 'Update Guest', `Updated guest info: ${updated.name}`);
     res.json(updated.toJSON());
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -145,7 +152,7 @@ export const addBooking = async (req: AuthRequest, res: Response) => {
 
     const booking = new Booking({ ...bookingData, _id: req.body.id });
     await booking.save();
-    await logAction(req, 'New Booking', `Created booking ${booking._id} for guest ${booking.guestId}`);
+    void logAction(req, 'New Booking', `Created booking ${booking._id} for guest ${booking.guestId}`);
 
     // Trigger outbound sync in background (fire and forget)
     pushAvailability(booking.checkIn, booking.checkOut).catch(console.error);
@@ -162,11 +169,12 @@ export const updateBooking = async (req: AuthRequest, res: Response) => {
     const updateData = { guestId, roomId, checkIn, checkOut, adults, children, status, total, paid, balance, source, channelBookingId, channelStatus, commission, netRevenue, channelRatePlan, extraCharges, bookedBy, bookerCountry, device, unitType };
     Object.keys(updateData).forEach(key => updateData[key as keyof typeof updateData] === undefined && delete updateData[key as keyof typeof updateData]);
 
-    const oldBooking = await Booking.findById(req.params.id);
+    // Only the dates are needed from the pre-update doc (for the availability push)
+    const oldBooking = await Booking.findById(req.params.id).select('checkIn checkOut').lean();
     const updated = await Booking.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!updated) return res.status(404).json({ error: 'Not found' });
 
-    await logAction(req, 'Update Booking', `Booking ${updated._id} status changed to ${updated.status}`);
+    void logAction(req, 'Update Booking', `Booking ${updated._id} status changed to ${updated.status}`);
 
     // Trigger outbound sync in background if dates or status changed
     if (oldBooking) {
@@ -183,9 +191,9 @@ export const updateBooking = async (req: AuthRequest, res: Response) => {
 
 export const deleteBooking = async (req: AuthRequest, res: Response) => {
   try {
-    const booking = await Booking.findById(req.params.id);
-    await Booking.findByIdAndDelete(req.params.id);
-    await logAction(req, 'Delete Booking', `Deleted booking ${req.params.id}`);
+    // findByIdAndDelete returns the removed doc — no separate lookup needed
+    const booking = await Booking.findByIdAndDelete(req.params.id);
+    void logAction(req, 'Delete Booking', `Deleted booking ${req.params.id}`);
 
     if (booking) {
       pushAvailability(booking.checkIn, booking.checkOut).catch(console.error);
@@ -206,7 +214,7 @@ export const confirmChannelBooking = async (req: AuthRequest, res: Response) => 
     booking.status = 'Confirmed';
     await booking.save();
 
-    await logAction(req, 'Confirm OTA Booking', `Confirmed OTA Booking ${booking._id}`);
+    void logAction(req, 'Confirm OTA Booking', `Confirmed OTA Booking ${booking._id}`);
 
     // Notify channel manager
     confirmChannelReservation(booking.channelBookingId, booking._id).catch(console.error);
@@ -226,7 +234,7 @@ export const rejectChannelBooking = async (req: AuthRequest, res: Response) => {
     booking.status = 'Checked-Out'; // release room
     await booking.save();
 
-    await logAction(req, 'Reject OTA Booking', `Rejected OTA Booking ${booking._id}`);
+    void logAction(req, 'Reject OTA Booking', `Rejected OTA Booking ${booking._id}`);
 
     // Notify channel manager
     rejectChannelReservation(booking.channelBookingId).catch(console.error);
@@ -247,7 +255,7 @@ export const addPayment = async (req: AuthRequest, res: Response) => {
     const paymentData = { bookingId, guestId, amount, mode, date, status, description, roomId };
     const payment = new Payment({ ...paymentData, _id: req.body.id });
     await payment.save();
-    await logAction(req, 'Add Payment', `Added payment ${payment._id} of amount ${payment.amount} for booking ${payment.bookingId}`);
+    void logAction(req, 'Add Payment', `Added payment ${payment._id} of amount ${payment.amount} for booking ${payment.bookingId}`);
     res.json(payment.toJSON());
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -261,7 +269,7 @@ export const addComm = async (req: AuthRequest, res: Response) => {
     const commData = { guestId, type, channel, template, status, sentAt, content };
     const comm = new CommRecord({ ...commData, _id: req.body.id });
     await comm.save();
-    await logAction(req, 'Send Comm', `Sent ${comm.channel} to guest ${comm.guestId} - Template: ${comm.template}`);
+    void logAction(req, 'Send Comm', `Sent ${comm.channel} to guest ${comm.guestId} - Template: ${comm.template}`);
     res.json(comm.toJSON());
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -275,7 +283,7 @@ export const addInvoice = async (req: AuthRequest, res: Response) => {
     const invoiceData = { invoiceNumber, customerName, customerAddress, customerGst, amount, cgst, sgst, total, date, items };
     const invoice = new StandaloneInvoice({ ...invoiceData, _id: req.body.id });
     await invoice.save();
-    await logAction(req, 'Generate Invoice', `Generated standalone invoice ${invoice._id} for ${invoice.customerName}`);
+    void logAction(req, 'Generate Invoice', `Generated standalone invoice ${invoice._id} for ${invoice.customerName}`);
     res.json(invoice.toJSON());
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -288,7 +296,7 @@ export const addStoredInvoice = async (req: AuthRequest, res: Response) => {
     const invoiceData = { bookingId, invoiceNumber, data };
     const invoice = new StoredInvoice({ ...invoiceData, _id: req.body.invoiceId });
     await invoice.save();
-    await logAction(req, 'Store Invoice Data', `Saved full invoice data ${invoice._id}`);
+    void logAction(req, 'Store Invoice Data', `Saved full invoice data ${invoice._id}`);
     res.json(invoice.toJSON());
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -302,7 +310,7 @@ export const addExpense = async (req: AuthRequest, res: Response) => {
     const expenseData = { category, amount, date, description, approvedBy, receiptUrl };
     const expense = new Expense({ ...expenseData, _id: req.body.id });
     await expense.save();
-    await logAction(req, 'Add Expense', `Added expense ${expense.id} of amount ₹${expense.amount} under ${expense.category}`);
+    void logAction(req, 'Add Expense', `Added expense ${expense.id} of amount ₹${expense.amount} under ${expense.category}`);
     res.json(expense.toJSON());
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -312,7 +320,7 @@ export const addExpense = async (req: AuthRequest, res: Response) => {
 export const deleteExpense = async (req: AuthRequest, res: Response) => {
   try {
     await Expense.findByIdAndDelete(req.params.id);
-    await logAction(req, 'Delete Expense', `Deleted expense ${req.params.id}`);
+    void logAction(req, 'Delete Expense', `Deleted expense ${req.params.id}`);
     res.json({ success: true });
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });

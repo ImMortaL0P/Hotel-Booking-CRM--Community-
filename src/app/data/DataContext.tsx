@@ -1,5 +1,5 @@
 import { apiFetch } from '../lib/api';
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { Room, Guest, Booking, PaymentTransaction, CommRecord, User, ActivityLog, StandaloneInvoice, Expense, StoredInvoiceData } from './types';
 
 interface DataContextType {
@@ -8,6 +8,10 @@ interface DataContextType {
   logout: () => void;
 
   rooms: Room[];
+  /** O(1) id lookups — prefer these over `.find()` inside render loops. */
+  roomById: Map<string, Room>;
+  guestById: Map<string, Guest>;
+  bookingById: Map<string, Booking>;
   updateRoomStatus: (roomId: string, status: Room['status']) => void;
 
   guests: Guest[];
@@ -128,8 +132,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setExpenses(data.expenses || []);
     } catch (err) {
       console.error('Failed to load initial data from Atlas', err);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -138,13 +140,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       try {
         const token = localStorage.getItem('token');
         if (token) {
+          // Verify the token and fetch the dataset in parallel: saves a full
+          // round trip on every page load (and on Render cold starts).
+          const dataPromise = loadInitialData(); // never rejects
           try {
-            const verifyRes = await apiFetch('/api/auth/verify');
-            if (verifyRes.user) {
-              setUser(verifyRes.user);
-              await loadInitialData();
-              return;
-            }
+            const [verifyRes] = await Promise.all([apiFetch('/api/auth/verify'), dataPromise]);
+            if (verifyRes.user) setUser(verifyRes.user);
           } catch (e) {
             localStorage.removeItem('token');
           }
@@ -162,13 +163,22 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isLoading || rooms.length === 0) return;
 
-    // Auto sync logic simplified
-    setRooms(prevRooms => prevRooms.map(room => {
-      const activeBooking = bookings.find(b => b.roomId === room.id && (b.status === 'Checked-In'));
-      if (activeBooking) return { ...room, status: 'Occupied' as const };
+    const occupiedRoomIds = new Set<string>();
+    for (const b of bookings) if (b.status === 'Checked-In') occupiedRoomIds.add(b.roomId);
 
-      return { ...room, status: room.status === 'Occupied' ? 'Available' : room.status };
-    }));
+    // Only produce a new array (and re-render consumers) when a status actually changes
+    setRooms(prevRooms => {
+      let changed = false;
+      const next = prevRooms.map(room => {
+        const status: Room['status'] = occupiedRoomIds.has(room.id)
+          ? 'Occupied'
+          : room.status === 'Occupied' ? 'Available' : room.status;
+        if (status === room.status) return room;
+        changed = true;
+        return { ...room, status };
+      });
+      return changed ? next : prevRooms;
+    });
   }, [bookings, isLoading]); // only reruns when bookings change
 
   const login = async (userData: User, token: string) => {
@@ -176,6 +186,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setUser(userData);
     setIsLoading(true);
     await loadInitialData();
+    setIsLoading(false);
   };
 
   const logout = () => {
@@ -183,12 +194,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   };
 
+  // Latest state for the stable callbacks below (they're created once, so they
+  // must not close over a stale render's user/bookings/guests).
+  const latest = useRef({ user, bookings, guests });
+  latest.current = { user, bookings, guests };
+
   // Helper to add user headers
   const getHeaders = () => {
+    const u = latest.current.user;
     return {
       'Content-Type': 'application/json',
-      'x-user-id': user?.id || 'system',
-      'x-user-name': user?.name || 'System Auto'
+      'x-user-id': u?.id || 'system',
+      'x-user-name': u?.name || 'System Auto'
     };
   };
 
@@ -239,7 +256,15 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         headers: getHeaders(), // Needed for Authorization token
         body: JSON.stringify({ action, details })
       });
-      fetchData(); // refresh to fetch logs
+      const u = latest.current.user;
+      setLogs(prev => [{
+        id: `LOG-LOCAL-${Date.now()}`,
+        action,
+        details,
+        userId: u?.id || 'system',
+        userName: u?.name || 'System Auto',
+        timestamp: new Date().toISOString()
+      } as ActivityLog, ...prev]);
     } catch(err) {
       console.error('Failed to log action', err);
     }
@@ -289,6 +314,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
        body: JSON.stringify(payment)
     }).then((created) => {
       setPayments(prev => [created, ...prev]);
+      const { bookings, guests } = latest.current;
       const booking = bookings.find(b => b.id === payment.bookingId);
       if (booking) {
         const newPaid = booking.paid + payment.amount;
@@ -354,18 +380,29 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }).catch(console.error);
   };
 
+  const roomById = useMemo(() => new Map(rooms.map(r => [r.id, r])), [rooms]);
+  const guestById = useMemo(() => new Map(guests.map(g => [g.id, g])), [guests]);
+  const bookingById = useMemo(() => new Map(bookings.map(b => [b.id, b])), [bookings]);
+
+  // Action callbacks only touch setters + `latest`, so one stable set is enough.
+  const actions = useRef({
+    login, logout, updateRoomStatus, addGuest, updateGuest, addBooking, updateBooking,
+    deleteBooking, confirmChannelBooking, rejectChannelBooking, addPayment, addComm,
+    addLog, addInvoice, addStoredInvoice, addExpense, deleteExpense
+  }).current;
+
+  const value = useMemo<DataContextType>(() => ({
+    ...actions,
+    user,
+    rooms, roomById,
+    guests, guestById,
+    bookings, bookingById,
+    payments, comms, logs, invoices, storedInvoices, expenses,
+    isLoading
+  }), [actions, user, rooms, roomById, guests, guestById, bookings, bookingById, payments, comms, logs, invoices, storedInvoices, expenses, isLoading]);
+
   return (
-    <DataContext.Provider value={{
-      user, login, logout,
-      rooms, updateRoomStatus,
-      guests, addGuest, updateGuest,
-      bookings, addBooking, updateBooking, deleteBooking, confirmChannelBooking, rejectChannelBooking,
-      payments, addPayment,
-      comms, addComm, logs, addLog, invoices, addInvoice,
-      storedInvoices, addStoredInvoice,
-      expenses, addExpense, deleteExpense,
-      isLoading
-    }}>
+    <DataContext.Provider value={value}>
       {isLoading ? <LoadingScreen /> : children}
     </DataContext.Provider>
   );

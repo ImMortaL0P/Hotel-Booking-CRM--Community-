@@ -94,10 +94,18 @@ app.use('/api/channel', channelRoutes); // channel webhook has its own specific 
 
 // Serve static frontend files continuously in production
 const distPath = path.join(__dirname, '../dist');
-app.use(express.static(distPath));
+// Vite emits content-hashed filenames under /assets, so they can be cached
+// forever; index.html must always revalidate so new deploys are picked up.
+app.use('/assets', express.static(path.join(distPath, 'assets'), { maxAge: '1y', immutable: true }));
+app.use(express.static(distPath, {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache');
+  }
+}));
 
 // Fallback to index.html for React Router
 app.get("*", (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
   res.sendFile(path.join(distPath, 'index.html'));
 });
 

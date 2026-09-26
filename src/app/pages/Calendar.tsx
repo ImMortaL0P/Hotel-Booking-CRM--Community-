@@ -6,7 +6,7 @@ import { BookingDetailDrawer } from '../components/BookingDetailDrawer';
 import { Booking } from '../data/types';
 
 export function Calendar() {
-  const { rooms, bookings, guests } = useData();
+  const { rooms, bookings, guestById } = useData();
   const [currentDate, setCurrentDate] = useState(() => new Date());
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [prefilledBooking, setPrefilledBooking] = useState<{roomId?: string, checkIn?: string, checkOut?: string}>({});
@@ -207,7 +207,7 @@ export function Calendar() {
 
                           {/* Bookings Blocks Overlay */}
                           {roomBookings.map(booking => {
-                            const guestMatch = guests.find(g => g.id === booking.guestId);
+                            const guestMatch = guestById.get(booking.guestId);
                             const guestName = guestMatch?.name || booking.guestId;
 
                             const parseDateTime = (dtStr: string, defaultHour: number) => {
