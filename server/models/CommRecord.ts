@@ -12,10 +12,16 @@ const commSchema = new mongoose.Schema({
   toJSON: {
     transform: (doc, ret) => {
       ret.id = ret._id;
+      // Aliases read by the Communications page
+      ret.recipientId = ret.guestId;
+      ret.templateName = ret.template;
       delete ret._id;
       delete ret.__v;
     }
   }
 });
+
+// Incremental sync (/api/sync) reads rows changed since a timestamp
+commSchema.index({ updatedAt: 1 });
 
 export const CommRecord = mongoose.model('CommRecord', commSchema);

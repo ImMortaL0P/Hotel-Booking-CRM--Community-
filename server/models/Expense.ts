@@ -25,4 +25,7 @@ expenseSchema.set('toJSON', {
   }
 });
 
+// Incremental sync (/api/sync) reads rows changed since a timestamp
+expenseSchema.index({ updatedAt: 1 });
+
 export const Expense = mongoose.model('Expense', expenseSchema);

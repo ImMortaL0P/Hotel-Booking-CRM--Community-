@@ -4,7 +4,9 @@ import { formatCurrency, formatDate } from '../lib/utils';
 import { CreditCard, IndianRupee, FileText, Download, Wallet, AlertCircle, ArrowUpRight, Search, Printer, X } from 'lucide-react';
 import { PaymentTransaction } from '../data/types';
 import { exportToCsv } from '../lib/exportCsv';
+import { useProgressiveList } from '../lib/useProgressiveList';
 import { apiFetch } from '../lib/api';
+import { buildPrintableHtml } from '../lib/printableHtml';
 // @ts-ignore
 export function Payments() {
   const { addLog, payments, bookings, bookingById, guestById } = useData();
@@ -30,6 +32,8 @@ export function Payments() {
       .sort((a, b) => b.t - a.t)
       .map(x => x.p);
   }, [payments, deferredSearch]);
+
+  const { visible: visiblePayments, hasMore, remaining, sentinelRef } = useProgressiveList(filteredPayments, deferredSearch);
 
   const getModeColor = (mode: string) => {
     switch(mode) {
@@ -162,7 +166,7 @@ export function Payments() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border/50">
-            {filteredPayments.map(p => {
+            {visiblePayments.map(p => {
               const booking = bookingById.get(p.bookingId);
               const guest = booking ? guestById.get(booking.guestId) : undefined;
               return (
@@ -199,6 +203,11 @@ export function Payments() {
                 </tr>
               )
             })}
+            {hasMore && (
+              <tr ref={sentinelRef}>
+                <td colSpan={8} className="px-4 py-4 text-center text-xs text-muted-foreground">Loading {remaining} more…</td>
+              </tr>
+            )}
             {filteredPayments.length === 0 && (
               <tr><td colSpan={8} className="px-4 py-8 text-center text-muted-foreground italic">No transactions found.</td></tr>
             )}
@@ -229,7 +238,7 @@ export function Payments() {
                   <button onClick={() => {
                     const printable = document.getElementById('printable-receipt');
                     if (printable) {
-                       const fullHtml = `<!DOCTYPE html><html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="p-4 bg-white text-black print:m-0 w-[800px]">${printable.outerHTML}</body></html>`;
+                       const fullHtml = buildPrintableHtml(printable.outerHTML);
                        apiFetch('/api/documents/save', {
                           method: 'POST',
                           body: JSON.stringify({

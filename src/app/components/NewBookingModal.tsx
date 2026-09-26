@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useData } from '../data/DataContext';
 import { IDProofType, PaymentMode, RoomCategory, BookingSource } from '../data/types';
-import { formatCurrency, generateId } from '../lib/utils';
+import { formatCurrency, generateId, generateBookingId } from '../lib/utils';
 import { X, Calendar, User, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -146,7 +146,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
       });
     }
 
-    const bookingId = `SP-2026-${Math.floor(100 + Math.random() * 900)}`;
+    const bookingId = generateBookingId();
     
     addBooking({
       id: bookingId,
@@ -181,7 +181,7 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
         mode: paymentMode,
         amount: advancePaid,
         status: 'Completed'
-      });
+      }, { applyToBooking: false }); // the booking above is created with paid = advancePaid already
     }
 
     toast.success(`Booking ${bookingId} created successfully!`);

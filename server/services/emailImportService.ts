@@ -6,6 +6,7 @@ import { Payment } from '../models/Payment.js';
 import { Expense } from '../models/Expense.js';
 import { Log } from '../models/Log.js';
 import { EmailImport } from '../models/EmailImport.js';
+import { recordDeletion } from '../models/Tombstone.js';
 import { getInboxProvider, InboxMessage } from './emailInbox/index.js';
 import { parseBookingEmail, htmlToText, normalizePhone, ParsedEmailBooking } from './emailBookingParser.js';
 import { pushAvailability } from './channelManagerService.js';
@@ -347,7 +348,10 @@ async function cancelBookings(d: ParsedEmailBooking, msg: InboxMessage): Promise
   const prior = await priorImports(d.channelBookingId!);
   const expenseIds = prior.flatMap(p => p.expenseIds);
   const paymentIds = prior.flatMap(p => p.paymentIds);
-  if (expenseIds.length) await Expense.deleteMany({ _id: { $in: expenseIds } });
+  if (expenseIds.length) {
+    await Expense.deleteMany({ _id: { $in: expenseIds } });
+    await recordDeletion('expenses', expenseIds);
+  }
   if (paymentIds.length) await Payment.updateMany({ _id: { $in: paymentIds } }, { $set: { status: 'Refunded' } });
 
   pushAvailability(existing[0].checkIn, existing[0].checkOut).catch(() => {});

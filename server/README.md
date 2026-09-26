@@ -17,6 +17,26 @@ This directory contains the Express + Mongoose REST API backend to support data 
 - **Seed database**: `npm run seed` (Clears current DB and initializes with project mock data)
 - **Check the booking-email parser**: `npm run test:email-parser`
 
+## Data pipeline
+
+- **First load**: `GET /api/initialize` returns the whole dataset plus a
+  `serverTime` cursor. It uses lean reads with schema defaults applied
+  (`services/serialize.ts`), which is about 3× faster than hydrating documents
+  and gives identical output.
+- **Afterwards**: `GET /api/sync?since=<cursor>` returns only rows whose
+  `updatedAt` is newer, plus ids deleted since then (from the `Tombstone`
+  collection, kept for 60 days). An empty sync is about 200 bytes. The app polls
+  it every minute while the tab is visible, and again on focus or reconnect.
+  A cursor older than 55 days gets `410`, and the client does a full reload.
+- **Client cache**: the last dataset is stored in IndexedDB, so the app opens
+  instantly, even while Render is waking up, and then syncs. It is cleared on
+  logout and when the token is rejected.
+- **Writes**: create/update endpoints accept exactly the schema's fields
+  (`pickSchemaFields`). `POST /api/payments` also applies the amount to the
+  booking balance and the guest's lifetime value in the same request. Pass
+  `applyToBooking: false` when the booking already includes it.
+- **Deletes** must call `recordDeletion()` so other clients drop the row.
+
 ## Email booking import
 
 Without OTA channel-manager API access, bookings are read from the booking

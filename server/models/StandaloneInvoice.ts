@@ -24,4 +24,7 @@ const standaloneInvoiceSchema = new mongoose.Schema({
   }
 });
 
+// Incremental sync (/api/sync) reads rows changed since a timestamp
+standaloneInvoiceSchema.index({ updatedAt: 1 });
+
 export const StandaloneInvoice = mongoose.model('StandaloneInvoice', standaloneInvoiceSchema);

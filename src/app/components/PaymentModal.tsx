@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PaymentMode } from '../data/types';
 import { X, IndianRupee } from 'lucide-react';
 
@@ -14,6 +14,12 @@ export function PaymentModal({ isOpen, onClose, onSubmit, defaultAmount = 0, tit
   const [amount, setAmount] = useState(defaultAmount.toString());
   const [mode, setMode] = useState<PaymentMode>('UPI');
 
+  // Pages keep this modal mounted, so the initial state was the balance of no
+  // booking (0). Prefill the selected booking's balance every time it opens.
+  useEffect(() => {
+    if (isOpen) setAmount(defaultAmount.toString());
+  }, [isOpen, defaultAmount]);
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -21,7 +27,6 @@ export function PaymentModal({ isOpen, onClose, onSubmit, defaultAmount = 0, tit
     const val = parseFloat(amount);
     if (!isNaN(val) && val > 0) {
       onSubmit(val, mode);
-      setAmount(defaultAmount.toString());
       onClose();
     }
   };

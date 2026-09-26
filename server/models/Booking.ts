@@ -47,4 +47,9 @@ const bookingSchema = new mongoose.Schema({
 // Compound index for timeline collision queries
 bookingSchema.index({ roomId: 1, checkIn: 1, checkOut: 1 });
 
+// Incremental sync (/api/sync) reads rows changed since a timestamp
+bookingSchema.index({ updatedAt: 1 });
+// Email import / OTA lookups by channel reference
+bookingSchema.index({ channelBookingId: 1 });
+
 export const Booking = mongoose.model('Booking', bookingSchema);

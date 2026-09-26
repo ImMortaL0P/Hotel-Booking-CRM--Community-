@@ -4,6 +4,7 @@ import { saveInvoiceFile } from '../controllers/invoiceArchiveController.js';
 import { saveDocument, searchDocuments } from '../controllers/documentController.js';
 import {
   initializeData,
+  syncData,
   updateRoom,
   addGuest,
   updateGuest,
@@ -34,6 +35,7 @@ const router = express.Router();
 router.use(requireAuth);
 
 router.get('/initialize', initializeData);
+router.get('/sync', syncData);
 
 // Rooms
 router.put('/rooms/:id', updateRoom);
