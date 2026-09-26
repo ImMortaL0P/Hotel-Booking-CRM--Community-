@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useDeferredValue } from 'react';
 import { useData } from '../data/DataContext';
 import { formatCurrency, formatDate, generateId } from '../lib/utils';
 import { Guest, IDProofType } from '../data/types';
@@ -7,7 +7,7 @@ import { Search, Crown, RotateCcw, TrendingUp, Users, MapPin, CreditCard, Clock,
 import { toast } from 'sonner';
 
 export function GuestProfiles() {
-  const { addLog, guests, bookings, rooms, addGuest, updateGuest } = useData();
+  const { addLog, guests, bookings, roomById, addGuest, updateGuest } = useData();
   const [activeTab, setActiveTab] = useState<'All' | 'VIP' | 'Repeat' | 'New'>('All');
   const [search, setSearch] = useState('');
   const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
@@ -103,13 +103,14 @@ export function GuestProfiles() {
   const totalLTV = guests.reduce((sum, g) => sum + g.totalSpent, 0);
   const avgStays = (guests.reduce((sum, g) => sum + g.totalStays, 0) / guests.length).toFixed(1);
 
-  const filteredGuests = guests.filter(g => {
+  const deferredSearch = useDeferredValue(search);
+  const filteredGuests = useMemo(() => guests.filter(g => {
     if (activeTab === 'VIP' && !g.isVIP) return false;
     if (activeTab === 'Repeat' && g.totalStays <= 1) return false;
     if (activeTab === 'New' && g.totalStays > 1) return false;
 
-    if (search) {
-      const query = search.toLowerCase();
+    if (deferredSearch) {
+      const query = deferredSearch.toLowerCase();
       // Guard against missing fields (e.g. OTA imports without a city/phone)
       const name = (g.name || '').toLowerCase();
       const phone = g.phone || '';
@@ -123,7 +124,12 @@ export function GuestProfiles() {
       }
     }
     return true;
-  });
+  }), [guests, activeTab, deferredSearch]);
+
+  const selectedGuestBookings = useMemo(
+    () => selectedGuest ? bookings.filter(b => b.guestId === selectedGuest.id) : [],
+    [bookings, selectedGuest]
+  );
 
   return (
     <div className="space-y-6 h-full flex flex-col relative text-foreground">
@@ -368,10 +374,9 @@ export function GuestProfiles() {
                   <Clock className="w-5 h-5 text-primary" /> Stay History
                 </h4>
                 <div className="space-y-4">
-                  {bookings
-                    .filter(b => b.guestId === selectedGuest.id).sort((a,b) => new Date(b.checkIn).getTime() > new Date(a.checkIn).getTime() ? -1 : 1)
+                  {[...selectedGuestBookings].sort((a,b) => new Date(b.checkIn).getTime() > new Date(a.checkIn).getTime() ? -1 : 1)
                     .map(b => {
-                      const room = rooms.find(r => r.id === b.roomId);
+                      const room = roomById.get(b.roomId);
                       return (
                         <div key={b.id} className="flex justify-between items-center text-sm border-l-2 border-primary pl-3 py-1">
                            <div>
@@ -386,7 +391,7 @@ export function GuestProfiles() {
                       )
                     })
                   }
-                  {bookings.filter(b => b.guestId === selectedGuest.id).length === 0 && (
+                  {selectedGuestBookings.length === 0 && (
                     <p className="text-sm text-muted-foreground italic">No stay records found.</p>
                   )}
                 </div>

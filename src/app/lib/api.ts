@@ -1,11 +1,12 @@
 import { toast } from 'sonner';
 
+// Use local vite proxy during development, use production URL when deployed
+export const API_BASE_URL = import.meta.env.DEV
+  ? ''
+  : (import.meta.env.VITE_API_BASE_URL || 'https://sharda-crm.onrender.com');
+
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
-  // Use local vite proxy during development, use production URL when deployed
-  const baseUrl = import.meta.env.DEV 
-    ? '' 
-    : (import.meta.env.VITE_API_BASE_URL || 'https://sharda-crm.onrender.com');
-  const url = `${baseUrl}${endpoint}`;
+  const url = `${API_BASE_URL}${endpoint}`;
   
   // Timeout for long requests
   const controller = new AbortController();

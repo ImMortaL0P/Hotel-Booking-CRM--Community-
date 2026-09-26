@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useDeferredValue, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import { useData } from '../data/DataContext';
 import { formatCurrency, formatDate } from '../lib/utils';
@@ -11,10 +11,14 @@ import { PaymentMode } from '../data/types';
 import { exportToCsv } from '../lib/exportCsv';
 
 export function Bookings() {
-  const { bookings, guests, rooms, updateBooking, addPayment, confirmChannelBooking, rejectChannelBooking, addLog } = useData();
+  const { bookings, guestById, roomById, updateBooking, addPayment, confirmChannelBooking, rejectChannelBooking, addLog } = useData();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = (searchParams.get('status') as BookingStatus | 'All') || 'All';
-  const search = searchParams.get('search') || '';
+  const urlSearch = searchParams.get('search') || '';
+  // The input is driven by local state: binding it straight to the URL made
+  // every keystroke a (transition-wrapped) navigation, so fast typing dropped
+  // characters. The URL is kept in sync below.
+  const [search, setSearchInput] = useState(urlSearch);
 
   const setActiveTab = (tab: BookingStatus | 'All') => {
     const params = new URLSearchParams(searchParams);
@@ -23,12 +27,33 @@ export function Bookings() {
     setSearchParams(params);
   };
 
-  const setSearch = (query: string) => {
-    const params = new URLSearchParams(searchParams);
-    if (!query) params.delete('search');
-    else params.set('search', query);
-    setSearchParams(params);
-  };
+  const lastPushedSearch = useRef(urlSearch);
+
+  // External URL changes (command palette, back button) → input. Our own
+  // debounced writes echo back here too; ignore those so they can't clobber
+  // characters typed since.
+  useEffect(() => {
+    if (urlSearch === lastPushedSearch.current) return;
+    lastPushedSearch.current = urlSearch;
+    setSearchInput(urlSearch);
+  }, [urlSearch]);
+
+  // Input → URL (debounced; replace so typing doesn't add history entries)
+  useEffect(() => {
+    if (search === lastPushedSearch.current) return;
+    const t = setTimeout(() => {
+      lastPushedSearch.current = search;
+      setSearchParams(prev => {
+        const params = new URLSearchParams(prev);
+        if (!search) params.delete('search');
+        else params.set('search', search);
+        return params;
+      }, { replace: true });
+    }, 250);
+    return () => clearTimeout(t);
+  }, [search, setSearchParams]);
+
+  const setSearch = setSearchInput;
 
   const [isNewBookingOpen, setIsNewBookingOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -36,13 +61,15 @@ export function Bookings() {
 
   const tabs: (BookingStatus | 'All')[] = ['All', 'Booked', 'Confirmed', 'Checked-In', 'Checked-Out'];
 
-  const filteredBookings = bookings
+  // Filtering runs on a deferred copy of the query so the input stays responsive
+  const deferredSearch = useDeferredValue(search);
+  const filteredBookings = useMemo(() => bookings
     .filter(b => {
       if (activeTab !== 'All' && b.status !== activeTab) return false;
-      if (search) {
-        const g = guests.find(g => g.id === b.guestId);
-        const r = rooms.find(r => r.id === b.roomId);
-        const query = search.toLowerCase();
+      if (deferredSearch) {
+        const g = guestById.get(b.guestId);
+        const r = roomById.get(b.roomId);
+        const query = deferredSearch.toLowerCase();
         if (!b.id.toLowerCase().includes(query) &&
             (!g || !g.name.toLowerCase().includes(query)) &&
             (!g || !g.phone.includes(query)) &&
@@ -52,7 +79,14 @@ export function Bookings() {
       }
       return true;
     })
-    .sort((a, b) => (b.checkIn || b.createdAt || '').localeCompare(a.checkIn || a.createdAt || ''));
+    .sort((a, b) => (b.checkIn || b.createdAt || '').localeCompare(a.checkIn || a.createdAt || '')),
+    [bookings, guestById, roomById, activeTab, deferredSearch]);
+
+  const statusCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const b of bookings) counts[b.status] = (counts[b.status] || 0) + 1;
+    return counts;
+  }, [bookings]);
 
   const getStatusColor = (s: string) => {
     switch (s) {
@@ -74,6 +108,98 @@ export function Bookings() {
     }
   };
 
+  // Memoized so a keystroke's urgent render (input update) reuses the rows;
+  // they're only rebuilt when the deferred filter result changes.
+  const tableRows = useMemo(() => filteredBookings.map(b => {
+    const guest = guestById.get(b.guestId);
+    const room = roomById.get(b.roomId);
+    return (
+      <tr key={b.id} className="hover:bg-muted/50 group cursor-pointer" onClick={() => setSelectedBooking(b)}>
+        <td className="px-4 py-3" onClick={e => e.stopPropagation()}><input type="checkbox" className="rounded" /></td>
+        <td className="px-4 py-3 font-medium text-primary hover:underline">{b.id}</td>
+        <td className="px-4 py-3">
+          <p className="font-medium text-foreground">{guest?.name}</p>
+          <p className="text-xs text-muted-foreground">{guest?.phone}</p>
+        </td>
+        <td className="px-4 py-3">
+          {b.source && b.source !== 'Direct' ? (
+            <div>
+              <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded border border-blue-200 font-medium">
+                {b.source}
+              </span>
+              {b.channelBookingId && (
+                <p className="text-[10px] text-muted-foreground mt-1 font-mono">#{b.channelBookingId}</p>
+              )}
+              {b.bookedBy && (
+                <p className="text-[10px] text-muted-foreground truncate max-w-[120px]" title={b.bookedBy}>{b.bookedBy}</p>
+              )}
+              {b.bookerCountry && (
+                <p className="text-[10px] text-muted-foreground uppercase">{b.bookerCountry}</p>
+              )}
+            </div>
+          ) : (
+            <span className="text-xs text-muted-foreground">Direct</span>
+          )}
+        </td>
+        <td className="px-4 py-3">
+          <p className="text-foreground">Room {room?.number}</p>
+          <p className="text-xs text-muted-foreground">{room?.category}</p>
+        </td>
+        <td className="px-4 py-3">
+          <p className="text-foreground">{formatDate(b.checkIn)}</p>
+          <p className="text-xs text-muted-foreground">to {formatDate(b.checkOut)} ({b.nights}N)</p>
+        </td>
+        <td className="px-4 py-3 text-right font-medium text-foreground">
+          {formatCurrency(b.total)}
+        </td>
+        <td className="px-4 py-3 text-right">
+          {(b.commission && b.commission > 0) ? (
+            <span className="text-xs text-orange-600 font-medium">{formatCurrency(b.commission)}</span>
+          ) : (
+            <span className="text-muted-foreground/60">—</span>
+          )}
+        </td>
+        <td className="px-4 py-3 text-right">
+          {b.balance > 0 ? (
+            <span className="text-red-600 font-medium">{formatCurrency(b.balance)}</span>
+          ) : (
+            <span className="text-muted-foreground/80">—</span>
+          )}
+        </td>
+        <td className="px-4 py-3">
+          <div className="flex flex-col gap-1 items-start">
+            <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md ${getStatusColor(b.status)}`}>
+              {b.status}
+            </span>
+            {b.channelStatus === 'pending_confirmation' && (
+              <div className="flex gap-1 mt-1 z-10" onClick={e => e.stopPropagation()}>
+                <button onClick={() => confirmChannelBooking(b.id)} className="text-[10px] bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded">Confirm</button>
+                <button onClick={() => rejectChannelBooking(b.id)} className="text-[10px] bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">Reject</button>
+              </div>
+            )}
+          </div>
+        </td>
+        <td className="px-4 py-3 text-right">
+          <div className="relative inline-block text-left" onClick={e => e.stopPropagation()}>
+            <button className="p-1 text-muted-foreground/80 hover:text-primary">
+              <MoreHorizontal className="w-5 h-5" />
+            </button>
+            
+            {/* Simple hardcoded actions for demo, normally this would be a custom dropdown component */}
+            <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-md shadow-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible z-20 transition-all">
+              <div className="p-1">
+                 <button onClick={(e) => { e.stopPropagation(); setSelectedBooking(b); }} className="w-full text-left px-3 py-2 text-sm text-foreground/80 hover:bg-secondary rounded">View Details</button>
+                 {b.status === 'Confirmed' && <button onClick={(e) => { e.stopPropagation(); handleAction(b,'Check-in'); }} className="w-full text-left px-3 py-2 text-sm text-green-700 hover:bg-green-50 rounded">Check In</button>}
+                 {b.status === 'Checked-In' && <button onClick={(e) => { e.stopPropagation(); handleAction(b,'Check-out'); }} className="w-full text-left px-3 py-2 text-sm text-foreground/80 hover:bg-muted rounded">Check Out</button>}
+                 {b.balance > 0 && <button onClick={(e) => { e.stopPropagation(); handleAction(b,'Record Payment'); }} className="w-full text-left px-3 py-2 text-sm text-primary hover:bg-secondary rounded">Record Payment</button>}
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+    )
+  }), [filteredBookings, guestById, roomById]); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <div className="space-y-6 h-full flex flex-col relative">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -87,8 +213,8 @@ export function Bookings() {
           <button
             onClick={() => {
               const exportData = filteredBookings.map(b => {
-                const guest = guests.find(g => g.id === b.guestId);
-                const room = rooms.find(r => r.id === b.roomId);
+                const guest = guestById.get(b.guestId);
+                const room = roomById.get(b.roomId);
                 return {
                   ID: b.id,
                   Guest: guest?.name || 'Unknown',
@@ -121,7 +247,7 @@ export function Bookings() {
       {/* Tabs */}
       <div className="flex gap-2 p-1 bg-card border border-border rounded-lg overflow-x-auto">
         {tabs.map(tab => {
-          const count = tab === 'All' ? bookings.length : bookings.filter(b => b.status === tab).length;
+          const count = tab === 'All' ? bookings.length : (statusCounts[tab] || 0);
           return (
             <button
               key={tab}
@@ -175,95 +301,7 @@ export function Bookings() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border/50">
-            {filteredBookings.map(b => {
-              const guest = guests.find(g => g.id === b.guestId);
-              const room = rooms.find(r => r.id === b.roomId);
-              return (
-                <tr key={b.id} className="hover:bg-muted/50 group cursor-pointer" onClick={() => setSelectedBooking(b)}>
-                  <td className="px-4 py-3" onClick={e => e.stopPropagation()}><input type="checkbox" className="rounded" /></td>
-                  <td className="px-4 py-3 font-medium text-primary hover:underline">{b.id}</td>
-                  <td className="px-4 py-3">
-                    <p className="font-medium text-foreground">{guest?.name}</p>
-                    <p className="text-xs text-muted-foreground">{guest?.phone}</p>
-                  </td>
-                  <td className="px-4 py-3">
-                    {b.source && b.source !== 'Direct' ? (
-                      <div>
-                        <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded border border-blue-200 font-medium">
-                          {b.source}
-                        </span>
-                        {b.channelBookingId && (
-                          <p className="text-[10px] text-muted-foreground mt-1 font-mono">#{b.channelBookingId}</p>
-                        )}
-                        {b.bookedBy && (
-                          <p className="text-[10px] text-muted-foreground truncate max-w-[120px]" title={b.bookedBy}>{b.bookedBy}</p>
-                        )}
-                        {b.bookerCountry && (
-                          <p className="text-[10px] text-muted-foreground uppercase">{b.bookerCountry}</p>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">Direct</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <p className="text-foreground">Room {room?.number}</p>
-                    <p className="text-xs text-muted-foreground">{room?.category}</p>
-                  </td>
-                  <td className="px-4 py-3">
-                    <p className="text-foreground">{formatDate(b.checkIn)}</p>
-                    <p className="text-xs text-muted-foreground">to {formatDate(b.checkOut)} ({b.nights}N)</p>
-                  </td>
-                  <td className="px-4 py-3 text-right font-medium text-foreground">
-                    {formatCurrency(b.total)}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    {(b.commission && b.commission > 0) ? (
-                      <span className="text-xs text-orange-600 font-medium">{formatCurrency(b.commission)}</span>
-                    ) : (
-                      <span className="text-muted-foreground/60">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    {b.balance > 0 ? (
-                      <span className="text-red-600 font-medium">{formatCurrency(b.balance)}</span>
-                    ) : (
-                      <span className="text-muted-foreground/80">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-col gap-1 items-start">
-                      <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md ${getStatusColor(b.status)}`}>
-                        {b.status}
-                      </span>
-                      {b.channelStatus === 'pending_confirmation' && (
-                        <div className="flex gap-1 mt-1 z-10" onClick={e => e.stopPropagation()}>
-                          <button onClick={() => confirmChannelBooking(b.id)} className="text-[10px] bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded">Confirm</button>
-                          <button onClick={() => rejectChannelBooking(b.id)} className="text-[10px] bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">Reject</button>
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="relative inline-block text-left" onClick={e => e.stopPropagation()}>
-                      <button className="p-1 text-muted-foreground/80 hover:text-primary">
-                        <MoreHorizontal className="w-5 h-5" />
-                      </button>
-                      
-                      {/* Simple hardcoded actions for demo, normally this would be a custom dropdown component */}
-                      <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-md shadow-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible z-20 transition-all">
-                        <div className="p-1">
-                           <button onClick={(e) => { e.stopPropagation(); setSelectedBooking(b); }} className="w-full text-left px-3 py-2 text-sm text-foreground/80 hover:bg-secondary rounded">View Details</button>
-                           {b.status === 'Confirmed' && <button onClick={(e) => { e.stopPropagation(); handleAction(b,'Check-in'); }} className="w-full text-left px-3 py-2 text-sm text-green-700 hover:bg-green-50 rounded">Check In</button>}
-                           {b.status === 'Checked-In' && <button onClick={(e) => { e.stopPropagation(); handleAction(b,'Check-out'); }} className="w-full text-left px-3 py-2 text-sm text-foreground/80 hover:bg-muted rounded">Check Out</button>}
-                           {b.balance > 0 && <button onClick={(e) => { e.stopPropagation(); handleAction(b,'Record Payment'); }} className="w-full text-left px-3 py-2 text-sm text-primary hover:bg-secondary rounded">Record Payment</button>}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              )
-            })}
+            {tableRows}
           </tbody>
         </table>
       </div>

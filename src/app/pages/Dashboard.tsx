@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useData } from '../data/DataContext';
 import { formatCurrency, formatDate } from '../lib/utils';
 import { apiFetch } from '../lib/api';
@@ -29,7 +29,7 @@ import { format } from 'date-fns';
 import logoUrl from '../../assets/logo.png';
 
 export function Dashboard() {
-  const { user, bookings, rooms, guests, comms } = useData();
+  const { user, bookings, rooms, guestById, roomById, comms } = useData();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -40,7 +40,7 @@ export function Dashboard() {
   const handleDocSearch = async () => {
     setIsSearching(true);
     try {
-       const res = await apiFetch(`/api/documents/search?q=${docSearch}`);
+       const res = await apiFetch(`/api/documents/search?q=${encodeURIComponent(docSearch)}`);
        if (res && res.success) {
            setDocs(res.data);
        }
@@ -105,17 +105,20 @@ export function Dashboard() {
   const [channelStartDate, setChannelStartDate] = useState(defaultStartDate);
   const [channelEndDate, setChannelEndDate] = useState(defaultEndDate);
 
-  const filteredChannelBookings = bookings.filter(b => {
-    // Using checking date for channel performance is often better,
-    // but preserving historical createdAt mapping - we'll safely parse the date.
-    let bDate = "";
+  // Normalising createdAt needs a Date parse per booking — do it once per
+  // bookings change, not on every render / keystroke in the doc search box.
+  const bookingCreatedDates = useMemo(() => bookings.map(b => {
     try {
-      bDate = new Date(b.createdAt).toISOString().split('T')[0];
+      return new Date(b.createdAt).toISOString().split('T')[0];
     } catch {
-      bDate = b.createdAt.split('T')[0];
+      return (b.createdAt || '').split('T')[0];
     }
+  }), [bookings]);
+
+  const filteredChannelBookings = useMemo(() => bookings.filter((b, i) => {
+    const bDate = bookingCreatedDates[i];
     return bDate >= channelStartDate && bDate <= channelEndDate;
-  });
+  }), [bookings, bookingCreatedDates, channelStartDate, channelEndDate]);
 
   const channelStatsBySource = filteredChannelBookings.reduce((acc, b) => {
     const src = b.source || 'Direct';
@@ -137,10 +140,14 @@ export function Dashboard() {
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DFF', '#FF6B6B', '#4AD9D9'];
 
   // Upcoming Arrivals
-  const upcomingArrivals = bookings
+  const upcomingArrivals = useMemo(() => bookings
     .filter(b => b.status === 'Confirmed' || b.status === 'Booked')
     .sort((a, b) => (a.checkIn || '').localeCompare(b.checkIn || ''))
-    .slice(0, 4);
+    .slice(0, 4), [bookings]);
+
+  const recentBookings = useMemo(() => [...bookings]
+    .sort((a, b) => (b.checkIn || b.createdAt || '').localeCompare(a.checkIn || a.createdAt || ''))
+    .slice(0, 5), [bookings]);
 
   return (
     <div className="space-y-6">
@@ -252,8 +259,8 @@ export function Dashboard() {
           <h2 className="text-base font-bold text-card-foreground mb-4">Upcoming Arrivals</h2>
           <div className="space-y-4">
             {upcomingArrivals.map(b => {
-              const guest = guests.find(g => g.id === b.guestId);
-              const room = rooms.find(r => r.id === b.roomId);
+              const guest = guestById.get(b.guestId);
+              const room = roomById.get(b.roomId);
               return (
                 <div key={b.id} className="flex items-center justify-between pb-3 border-b border-border/50 last:border-0 last:pb-0">
                   <div className="flex items-center gap-3">
@@ -388,9 +395,9 @@ export function Dashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
-                {[...bookings].sort((a, b) => (b.checkIn || b.createdAt || '').localeCompare(a.checkIn || a.createdAt || '')).slice(0, 5).map(b => {
-                  const guest = guests.find(g => g.id === b.guestId);
-                  const room = rooms.find(r => r.id === b.roomId);
+                {recentBookings.map(b => {
+                  const guest = guestById.get(b.guestId);
+                  const room = roomById.get(b.roomId);
                   return (
                     <tr key={b.id} className="hover:bg-muted/50">
                       <td className="py-3 font-medium text-primary">{b.id}</td>
@@ -432,7 +439,7 @@ export function Dashboard() {
           </div>
           <div className="space-y-4">
             {comms.slice(0, 4).map(c => {
-              const guest = guests.find(g => g.id === c.guestId);
+              const guest = guestById.get(c.guestId);
               return (
                 <div key={c.id} className="flex items-start gap-3 pb-3 border-b border-border/50 last:border-0">
                   <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0 text-primary font-semibold text-xs border border-border">

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useDeferredValue } from 'react';
 import { useData } from '../data/DataContext';
 import { formatCurrency, formatDate } from '../lib/utils';
 import { CreditCard, IndianRupee, FileText, Download, Wallet, AlertCircle, ArrowUpRight, Search, Printer, X } from 'lucide-react';
@@ -7,7 +7,7 @@ import { exportToCsv } from '../lib/exportCsv';
 import { apiFetch } from '../lib/api';
 // @ts-ignore
 export function Payments() {
-  const { addLog, payments, bookings, guests } = useData();
+  const { addLog, payments, bookings, bookingById, guestById } = useData();
   const [search, setSearch] = useState('');
   const [selectedReceipt, setSelectedReceipt] = useState<PaymentTransaction | null>(null);
 
@@ -20,13 +20,16 @@ export function Payments() {
 
   const pendingCollections = bookings.reduce((sum, b) => b.balance > 0 ? sum + b.balance : sum, 0);
 
-  const filteredPayments = payments.filter(p => {
-    if (search) {
-      const q = search.toLowerCase();
-      return p.id.toLowerCase().includes(q) || p.bookingId.toLowerCase().includes(q);
-    }
-    return true;
-  }).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const deferredSearch = useDeferredValue(search);
+  const filteredPayments = useMemo(() => {
+    const q = deferredSearch.toLowerCase();
+    return payments
+      .filter(p => !q || p.id.toLowerCase().includes(q) || p.bookingId.toLowerCase().includes(q))
+      // Parse each date once instead of twice per comparison
+      .map(p => ({ p, t: new Date(p.date).getTime() }))
+      .sort((a, b) => b.t - a.t)
+      .map(x => x.p);
+  }, [payments, deferredSearch]);
 
   const getModeColor = (mode: string) => {
     switch(mode) {
@@ -60,8 +63,8 @@ export function Payments() {
           <button
             onClick={() => {
               const exportData = filteredPayments.map(p => {
-                const booking = bookings.find(b => b.id === p.bookingId);
-                const guest = guests.find(g => g.id === booking?.guestId);
+                const booking = bookingById.get(p.bookingId);
+                const guest = booking ? guestById.get(booking.guestId) : undefined;
                 return {
                   'Receipt No': p.id,
                   'Booking ID': p.bookingId,
@@ -160,8 +163,8 @@ export function Payments() {
           </thead>
           <tbody className="divide-y divide-border/50">
             {filteredPayments.map(p => {
-              const booking = bookings.find(b => b.id === p.bookingId);
-              const guest = guests.find(g => g.id === booking?.guestId);
+              const booking = bookingById.get(p.bookingId);
+              const guest = booking ? guestById.get(booking.guestId) : undefined;
               return (
                 <tr key={p.id} className="hover:bg-muted/50">
                   <td className="px-4 py-3 font-medium text-foreground">{p.id}</td>
@@ -205,8 +208,8 @@ export function Payments() {
 
       {/* Printable Receipt Modal Overlay */}
       {selectedReceipt && (() => {
-        const _booking = bookings.find(b => b.id === selectedReceipt.bookingId);
-        const _guest = guests.find(g => g.id === _booking?.guestId);
+        const _booking = bookingById.get(selectedReceipt.bookingId);
+        const _guest = _booking ? guestById.get(_booking.guestId) : undefined;
 
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 print:block print:relative print:bg-transparent print:p-0 print:inset-auto">
