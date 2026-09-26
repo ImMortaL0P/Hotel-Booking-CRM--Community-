@@ -1,6 +1,6 @@
 import { ReactNode, useState, useEffect, useMemo, useCallback } from 'react';
 import { NavLink, useLocation } from 'react-router';
-import { LayoutDashboard, BookOpenText, Users, BedDouble, CalendarDays, MessageSquare, CreditCard, LogOut, ChevronLeft, ChevronRight, Building, FileText, Receipt, History, Moon, Sun, Bell, Search, WalletCards, Activity, Globe, Server, Database } from 'lucide-react';
+import { LayoutDashboard, BookOpenText, Users, BedDouble, CalendarDays, MessageSquare, CreditCard, LogOut, ChevronLeft, ChevronRight, Building, FileText, Receipt, History, Moon, Sun, Bell, Search, WalletCards, Activity, Globe, Server, Database, Mail } from 'lucide-react';
 import { useData } from '../data/DataContext';
 import { useTheme } from './ThemeProvider';
 import { cn } from '../lib/utils';
@@ -150,6 +150,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <NavItem collapsed={collapsed} to="/guests" icon={Users} label="Guests" />
           <NavItem collapsed={collapsed} to="/rooms" icon={BedDouble} label="Rooms" />
           <NavItem collapsed={collapsed} to="/calendar" icon={CalendarDays} label="Calendar" />
+          <NavItem collapsed={collapsed} to="/email-import" icon={Mail} label="Email Import" />
           <NavItem collapsed={collapsed} to="/communications" icon={MessageSquare} label="Communications" />
           {['manager', 'owner', 'superadmin'].includes(user?.role || '') && (
             <NavItem collapsed={collapsed} to="/payments" icon={CreditCard} label="Payments" badge={pendingPayments} />

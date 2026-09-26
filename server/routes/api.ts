@@ -20,6 +20,7 @@ import {
   addStoredInvoice,
   addLog
 } from '../controllers/dataController.js';
+import { getEmailImportStatus, runEmailSync, reprocessEmail, addTestEmail } from '../controllers/emailImportController.js';
 import {
   getChannelConfig,
   updateChannelConfig,
@@ -71,6 +72,12 @@ router.get('/channel/config', getChannelConfig);
 router.put('/channel/config', updateChannelConfig);
 router.post('/channel/test', testChannelConnection);
 router.post('/channel/full-sync', triggerFullSync);
+
+// Email booking import (stands in for the OTA channel-manager API)
+router.get('/email-import/status', getEmailImportStatus);
+router.post('/email-import/sync', runEmailSync);
+router.post('/email-import/dummy/test-email', addTestEmail);
+router.post('/email-import/:id/reprocess', reprocessEmail);
 
 // Save invoice file (HTML to github folder) // Keeping for backwards compatibility
 router.post('/save-invoice-file', saveInvoiceFile);

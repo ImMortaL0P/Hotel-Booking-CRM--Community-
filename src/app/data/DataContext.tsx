@@ -32,6 +32,8 @@ interface DataContextType {
   addComm: (comm: CommRecord) => void;
 
   isLoading: boolean;
+  /** Re-fetch everything from the server (e.g. after an email import created bookings) */
+  refreshData: () => Promise<void>;
   logs: ActivityLog[];
   addLog: (action: string, details: string) => Promise<void>;
   invoices: StandaloneInvoice[];
@@ -188,6 +190,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     await loadInitialData();
     setIsLoading(false);
   };
+
+  // Background refresh: unlike login, keeps the current screen instead of the loading screen
+  const refreshData = () => loadInitialData();
 
   const logout = () => {
     localStorage.removeItem('token');
@@ -386,7 +391,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   // Action callbacks only touch setters + `latest`, so one stable set is enough.
   const actions = useRef({
-    login, logout, updateRoomStatus, addGuest, updateGuest, addBooking, updateBooking,
+    login, logout, refreshData, updateRoomStatus, addGuest, updateGuest, addBooking, updateBooking,
     deleteBooking, confirmChannelBooking, rejectChannelBooking, addPayment, addComm,
     addLog, addInvoice, addStoredInvoice, addExpense, deleteExpense
   }).current;
