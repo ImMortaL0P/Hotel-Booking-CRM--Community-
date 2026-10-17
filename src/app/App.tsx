@@ -33,7 +33,17 @@ const LoadingFallback = () => (
 export default function App() {
   const { user } = useData();
 
+  const isPublicBookingRoute = 
+    window.location.pathname.startsWith('/book') || 
+    window.location.pathname.startsWith('/reserve') ||
+    window.location.pathname.startsWith('/booking-request') ||
+    window.location.hash.startsWith('#/book') ||
+    window.location.hash.startsWith('#/reserve');
+
   useEffect(() => {
+    // Only activate Kraft Studios smooth scroll on public booking routes
+    if (!isPublicBookingRoute) return;
+
     const lenis = new Lenis({
       duration: 1.1,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -51,14 +61,7 @@ export default function App() {
       cancelAnimationFrame(rafId);
       lenis.destroy();
     };
-  }, []);
-
-  const isPublicBookingRoute = 
-    window.location.pathname.startsWith('/book') || 
-    window.location.pathname.startsWith('/reserve') ||
-    window.location.pathname.startsWith('/booking-request') ||
-    window.location.hash.startsWith('#/book') ||
-    window.location.hash.startsWith('#/reserve');
+  }, [isPublicBookingRoute]);
 
   if (isPublicBookingRoute) {
     return (

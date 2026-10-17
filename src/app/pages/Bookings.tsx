@@ -3,17 +3,18 @@ import { useSearchParams } from 'react-router';
 import { useData } from '../data/DataContext';
 import { formatCurrency, formatDate, generateId } from '../lib/utils';
 import { BookingStatus, Booking } from '../data/types';
-import { Search, Plus, MoreHorizontal, FileText, CheckCircle2, ChevronRight, X, CreditCard, Download, Share2 } from 'lucide-react';
+import { Search, Plus, MoreHorizontal, FileText, CheckCircle2, ChevronRight, X, CreditCard, Download, Share2, SlidersHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
 import { NewBookingModal } from '../components/NewBookingModal';
 import { BookingDetailDrawer } from '../components/BookingDetailDrawer';
 import { PaymentModal } from '../components/PaymentModal';
+import { PublicRateSettingsModal } from '../components/PublicRateSettingsModal';
 import { PaymentMode } from '../data/types';
 import { exportToCsv } from '../lib/exportCsv';
 import { useProgressiveList } from '../lib/useProgressiveList';
 
 export function Bookings() {
-  const { bookings, guestById, roomById, updateBooking, addPayment, confirmChannelBooking, rejectChannelBooking, addLog } = useData();
+  const { bookings, guestById, roomById, updateBooking, addPayment, confirmChannelBooking, rejectChannelBooking, addLog, user } = useData();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = (searchParams.get('status') as BookingStatus | 'All') || 'All';
   const urlSearch = searchParams.get('search') || '';
@@ -60,6 +61,7 @@ export function Bookings() {
   const [isNewBookingOpen, setIsNewBookingOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [paymentModalBooking, setPaymentModalBooking] = useState<Booking | null>(null);
+  const [isRateSettingsOpen, setIsRateSettingsOpen] = useState(false);
 
   const tabs: (BookingStatus | 'All')[] = ['All', 'Booked', 'Confirmed', 'Checked-In', 'Checked-Out'];
 
@@ -251,6 +253,13 @@ export function Bookings() {
             <Share2 className="w-3.5 h-3.5 text-primary" /> Guest Link (/book)
           </button>
           <button
+            onClick={() => setIsRateSettingsOpen(true)}
+            className="flex items-center justify-center gap-1.5 bg-secondary text-secondary-foreground border border-border px-3.5 py-2 rounded-full font-medium hover:bg-muted transition-colors text-sm cursor-pointer font-mono"
+            title="Super Admin: Update room rates on the public booking page (/book)"
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5 text-primary" /> Public Rates
+          </button>
+          <button
             onClick={() => setIsNewBookingOpen(true)}
             className="flex items-center justify-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-full font-semibold hover:opacity-90 transition-opacity text-sm cursor-pointer"
           >
@@ -300,7 +309,12 @@ export function Bookings() {
       </div>
 
       {/* Table */}
-      <div className="bg-card border text-sm border-border rounded-b-xl overflow-x-auto flex-1 h-0">
+      <div 
+        data-lenis-prevent
+        onWheel={(e) => e.stopPropagation()}
+        className="bg-card border text-sm border-border rounded-b-xl overflow-y-auto overflow-x-auto overscroll-contain flex-1 min-h-[350px] max-h-[calc(100vh-270px)]"
+        style={{ overscrollBehavior: 'contain' }}
+      >
         <table className="w-full text-left whitespace-nowrap">
           <thead className="bg-secondary sticky top-0 z-10">
             <tr className="border-b border-border text-xs font-semibold text-foreground">
@@ -329,6 +343,7 @@ export function Bookings() {
       </div>
 
       <NewBookingModal isOpen={isNewBookingOpen} onClose={() => setIsNewBookingOpen(false)} />
+      <PublicRateSettingsModal isOpen={isRateSettingsOpen} onClose={() => setIsRateSettingsOpen(false)} />
 
       {/* Booking Detail Drawer overlay */}
       <BookingDetailDrawer booking={selectedBooking} isOpen={!!selectedBooking} onClose={() => setSelectedBooking(null)} />

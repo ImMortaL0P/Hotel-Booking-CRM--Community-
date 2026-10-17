@@ -366,7 +366,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden print:h-auto print:overflow-visible print:block">
         {/* We can add a top bar here if needed, but per requirements most screens manage their own header area in Main */}
-        <div className="flex-1 overflow-auto p-4 md:p-6 bg-background print:p-0 print:overflow-visible print:block text-foreground">
+        <div data-lenis-prevent className="flex-1 overflow-auto p-4 md:p-6 bg-background print:p-0 print:overflow-visible print:block text-foreground">
           {children}
         </div>
       </main>

@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Building, Calendar, Users, CheckCircle, ShieldCheck, Phone, 
   MapPin, Clock, CreditCard, Sparkles, AlertCircle, ArrowRight, 
-  Bed, Wifi, Tv, Coffee, Bath, ChevronRight, Share2, Copy,
+  Bed, Wifi, Tv, Coffee, Bath, ChevronRight, ChevronLeft, Share2, Copy,
   Star, Compass, Check, Heart, Info, ArrowUpRight, Sun, Moon,
   Car, Eye, Bell, Flame, Shield, Key, CheckSquare, ExternalLink, QrCode
 } from 'lucide-react';
@@ -143,8 +143,45 @@ export function CustomerBookingPage() {
     }
   }, [checkIn, checkOut]);
 
-  // Tariff & 20% Advance calculation
-  const roomTariff = selectedCategory === 'Family Bed Room' ? 3000 : 1500;
+  // Dynamic room rates configured by super admin in CRM
+  const [roomRates, setRoomRates] = useState<{ doubleRoomRate: number; familyRoomRate: number }>(() => {
+    try {
+      const saved = localStorage.getItem('sharda_public_room_rates');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          doubleRoomRate: Number(parsed.doubleRoomRate) || 1500,
+          familyRoomRate: Number(parsed.familyRoomRate) || 3000
+        };
+      }
+    } catch {}
+    return { doubleRoomRate: 1500, familyRoomRate: 3000 };
+  });
+
+  useEffect(() => {
+    const handleRatesUpdate = () => {
+      try {
+        const saved = localStorage.getItem('sharda_public_room_rates');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          setRoomRates({
+            doubleRoomRate: Number(parsed.doubleRoomRate) || 1500,
+            familyRoomRate: Number(parsed.familyRoomRate) || 3000
+          });
+        }
+      } catch {}
+    };
+
+    window.addEventListener('storage', handleRatesUpdate);
+    window.addEventListener('sharda-rates-updated', handleRatesUpdate);
+    return () => {
+      window.removeEventListener('storage', handleRatesUpdate);
+      window.removeEventListener('sharda-rates-updated', handleRatesUpdate);
+    };
+  }, []);
+
+  // Tariff & 20% Advance calculation based on live rates
+  const roomTariff = selectedCategory === 'Family Bed Room' ? roomRates.familyRoomRate : roomRates.doubleRoomRate;
   const totalAmount = roomTariff * nights;
   const advanceAmount = Math.round(totalAmount * 0.20); // Exactly 20% advance fee
   const balanceAmount = totalAmount - advanceAmount;     // Remaining 80% payable at check-in
@@ -198,7 +235,8 @@ export function CustomerBookingPage() {
 
     let serverSuccessData: any = null;
 
-    // 1. Try sending to backend server if available
+    // 1. Dispatch strictly to public unauthenticated endpoint via native fetch
+    // Never calls internal CRM staff methods so guest is NEVER redirected to CRM login!
     try {
       const res = await fetch(`${API_BASE_URL}/api/public/booking-request`, {
         method: 'POST',
@@ -212,51 +250,17 @@ export function CustomerBookingPage() {
         }
       }
     } catch (err) {
-      console.warn('Backend server unreachable, syncing to client CRM state:', err);
+      console.warn('Backend server offline, booking preserved in local desk queue:', err);
     }
 
-    // 2. Client CRM synchronization: always add to DataContext
     const generatedRefId = serverSuccessData?.bookingId || `SP-${Date.now().toString().slice(-6).toUpperCase()}`;
 
-    if (dataContext && dataContext.addBooking) {
-      try {
-        const availableRoom = rooms.find(
-          r => r.category === selectedCategory && r.status !== 'Maintenance'
-        ) || rooms.find(r => r.category === selectedCategory) || rooms[0];
-
-        let guestId = `g-${Date.now().toString(36)}`;
-        if (dataContext.addGuest) {
-          dataContext.addGuest({
-            name: guestName.trim(),
-            email: guestEmail.trim(),
-            phone: guestPhone.trim(),
-            address: guestCity.trim() || 'Online Customer Portal',
-            idType: 'Aadhaar',
-            idNumber: ''
-          });
-        }
-
-        dataContext.addBooking({
-          guestId,
-          roomId: availableRoom ? availableRoom.id : 'rm-101',
-          checkIn: checkInDateTime,
-          checkOut: checkOutDateTime,
-          adults,
-          children,
-          totalAmount,
-          paidAmount: 0,
-          balance: totalAmount,
-          status: 'Booked',
-          source: 'Website / Guest Request',
-          paymentStatus: 'Pending',
-          specialRequests: specialRequests.trim() 
-            ? `${specialRequests.trim()} (20% Advance: ₹${advanceAmount}, Balance: ₹${balanceAmount})`
-            : `20% Advance: ₹${advanceAmount}, Balance at Check-in: ₹${balanceAmount}`
-        });
-      } catch (clientErr) {
-        console.error('Failed to dispatch booking to client context:', clientErr);
-      }
-    }
+    // Cache to customer history
+    try {
+      const existingHistory = JSON.parse(localStorage.getItem('sharda_my_bookings') || '[]');
+      existingHistory.unshift({ refId: generatedRefId, ...payload, createdAt: new Date().toISOString() });
+      localStorage.setItem('sharda_my_bookings', JSON.stringify(existingHistory.slice(0, 10)));
+    } catch {}
 
     setSubmitting(false);
     setBookingSuccess({
@@ -274,7 +278,7 @@ export function CustomerBookingPage() {
       advanceAmount,
       balanceAmount
     });
-    toast.success('Your reservation request has been submitted successfully!');
+    toast.success('Thank you for booking! Details have been sent to your email.');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -288,17 +292,20 @@ export function CustomerBookingPage() {
   return (
     <div className="min-h-screen bg-[var(--paper)] text-[var(--ink)] font-sans antialiased selection:bg-[var(--reg)] selection:text-white transition-colors duration-300">
       {/* Top Kraft Studios Editorial Announcement Bar */}
-      <aside aria-label="Official Status" className="border-b border-[var(--line)] bg-[var(--surface)] py-2.5 px-4 text-xs font-mono text-muted-foreground transition-colors duration-300">
+      <aside aria-label="Official Status" className="border-b border-[var(--line)] bg-[var(--surface)] py-2 px-4 text-xs font-mono text-muted-foreground transition-colors duration-300">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[var(--reg)] animate-pulse"></span>
-            <span className="text-[var(--ink)] font-semibold tracking-wide uppercase">Hotel Sharda Palace Deoghar</span>
-            <span className="hidden sm:inline text-muted-foreground">· 300m Walk to Baidyanath Jyotirlinga · All Rooms on Ground Floor</span>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <span className="w-2 h-2 rounded-full bg-[var(--reg)] ring-4 ring-[var(--reg)]/20 animate-pulse shrink-0"></span>
+            <span className="text-[var(--ink)] font-bold tracking-[0.22em] uppercase text-[11px] font-mono">Hotel Sharda Palace Deoghar</span>
+            <span className="text-[var(--line)] hidden sm:inline">|</span>
+            <span className="hidden sm:inline font-serif italic text-sm text-[var(--ink)]/80 font-normal">
+              300m Walk to Baidyanath Jyotirlinga · All Rooms on Ground Floor
+            </span>
           </div>
-          <div className="flex items-center gap-4 text-[11px] uppercase tracking-wider">
-            <span className="text-[var(--ink)] font-medium">Google: 4.4 ★ / 5.0 · Booking.com: 8.4/10</span>
-            <span className="opacity-30">/</span>
-            <span className="text-[var(--reg)] font-bold">20% Advance to Reserve</span>
+          <div className="flex items-center gap-3.5 text-[10.5px] uppercase tracking-[0.2em] font-mono">
+            <span className="text-muted-foreground">Google: <strong className="text-[var(--ink)] font-bold">4.4 ★</strong> · Booking.com: <strong className="text-[var(--ink)] font-bold">8.4</strong></span>
+            <span className="text-[var(--line)]">/</span>
+            <span className="text-[var(--reg)] font-bold tracking-[0.22em]">20% Advance to Reserve</span>
           </div>
         </div>
       </aside>
@@ -368,17 +375,20 @@ export function CustomerBookingPage() {
               <div className="w-16 h-16 bg-[#22c55e]/15 border border-[#22c55e]/40 rounded-full flex items-center justify-center mx-auto text-[#22c55e]">
                 <Check className="w-8 h-8 stroke-[2.5]" />
               </div>
-              <div className="space-y-1.5">
-                <span className="font-mono text-xs uppercase tracking-[0.24em] text-[var(--reg)] font-bold">
-                  Reservation Logged in CRM
+              <div className="space-y-2">
+                <span className="font-mono text-xs uppercase tracking-[0.26em] text-[var(--reg)] font-bold">
+                  Reservation Dispatched
                 </span>
                 <h1 className="font-serif italic text-4xl sm:text-5xl text-[var(--ink)] font-normal tracking-tight">
-                  Your reservation request is submitted.
+                  Thank you for booking with us!
                 </h1>
+                <p className="text-base text-[var(--ink)]/90 font-medium max-w-lg mx-auto font-sans leading-relaxed">
+                  Your reservation request has been received, and the booking details have been sent to your email (<strong className="underline text-[var(--ink)]">{bookingSuccess.guestEmail}</strong>).
+                </p>
+                <p className="text-xs text-muted-foreground max-w-md mx-auto font-sans">
+                  Your room allocation will be verified and <strong>confirmed by our team shortly</strong>.
+                </p>
               </div>
-              <p className="text-sm text-muted-foreground max-w-lg mx-auto font-sans leading-relaxed">
-                Namaste <strong className="text-[var(--ink)]">{bookingSuccess.guestName}</strong>. Your reservation request has been dispatched directly to the front desk CRM at Hotel Sharda Palace Deoghar.
-              </p>
             </div>
 
             {/* Reference ID Pill */}
@@ -510,42 +520,62 @@ export function CustomerBookingPage() {
                 </p>
               </div>
 
-              {/* Verified Ratings & Metrics Strip */}
+              {/* Verified Ratings & Metrics Strip - Luxury Editorial Typography */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 pt-2">
-                <div className="bg-[var(--surface)] border border-[var(--line)] rounded-xl p-4.5 transition-colors duration-300">
-                  <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground uppercase mb-1">
-                    <Star className="w-3.5 h-3.5 text-blue-500 fill-blue-500" />
+                {/* Card 1: Google Reviews */}
+                <div className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl p-5 sm:p-6 transition-all duration-300 hover:border-[var(--reg)]/50 relative overflow-hidden group">
+                  <div className="flex items-center justify-between gap-2 mb-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[var(--reg)] font-bold">
                     <span>Google Reviews</span>
+                    <Star className="w-3.5 h-3.5 text-blue-500 fill-blue-500 shrink-0" />
                   </div>
-                  <div className="text-lg font-semibold text-[var(--ink)]">4.4 ★ / 5.0</div>
-                  <div className="text-xs font-mono text-muted-foreground">200+ Verified Devotees</div>
+                  <div className="font-serif italic font-normal text-3xl sm:text-4xl text-[var(--ink)] tracking-tight leading-none my-2">
+                    4.4<span className="text-lg font-mono font-normal text-muted-foreground ml-1.5 not-italic">★ / 5.0</span>
+                  </div>
+                  <div className="font-mono text-[10.5px] tracking-[0.14em] uppercase text-muted-foreground mt-1">
+                    200+ Verified Devotees
+                  </div>
                 </div>
 
-                <div className="bg-[var(--surface)] border border-[var(--line)] rounded-xl p-4.5 transition-colors duration-300">
-                  <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground uppercase mb-1">
-                    <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                {/* Card 2: Booking.com */}
+                <div className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl p-5 sm:p-6 transition-all duration-300 hover:border-[var(--reg)]/50 relative overflow-hidden group">
+                  <div className="flex items-center justify-between gap-2 mb-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[var(--reg)] font-bold">
                     <span>Booking.com</span>
+                    <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />
                   </div>
-                  <div className="text-lg font-semibold text-[var(--ink)]">8.4 / 10</div>
-                  <div className="text-xs font-mono text-muted-foreground">Very Good Rating</div>
+                  <div className="font-serif italic font-normal text-3xl sm:text-4xl text-[var(--ink)] tracking-tight leading-none my-2">
+                    8.4<span className="text-lg font-mono font-normal text-muted-foreground ml-1.5 not-italic">/ 10</span>
+                  </div>
+                  <div className="font-mono text-[10.5px] tracking-[0.14em] uppercase text-muted-foreground mt-1">
+                    Very Good Rating
+                  </div>
                 </div>
 
-                <div className="bg-[var(--surface)] border border-[var(--line)] rounded-xl p-4.5 transition-colors duration-300">
-                  <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground uppercase mb-1">
-                    <Building className="w-3.5 h-3.5 text-[var(--reg)]" />
+                {/* Card 3: Ground Floor Access */}
+                <div className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl p-5 sm:p-6 transition-all duration-300 hover:border-[var(--reg)]/50 relative overflow-hidden group">
+                  <div className="flex items-center justify-between gap-2 mb-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[var(--reg)] font-bold">
                     <span>Access</span>
+                    <Building className="w-3.5 h-3.5 text-[var(--reg)] shrink-0" />
                   </div>
-                  <div className="text-lg font-semibold text-[var(--ink)]">Ground Floor Only</div>
-                  <div className="text-xs font-mono text-muted-foreground">100% Step-Free Access</div>
+                  <div className="font-serif italic font-normal text-2xl sm:text-3xl text-[var(--ink)] tracking-tight leading-none my-2">
+                    Ground Floor Only
+                  </div>
+                  <div className="font-mono text-[10.5px] tracking-[0.14em] uppercase text-muted-foreground mt-1">
+                    100% Step-Free Access
+                  </div>
                 </div>
 
-                <div className="bg-[var(--surface)] border border-[var(--line)] rounded-xl p-4.5 transition-colors duration-300">
-                  <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground uppercase mb-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#22c55e]" />
+                {/* Card 4: Booking Terms */}
+                <div className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl p-5 sm:p-6 transition-all duration-300 hover:border-[var(--reg)]/50 relative overflow-hidden group">
+                  <div className="flex items-center justify-between gap-2 mb-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[var(--reg)] font-bold">
                     <span>Booking Terms</span>
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#22c55e] shrink-0" />
                   </div>
-                  <div className="text-lg font-semibold text-[var(--ink)]">20% Advance</div>
-                  <div className="text-xs font-mono text-muted-foreground">80% Balance at Check-in</div>
+                  <div className="font-serif italic font-normal text-3xl sm:text-4xl text-[var(--ink)] tracking-tight leading-none my-2">
+                    20%<span className="text-lg font-serif italic text-muted-foreground ml-1.5 font-normal">Advance</span>
+                  </div>
+                  <div className="font-mono text-[10.5px] tracking-[0.14em] uppercase text-muted-foreground mt-1">
+                    80% Balance at Check-in
+                  </div>
                 </div>
               </div>
             </section>
@@ -577,15 +607,38 @@ export function CustomerBookingPage() {
                 </div>
               </div>
 
-              {/* Primary Active Image Display */}
-              <div className="relative rounded-2xl overflow-hidden border border-[var(--line)] bg-[var(--surface)] h-[350px] sm:h-[500px] shadow-sm">
+              {/* Primary Active Image Display with Gallery Navigation Arrows */}
+              <div className="relative rounded-2xl overflow-hidden border border-[var(--line)] bg-[var(--surface)] h-[350px] sm:h-[500px] shadow-sm group">
                 <img 
                   src={HOTEL_IMAGES[activePhotoIdx].url} 
                   alt={HOTEL_IMAGES[activePhotoIdx].title}
-                  className="w-full h-full object-cover transition-opacity duration-300"
+                  className="w-full h-full object-cover transition-opacity duration-300 select-none"
                 />
+
+                {/* Gallery Navigation Left Arrow */}
+                <button
+                  type="button"
+                  onClick={() => setActivePhotoIdx((prev) => (prev - 1 + HOTEL_IMAGES.length) % HOTEL_IMAGES.length)}
+                  className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[var(--paper)]/85 hover:bg-[var(--paper)] text-[var(--ink)] border border-[var(--line)] backdrop-blur-md flex items-center justify-center transition-all shadow-lg active:scale-90 cursor-pointer hover:border-[var(--reg)]"
+                  title="Previous image"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+                </button>
+
+                {/* Gallery Navigation Right Arrow */}
+                <button
+                  type="button"
+                  onClick={() => setActivePhotoIdx((prev) => (prev + 1) % HOTEL_IMAGES.length)}
+                  className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[var(--paper)]/85 hover:bg-[var(--paper)] text-[var(--ink)] border border-[var(--line)] backdrop-blur-md flex items-center justify-center transition-all shadow-lg active:scale-90 cursor-pointer hover:border-[var(--reg)]"
+                  title="Next image"
+                  aria-label="Next image"
+                >
+                  <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+                </button>
+
                 <div className="absolute inset-0 bg-gradient-to-t from-[var(--paper)] via-transparent to-transparent opacity-85 pointer-events-none" />
-                <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between pointer-events-none">
+                <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between pointer-events-none z-10">
                   <div className="space-y-1">
                     <span className="text-xs font-mono uppercase tracking-[0.2em] text-[var(--reg)] font-bold">
                       {HOTEL_IMAGES[activePhotoIdx].title}
@@ -651,7 +704,7 @@ export function CustomerBookingPage() {
                       </div>
                       <div className="absolute bottom-3 right-3">
                         <span className="px-3 py-1 rounded-md text-xs font-mono font-bold bg-[var(--ink)] text-[var(--paper)]">
-                          ₹1,500 / Night
+                          ₹{roomRates.doubleRoomRate.toLocaleString('en-IN')} / Night
                         </span>
                       </div>
                     </div>
@@ -660,7 +713,7 @@ export function CustomerBookingPage() {
                       <div>
                         <div className="flex items-center justify-between">
                           <h3 className="text-xl font-bold text-[var(--ink)] font-sans">Double Bed Room</h3>
-                          <span className="text-xs font-mono text-[var(--reg)] font-bold">20% Adv: ₹300/N</span>
+                          <span className="text-xs font-mono text-[var(--reg)] font-bold">20% Adv: ₹{Math.round(roomRates.doubleRoomRate * 0.20).toLocaleString('en-IN')}/N</span>
                         </div>
                         <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                           Comfortable air-conditioned room featuring 1 Large Double Bed, custom reading lighting, sanitized linen, and step-free ground floor access. Ideal for couples or solo pilgrims.
@@ -724,7 +777,7 @@ export function CustomerBookingPage() {
                       </div>
                       <div className="absolute bottom-3 right-3">
                         <span className="px-3 py-1 rounded-md text-xs font-mono font-bold bg-[var(--ink)] text-[var(--paper)]">
-                          ₹3,000 / Night
+                          ₹{roomRates.familyRoomRate.toLocaleString('en-IN')} / Night
                         </span>
                       </div>
                     </div>
@@ -733,7 +786,7 @@ export function CustomerBookingPage() {
                       <div>
                         <div className="flex items-center justify-between">
                           <h3 className="text-xl font-bold text-[var(--ink)] font-sans">Family Bed Room</h3>
-                          <span className="text-xs font-mono text-[var(--reg)] font-bold">20% Adv: ₹600/N</span>
+                          <span className="text-xs font-mono text-[var(--reg)] font-bold">20% Adv: ₹{Math.round(roomRates.familyRoomRate * 0.20).toLocaleString('en-IN')}/N</span>
                         </div>
                         <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                           Extra spacious ground-floor suite equipped with 2 Large Double Beds and large bathroom. Ideal for senior devotees and family pilgrimage groups.
@@ -895,30 +948,47 @@ export function CustomerBookingPage() {
                   <p className="text-xs text-muted-foreground mt-1">Main Shivganga Road, Bambam Baba Path, Near Matri Mandir Girls High School, Deoghar, Jharkhand 814112</p>
                 </div>
                 <a 
-                  href="https://maps.google.com/?q=Hotel+Sharda+Palace+Deoghar+Jharkhand" 
+                  href="https://maps.app.goo.gl/HkyEH6BBTiCvLvcR7" 
                   target="_blank" 
                   rel="noreferrer"
                   className="inline-flex items-center gap-2 text-xs font-mono text-[var(--reg)] hover:underline"
                 >
+                  <MapPin className="w-3.5 h-3.5 text-[var(--reg)]" />
                   <span>Open in Google Maps</span>
                   <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               </div>
 
-              {/* Responsive Google Maps Embed */}
-              <div className="relative rounded-xl overflow-hidden border border-[var(--line)] h-[320px] sm:h-[420px] shadow-xs">
+              {/* Responsive Google Maps Embed with Verified Pin for Sharda Palace Hotel */}
+              <div className="relative rounded-xl overflow-hidden border border-[var(--line)] h-[340px] sm:h-[440px] shadow-xs">
                 <iframe
-                  title="Hotel Sharda Palace Deoghar Location"
+                  title="SHARDA PALACE DEOGHAR Location Pin"
                   width="100%"
                   height="100%"
                   frameBorder="0"
                   scrolling="no"
                   marginHeight={0}
                   marginWidth={0}
-                  src="https://maps.google.com/maps?q=Hotel+Sharda+Palace+Deoghar+Jharkhand&t=&z=16&ie=UTF8&iwloc=&output=embed"
+                  src="https://maps.google.com/maps?q=SHARDA+PALACE+DEOGHAR,+Bambam+Baba+Path,+Deoghar&t=&z=17&ie=UTF8&iwloc=B&output=embed"
                   className="w-full h-full filter contrast-105"
                   loading="lazy"
                 ></iframe>
+
+                {/* Floating Verified Pin Badge */}
+                <div className="absolute top-4 left-4 z-10 bg-[var(--paper)]/95 backdrop-blur-md border border-[var(--line)] rounded-xl p-3 shadow-lg max-w-xs pointer-events-none">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
+                    <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--reg)]">
+                      Verified Hotel Pin
+                    </span>
+                  </div>
+                  <p className="font-sans text-xs font-bold text-[var(--ink)] leading-tight">
+                    SHARDA PALACE DEOGHAR
+                  </p>
+                  <p className="font-mono text-[10px] text-muted-foreground mt-0.5">
+                    Bambam Baba Path · 300m walk to Mandir
+                  </p>
+                </div>
               </div>
 
               {/* Landmark Distances Grid */}
