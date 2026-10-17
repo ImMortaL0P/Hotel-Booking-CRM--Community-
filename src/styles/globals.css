@@ -1,102 +1,108 @@
-@custom-variant dark (&:is(.dark *, [data-theme="dark"] *));
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
 
 :root, [data-theme="light"] {
   --font-size: 16px;
   
-  /* Kraft Studios — Tactile Paper & Ink Design System */
-  --paper: #F4F1EA;
-  --surface: #EBE7DE;
-  --ink: #17171A;
-  --reg: #C2412D; /* Kraft Vermilion */
-  --line: rgba(23, 23, 26, 0.13);
+  /* Kraft Studios — Tactile Paper & Ink Design System (Exact from kraftstudios.site) */
+  --paper: oklch(0.955 0.012 88);
+  --surface: oklch(0.925 0.013 88);
+  --ink: oklch(0.18 0 0);
+  --reg: oklch(0.61 0.21 28);
+  --muted-foreground: oklch(0.47 0 0);
+  --line: oklch(0.18 0 0 / 13%);
+  --grain-opacity: 0.05;
   
-  --background: #F4F1EA;
-  --foreground: #17171A;
-  --card: #EBE7DE;
-  --card-foreground: #17171A;
-  --popover: #EBE7DE;
-  --popover-foreground: #17171A;
+  --background: oklch(0.955 0.012 88);
+  --foreground: oklch(0.18 0 0);
+  --card: oklch(0.925 0.013 88);
+  --card-foreground: oklch(0.18 0 0);
+  --popover: oklch(0.925 0.013 88);
+  --popover-foreground: oklch(0.18 0 0);
   
-  --primary: #C2412D;
-  --primary-foreground: #F4F1EA;
+  --primary: oklch(0.61 0.21 28);
+  --primary-foreground: #ffffff;
   
-  --secondary: #E4DFD5;
-  --secondary-foreground: #17171A;
+  --secondary: oklch(0.90 0.013 88);
+  --secondary-foreground: oklch(0.18 0 0);
   
-  --muted: #E4DFD5;
-  --muted-foreground: #6B7A85;
+  --muted: oklch(0.925 0.013 88);
   
-  --accent: #DDD7CB;
-  --accent-foreground: #17171A;
+  --accent: oklch(0.89 0.014 88);
+  --accent-foreground: oklch(0.18 0 0);
   
-  --destructive: #C2412D;
-  --destructive-foreground: #F4F1EA;
+  --destructive: oklch(0.61 0.21 28);
+  --destructive-foreground: #ffffff;
   
-  --border: rgba(23, 23, 26, 0.13);
-  --input: rgba(23, 23, 26, 0.13);
-  --input-background: #F4F1EA;
-  --switch-background: #DDD7CB;
-  --ring: #C2412D;
+  --border: oklch(0.18 0 0 / 13%);
+  --input: oklch(0.18 0 0 / 13%);
+  --input-background: oklch(0.955 0.012 88);
+  --switch-background: oklch(0.88 0.013 88);
+  --ring: oklch(0.61 0.21 28);
   
   --font-weight-medium: 500;
   --font-weight-normal: 400;
   
   --radius: 0.5rem;
   
-  --sidebar: #EBE7DE;
-  --sidebar-foreground: #17171A;
-  --sidebar-primary: #C2412D;
-  --sidebar-primary-foreground: #F4F1EA;
-  --sidebar-accent: #E4DFD5;
-  --sidebar-accent-foreground: #17171A;
-  --sidebar-border: rgba(23, 23, 26, 0.10);
-  --sidebar-ring: #C2412D;
+  --sidebar: oklch(0.925 0.013 88);
+  --sidebar-foreground: oklch(0.18 0 0);
+  --sidebar-primary: oklch(0.61 0.21 28);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: oklch(0.90 0.013 88);
+  --sidebar-accent-foreground: oklch(0.18 0 0);
+  --sidebar-border: oklch(0.18 0 0 / 10%);
+  --sidebar-ring: oklch(0.61 0.21 28);
+
+  color-scheme: light;
 }
 
 .dark, [data-theme="dark"] {
   /* Kraft Studios Dark — Obsidian Matte & Bone */
-  --paper: #0B0B0D;
+  --paper: #0b0b0d;
   --surface: #131316;
-  --ink: #F0EEEA;
-  --reg: #E04B33; /* Kraft Electric Vermilion */
-  --line: rgba(240, 238, 234, 0.11);
+  --ink: #f0eeea;
+  --reg: oklch(0.64 0.21 29);
+  --muted-foreground: #9a9893;
+  --line: rgb(240 238 234 / 11%);
+  --grain-opacity: 0.07;
   
-  --background: #0B0B0D;
-  --foreground: #F0EEEA;
+  --background: #0b0b0d;
+  --foreground: #f0eeea;
   --card: #131316;
-  --card-foreground: #F0EEEA;
+  --card-foreground: #f0eeea;
   --popover: #131316;
-  --popover-foreground: #F0EEEA;
+  --popover-foreground: #f0eeea;
   
-  --primary: #E04B33;
-  --primary-foreground: #0B0B0D;
+  --primary: oklch(0.64 0.21 29);
+  --primary-foreground: #ffffff;
   
-  --secondary: #18181D;
-  --secondary-foreground: #F0EEEA;
+  --secondary: #18181d;
+  --secondary-foreground: #f0eeea;
   
-  --muted: #18181D;
-  --muted-foreground: #9A9893;
+  --muted: #18181d;
   
   --accent: #202026;
-  --accent-foreground: #F0EEEA;
+  --accent-foreground: #f0eeea;
   
-  --destructive: #E04B33;
-  --destructive-foreground: #FFFFFF;
+  --destructive: oklch(0.64 0.21 29);
+  --destructive-foreground: #ffffff;
   
-  --border: rgba(240, 238, 234, 0.11);
-  --input: rgba(240, 238, 234, 0.11);
-  --input-background: #0B0B0D;
+  --border: rgb(240 238 234 / 11%);
+  --input: rgb(240 238 234 / 11%);
+  --input-background: #0b0b0d;
   --switch-background: #232329;
-  --ring: #E04B33;
+  --ring: oklch(0.64 0.21 29);
 
-  --sidebar: #0F0F12;
-  --sidebar-foreground: #F0EEEA;
-  --sidebar-primary: #E04B33;
-  --sidebar-primary-foreground: #0B0B0D;
-  --sidebar-accent: #18181D;
-  --sidebar-accent-foreground: #F0EEEA;
-  --sidebar-border: rgba(240, 238, 234, 0.08);
-  --sidebar-ring: #E04B33;
+  --sidebar: #0f0f12;
+  --sidebar-foreground: #f0eeea;
+  --sidebar-primary: oklch(0.64 0.21 29);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #18181d;
+  --sidebar-accent-foreground: #f0eeea;
+  --sidebar-border: rgb(240 238 234 / 8%);
+  --sidebar-ring: oklch(0.64 0.21 29);
+
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -291,3 +297,25 @@
     }
   }
 }
+
+/* Lenis Smooth Scroll Integration */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+

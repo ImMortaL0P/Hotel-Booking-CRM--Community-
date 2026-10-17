@@ -29,7 +29,6 @@ export function Rooms() {
     'Occupied': 'bg-secondary text-foreground border-border',
     'Cleaning': 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25',
     'Maintenance': 'bg-primary/10 text-primary border-primary/25',
-    'Coming Soon': 'bg-secondary/70 text-muted-foreground border-border font-mono',
   };
 
   const statusIcons: Record<RoomStatus, React.ReactNode> = {
@@ -37,7 +36,6 @@ export function Rooms() {
     'Occupied': <AlertCircle className="w-3 h-3" />,
     'Cleaning': <Sparkles className="w-3 h-3" />,
     'Maintenance': <DoorClosed className="w-3 h-3" />,
-    'Coming Soon': <Sparkles className="w-3 h-3 text-primary" />,
   };
 
   const handleStatusChange = (roomId: string, newStatus: RoomStatus) => {
@@ -69,7 +67,7 @@ export function Rooms() {
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-muted-foreground" />
           <span className="text-sm font-semibold text-foreground mr-2">Status:</span>
-          {(['All', 'Available', 'Occupied', 'Cleaning', 'Maintenance', 'Coming Soon'] as const).map(s => (
+          {(['All', 'Available', 'Occupied', 'Cleaning', 'Maintenance'] as const).map(s => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
@@ -133,23 +131,14 @@ export function Rooms() {
                           </div>
                         ) : (
                           <div className="h-12 flex items-center justify-center text-xs text-muted-foreground italic mb-3 text-center">
-                            {room.status === 'Coming Soon' ? (
-                              <span className="font-mono text-[11px] not-italic text-primary">Non-Operational</span>
-                            ) : room.status === 'Available' ? (
-                              'Ready'
-                            ) : ''}
+                            {room.status === 'Available' ? 'Ready' : ''}
                           </div>
                         )}
                         
-                        {room.status === 'Coming Soon' ? (
-                          <div className={`w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-mono font-medium border ${statusColors['Coming Soon']}`}>
-                            <Sparkles className="w-3 h-3 text-primary" /> Coming Soon
-                          </div>
-                        ) : (
-                          <div className="relative group/menu">
-                            <button className={`w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded text-xs font-bold border ${statusColors[room.status]}`}>
-                              {statusIcons[room.status]} {room.status}
-                            </button>
+                        <div className="relative group/menu">
+                          <button className={`w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded text-xs font-bold border ${statusColors[room.status]}`}>
+                            {statusIcons[room.status]} {room.status}
+                          </button>
                             
                             {/* Hidden dropup menu on hover */}
                             <div className="absolute bottom-full left-0 w-full mb-1 bg-card border border-border rounded-md shadow-sm opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all z-10 p-1 flex flex-col gap-1">
@@ -164,7 +153,6 @@ export function Rooms() {
                               ))}
                             </div>
                           </div>
-                        )}
 
                       </div>
                     </div>

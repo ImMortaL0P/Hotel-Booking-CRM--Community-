@@ -80,12 +80,6 @@ export function Calendar() {
   }, [bookings]);
 
   const handleCellClick = (roomId: string, hourIdx: number) => {
-    const room = rooms.find(r => r.id === roomId);
-    if (room?.status === 'Coming Soon') {
-      import('sonner').then(({ toast }) => toast.info(`Room ${room.number} is coming soon and is not currently operational.`));
-      return;
-    }
-
     const cellTime = new Date(timelineStartTime + hourIdx * 60 * 60 * 1000);
     const y = cellTime.getFullYear();
     const m = String(cellTime.getMonth() + 1).padStart(2, '0');
@@ -136,7 +130,6 @@ export function Calendar() {
           <div className="chip gap-1.5"><div className="w-2 h-2 bg-blue-500 rounded-full"></div> Confirmed</div>
           <div className="chip gap-1.5"><div className="w-2 h-2 bg-amber-500 rounded-full"></div> Booked</div>
           <div className="chip gap-1.5"><div className="w-2 h-2 bg-muted-foreground rounded-full"></div> Checked-Out</div>
-          <div className="chip gap-1.5"><div className="w-2 h-2 bg-primary/60 rounded-full"></div> Coming Soon</div>
         </div>
       </div>
 
@@ -226,9 +219,7 @@ export function Calendar() {
                           <div className="flex items-center justify-between mb-1 gap-2">
                             <span className="font-bold text-base text-foreground font-mono truncate">Room {room.number}</span>
                             <span className={`chip text-[10px] py-0.5 px-2 ${
-                              room.status === 'Coming Soon'
-                                ? 'text-primary/80 border-primary/40 bg-primary/5 font-semibold'
-                                : room.status === 'Available'
+                              room.status === 'Available'
                                 ? 'text-green-600 border-green-600/30'
                                 : 'text-primary border-primary/30'
                             }`}>
@@ -247,25 +238,14 @@ export function Calendar() {
                                   key={h}
                                   style={{ width: hourWidth }}
                                   onClick={() => handleCellClick(room.id, hourIdx)}
-                                  className={`h-full shrink-0 border-r border-border/40 transition-colors
-                                            ${room.status === 'Coming Soon' ? 'cursor-not-allowed bg-muted/10' : 'cursor-pointer hover:bg-muted/60'}
-                                            ${day.isWeekend ? 'bg-muted/20' : 'bg-transparent'}`}
+                                  className={`h-full shrink-0 border-r border-border/40 transition-colors cursor-pointer hover:bg-muted/60 ${day.isWeekend ? 'bg-muted/20' : 'bg-transparent'}`}
                                 ></div>
                               ))}
                             </div>
                           ))}
 
-                          {/* Coming Soon overlay for non-operational rooms */}
-                          {room.status === 'Coming Soon' && (
-                            <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none bg-muted/15 border border-dashed border-border/50">
-                              <span className="font-mono text-xs text-muted-foreground/90 tracking-widest uppercase bg-card/90 px-3 py-1 rounded-full border border-border shadow-sm">
-                                Coming Soon · Non-Operational
-                              </span>
-                            </div>
-                          )}
-
                           {/* Bookings Blocks Overlay */}
-                          {room.status !== 'Coming Soon' && roomBookings.map(booking => {
+                          {roomBookings.map(booking => {
                             const guestMatch = guestById.get(booking.guestId);
                             const guestName = guestMatch?.name || booking.guestId;
 

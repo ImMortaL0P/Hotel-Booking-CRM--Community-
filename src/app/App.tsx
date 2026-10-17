@@ -1,5 +1,6 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
+import Lenis from 'lenis';
 import { useData } from './data/DataContext';
 import { StaffSignIn } from './pages/StaffSignIn';
 import { AppShell } from './components/AppShell';
@@ -31,6 +32,26 @@ const LoadingFallback = () => (
 
 export default function App() {
   const { user } = useData();
+
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.1,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+    });
+
+    let rafId: number;
+    function raf(time: number) {
+      lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
+    }
+    rafId = requestAnimationFrame(raf);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+    };
+  }, []);
 
   const isPublicBookingRoute = 
     window.location.pathname.startsWith('/book') || 

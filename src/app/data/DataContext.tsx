@@ -174,7 +174,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const syncing = useRef<Promise<void> | null>(null);
 
   const applyFull = (data: Partial<Dataset>) => {
-    const incomingRooms = data.rooms || [];
+    const incomingRooms = (data.rooms || []).filter(r => !['rm-201', 'rm-202', 'rm-203', '201', '202', '203'].includes(r.id) && r.status !== 'Coming Soon');
     const incomingIds = new Set(incomingRooms.map(r => r.id));
     const mergedRooms = [...incomingRooms];
     for (const initRoom of INITAL_ROOMS) {
@@ -197,11 +197,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const del = d.deleted || {};
     setRooms(prev => {
       const merged = mergeById(prev, d.rooms, del.rooms);
-      const ids = new Set(merged.map(r => r.id));
+      const filtered = merged.filter(r => !['rm-201', 'rm-202', 'rm-203', '201', '202', '203'].includes(r.id) && r.status !== 'Coming Soon');
+      const ids = new Set(filtered.map(r => r.id));
       for (const initRoom of INITAL_ROOMS) {
-        if (!ids.has(initRoom.id)) merged.push(initRoom);
+        if (!ids.has(initRoom.id)) filtered.push(initRoom);
       }
-      return merged;
+      return filtered;
     });
     setGuests(prev => mergeById(prev, d.guests, del.guests));
     setBookings(prev => {
