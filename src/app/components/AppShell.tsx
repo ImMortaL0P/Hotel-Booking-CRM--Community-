@@ -1,6 +1,6 @@
 import { ReactNode, useState, useEffect, useMemo, useCallback } from 'react';
 import { NavLink, useLocation } from 'react-router';
-import { LayoutDashboard, BookOpenText, Users, BedDouble, CalendarDays, MessageSquare, CreditCard, LogOut, ChevronLeft, ChevronRight, Building, FileText, Receipt, History, Moon, Sun, Bell, Search, WalletCards, Activity, Globe, Server, Database, Mail } from 'lucide-react';
+import { LayoutDashboard, BookOpenText, Users, BedDouble, CalendarDays, MessageSquare, CreditCard, LogOut, ChevronLeft, ChevronRight, Building, FileText, Receipt, History, Moon, Sun, Bell, Search, WalletCards, Activity, Globe, Server, Database, Mail, ExternalLink } from 'lucide-react';
 import { useData } from '../data/DataContext';
 import { useTheme } from './ThemeProvider';
 import { cn } from '../lib/utils';
@@ -11,32 +11,56 @@ import { API_BASE_URL } from '../lib/api';
 
 // Defined at module scope: declaring it inside AppShell gave it a new identity
 // every render, so React unmounted and remounted the whole nav each time.
-const NavItem = ({ to, icon: Icon, label, badge, collapsed }: any) => (
-  <NavLink
-    to={to}
-    className={({ isActive }) => cn(
-      "flex items-center gap-3 px-3 py-2 rounded-lg mb-0.5 transition-colors text-sm font-medium",
-      isActive
-        ? "bg-primary text-primary-foreground font-semibold shadow-none"
-        : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
-    )}
-  >
-    <Icon className="w-4 h-4 shrink-0" />
-    {!collapsed && (
-      <div className="flex-1 flex items-center justify-between">
-        <span className="tracking-tight">{label}</span>
-        {badge > 0 && (
-          <span className={cn(
-            "px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold tracking-tight border",
-            "bg-primary/15 text-primary border-primary/30 dark:bg-primary/20 dark:text-primary-foreground dark:border-primary/40"
-          )}>
-            {badge}
-          </span>
+const NavItem = ({ to, icon: Icon, label, badge, collapsed, inactive }: any) => {
+  if (inactive) {
+    return (
+      <div
+        className={cn(
+          "flex items-center gap-3 px-3 py-2 rounded-lg mb-0.5 transition-colors text-sm font-medium opacity-50 cursor-not-allowed select-none text-muted-foreground hover:bg-muted/30",
+          collapsed && "justify-center px-0"
+        )}
+        title={`${label} (Inactive)`}
+      >
+        <Icon className="w-4 h-4 shrink-0 text-muted-foreground/60" />
+        {!collapsed && (
+          <div className="flex-1 flex items-center justify-between">
+            <span className="tracking-tight text-muted-foreground/75">{label}</span>
+            <span className="px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider rounded border border-border/70 bg-muted/60 text-muted-foreground font-semibold">
+              Inactive
+            </span>
+          </div>
         )}
       </div>
-    )}
-  </NavLink>
-);
+    );
+  }
+
+  return (
+    <NavLink
+      to={to}
+      className={({ isActive }) => cn(
+        "flex items-center gap-3 px-3 py-2 rounded-lg mb-0.5 transition-colors text-sm font-medium",
+        isActive
+          ? "bg-primary text-primary-foreground font-semibold shadow-none"
+          : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+      )}
+    >
+      <Icon className="w-4 h-4 shrink-0" />
+      {!collapsed && (
+        <div className="flex-1 flex items-center justify-between">
+          <span className="tracking-tight">{label}</span>
+          {badge > 0 && (
+            <span className={cn(
+              "px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold tracking-tight border",
+              "bg-primary/15 text-primary border-primary/30 dark:bg-primary/20 dark:text-primary-foreground dark:border-primary/40"
+            )}>
+              {badge}
+            </span>
+          )}
+        </div>
+      )}
+    </NavLink>
+  );
+};
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, logout, bookings, payments, rooms } = useData();
@@ -153,7 +177,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <NavItem collapsed={collapsed} to="/guests" icon={Users} label="Guests" />
           <NavItem collapsed={collapsed} to="/rooms" icon={BedDouble} label="Rooms" />
           <NavItem collapsed={collapsed} to="/calendar" icon={CalendarDays} label="Calendar" />
-          <NavItem collapsed={collapsed} to="/email-import" icon={Mail} label="Email Import" />
+          <NavItem collapsed={collapsed} to="/email-import" icon={Mail} label="Email Import" inactive={true} />
           <NavItem collapsed={collapsed} to="/communications" icon={MessageSquare} label="Communications" />
           {['manager', 'owner', 'superadmin'].includes(user?.role || '') && (
             <NavItem collapsed={collapsed} to="/payments" icon={CreditCard} label="Payments" badge={pendingPayments} />
@@ -164,10 +188,34 @@ export function AppShell({ children }: { children: ReactNode }) {
             <NavItem collapsed={collapsed} to="/expenses" icon={WalletCards} label="Expenses & Ledger" />
           )}
           {['manager', 'owner', 'superadmin'].includes(user?.role || '') && (
-            <NavItem collapsed={collapsed} to="/channel-settings" icon={Globe} label="Channel Settings" />
+            <NavItem collapsed={collapsed} to="/channel-settings" icon={Globe} label="Channel Settings" inactive={true} />
           )}
 
           <NavItem collapsed={collapsed} to="/logs" icon={History} label="Activity Logs" />
+
+          {/* Quick link to public guest booking portal */}
+          <div className="pt-2 mt-2 border-t border-border/50">
+            <a
+              href="/book"
+              target="_blank"
+              rel="noreferrer"
+              className={cn(
+                "flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs font-medium border border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary group",
+                collapsed && "justify-center px-0"
+              )}
+              title="Open Public Customer Booking Page (/book)"
+            >
+              <ExternalLink className="w-4 h-4 shrink-0 text-primary" />
+              {!collapsed && (
+                <div className="flex-1 flex items-center justify-between">
+                  <span className="font-semibold tracking-tight font-mono">Guest Booking</span>
+                  <span className="text-[9px] uppercase font-mono px-1.5 py-0.5 rounded bg-primary text-primary-foreground font-bold">
+                    Public
+                  </span>
+                </div>
+              )}
+            </a>
+          </div>
         </div>
 
         {/* System Health Monitor */}

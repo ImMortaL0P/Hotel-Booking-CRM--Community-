@@ -20,8 +20,10 @@ import {
   Server,
   Database,
   Globe,
-  Search
+  Search,
+  Trash2
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
 import { NewBookingModal } from '../components/NewBookingModal';
 import { useNavigate } from 'react-router';
@@ -49,6 +51,30 @@ export function Dashboard() {
     }
     setIsSearching(false);
   };
+
+  const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
+
+  const handleDeleteDoc = async (id: string, docId: string) => {
+    if (!window.confirm(`Are you sure you want to delete document ${docId}? This will remove it from the Cloud Repository and Google Drive.`)) {
+      return;
+    }
+
+    setDeletingDocId(id);
+    try {
+      const res = await apiFetch(`/api/documents/${id}`, { method: 'DELETE' });
+      if (res && res.success) {
+        toast.success(`Document ${docId} deleted successfully`);
+        setDocs(prev => prev.filter(d => (d._id || d.id) !== id && d.documentId !== id));
+      } else {
+        toast.error(res?.message || 'Failed to delete document');
+      }
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to delete document');
+    } finally {
+      setDeletingDocId(null);
+    }
+  };
+
   // Load initially
   useEffect(() => { handleDocSearch(); }, []);
 
@@ -570,6 +596,15 @@ export function Dashboard() {
                                      <a href={d.webContentLink} target="_blank" rel="noreferrer" className="text-xs font-bold bg-primary text-primary-foreground px-3 py-1.5 rounded hover:opacity-90 transition-colors">
                                         Download PDF
                                      </a>
+                                     <button
+                                        onClick={() => handleDeleteDoc(d._id || d.id || d.documentId, d.documentId)}
+                                        disabled={deletingDocId === (d._id || d.id || d.documentId)}
+                                        className="text-xs font-bold text-destructive bg-destructive/10 hover:bg-destructive hover:text-destructive-foreground border border-destructive/30 px-2.5 py-1.5 rounded transition-colors flex items-center gap-1 disabled:opacity-50"
+                                        title="Delete file permanently"
+                                     >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                        {deletingDocId === (d._id || d.id || d.documentId) ? 'Deleting...' : 'Delete'}
+                                     </button>
                                  </div>
                               </td>
                            </tr>

@@ -106,3 +106,13 @@ export async function uploadPdfToDrive(pdfBuffer: Buffer, filename: string, type
     webContentLink: file.data.webContentLink!
   };
 }
+
+export async function deletePdfFromDrive(fileId: string) {
+  try {
+    await drive.files.delete({ fileId });
+    return true;
+  } catch (err) {
+    console.warn(`Failed to delete file ${fileId} from Drive:`, err);
+    return false;
+  }
+}

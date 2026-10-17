@@ -81,3 +81,36 @@ export const searchDocuments = async (req: Request, res: Response): Promise<void
          res.status(500).json({ success: false, message: 'Failed to search documents' });
     }
 };
+
+export const deleteDocument = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        // Accept either MongoDB _id or custom documentId
+        const doc = await DocumentModel.findOne({
+            $or: [
+                { _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : null },
+                { documentId: id }
+            ].filter(Boolean)
+        });
+
+        if (!doc) {
+            res.status(404).json({ success: false, message: 'Document not found' });
+            return;
+        }
+
+        if (doc.driveFileId) {
+            try {
+                const { deletePdfFromDrive } = await import('../services/driveService.js');
+                await deletePdfFromDrive(doc.driveFileId);
+            } catch (driveErr) {
+                console.warn('Could not delete from Google Drive:', driveErr);
+            }
+        }
+
+        await DocumentModel.findByIdAndDelete(doc._id);
+        res.json({ success: true, message: 'Document deleted successfully' });
+    } catch (error: any) {
+        console.error('Error deleting document:', error);
+        res.status(500).json({ success: false, message: 'Failed to delete document', error: error.message || String(error) });
+    }
+};

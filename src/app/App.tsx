@@ -18,6 +18,7 @@ const Expenses = lazy(() => import('./pages/Expenses').then(m => ({ default: m.E
 const EmailImport = lazy(() => import('./pages/EmailImport').then(m => ({ default: m.EmailImport })));
 const Logs = lazy(() => import('./pages/Logs').then(m => ({ default: m.Logs })));
 const ChannelSettings = lazy(() => import('./components/ChannelSettings').then(m => ({ default: m.ChannelSettings })));
+const CustomerBookingPage = lazy(() => import('./pages/CustomerBookingPage').then(m => ({ default: m.CustomerBookingPage })));
 
 const LoadingFallback = () => (
   <div className="h-full flex items-center justify-center bg-background">
@@ -30,6 +31,29 @@ const LoadingFallback = () => (
 
 export default function App() {
   const { user } = useData();
+
+  const isPublicBookingRoute = 
+    window.location.pathname.startsWith('/book') || 
+    window.location.pathname.startsWith('/reserve') ||
+    window.location.pathname.startsWith('/booking-request') ||
+    window.location.hash.startsWith('#/book') ||
+    window.location.hash.startsWith('#/reserve');
+
+  if (isPublicBookingRoute) {
+    return (
+      <BrowserRouter>
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
+            <Route path="/book" element={<CustomerBookingPage />} />
+            <Route path="/reserve" element={<CustomerBookingPage />} />
+            <Route path="/booking-request" element={<CustomerBookingPage />} />
+            <Route path="*" element={<CustomerBookingPage />} />
+          </Routes>
+        </Suspense>
+        <Toaster />
+      </BrowserRouter>
+    );
+  }
 
   if (!user) {
     return (
@@ -59,6 +83,8 @@ export default function App() {
             <Route path="/channel-settings" element={<ChannelSettings />} />
             <Route path="/email-import" element={<EmailImport />} />
             <Route path="/logs" element={<Logs />} />
+            <Route path="/book" element={<CustomerBookingPage />} />
+            <Route path="/reserve" element={<CustomerBookingPage />} />
           </Routes>
         </Suspense>
       </AppShell>

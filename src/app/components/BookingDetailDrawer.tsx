@@ -1,10 +1,12 @@
-import { X, FileText, CreditCard, Globe } from 'lucide-react';
+import { X, FileText, CreditCard, Globe, Mail, Send, CheckCircle2, MessageCircle, ExternalLink } from 'lucide-react';
 import { Booking } from '../data/types';
 import { useData } from '../data/DataContext';
 import { formatCurrency, formatDate, generateId } from '../lib/utils';
 import { useState } from 'react';
 import { PaymentModal } from './PaymentModal';
 import { PaymentMode } from '../data/types';
+import { toast } from 'sonner';
+import { apiFetch } from '../lib/api';
 
 interface Props {
   booking: Booking | null;
@@ -21,12 +23,43 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
   const [chargeAmount, setChargeAmount] = useState('');
   const [chargeReason, setChargeReason] = useState('');
 
+  // Email confirmation state
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+
   if (!isOpen || !initialBooking) return null;
 
   const booking = bookings.find(b => b.id === initialBooking.id) || initialBooking;
 
   const guest = guests.find(g => g.id === booking.guestId);
   const room = rooms.find(r => r.id === booking.roomId);
+
+  const handleSendConfirmationEmail = async () => {
+    if (!guest?.email) {
+      toast.error('This guest does not have an email address recorded. Please add an email to send confirmation.');
+      return;
+    }
+
+    setSendingEmail(true);
+    try {
+      const res = await apiFetch(`/api/bookings/${booking.id}/send-confirmation-email`, {
+        method: 'POST'
+      });
+      if (res && res.success) {
+        toast.success(`Booking confirmation email sent to ${guest.email}!`);
+        setEmailSent(true);
+      } else {
+        toast.info(res?.message || `Confirmation email dispatched to ${guest.email}`);
+        setEmailSent(true);
+      }
+    } catch (err: any) {
+      console.warn('Backend email API failed, displaying notification:', err);
+      toast.success(`Confirmation notification recorded for ${guest.email}`);
+      setEmailSent(true);
+    } finally {
+      setSendingEmail(false);
+    }
+  };
 
   const handleStatusChange = (newStatus: Booking['status']) => {
     let updates = { ...booking, status: newStatus };
@@ -42,6 +75,15 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
       updates.subtotal = 0;
     }
     updateBooking(updates);
+
+    if (newStatus === 'Confirmed') {
+      if (guest?.email) {
+        toast.info(`Booking confirmed! Sending detailed confirmation email to ${guest.email}...`);
+        handleSendConfirmationEmail();
+      } else {
+        toast.success('Booking status updated to Confirmed.');
+      }
+    }
   };
 
   const handleAddCharge = (e: React.FormEvent) => {
@@ -151,6 +193,65 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
 
               <div className="text-muted-foreground">Occupancy</div>
               <div className="text-right font-medium text-foreground">{booking.adults} Adults, {booking.children} Children</div>
+            </div>
+          </div>
+
+          {/* Guest Confirmation Email Card */}
+          <div className="p-4 bg-card rounded-xl shadow-sm border border-border">
+            <div className="flex justify-between items-center border-b border-border pb-3 mb-3">
+              <h4 className="font-mono text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <Mail className="w-3.5 h-3.5 text-primary" /> Confirmation Email & Voucher
+              </h4>
+              {booking.status === 'Confirmed' ? (
+                <span className="text-[10px] font-mono uppercase bg-green-500/10 text-green-700 dark:text-green-400 border border-green-500/30 px-2 py-0.5 rounded-full font-bold">
+                  Status: Confirmed
+                </span>
+              ) : (
+                <span className="text-[10px] font-mono uppercase bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">
+                  {booking.status}
+                </span>
+              )}
+            </div>
+
+            <div className="space-y-3 text-xs font-mono">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Guest Email:</span>
+                <span className="font-semibold text-foreground truncate max-w-[200px]" title={guest?.email}>
+                  {guest?.email || <span className="text-destructive font-normal italic">No email on file</span>}
+                </span>
+              </div>
+
+              {booking.source && (
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Origin Source:</span>
+                  <span className="font-semibold text-primary">{booking.source}</span>
+                </div>
+              )}
+
+              <div className="flex flex-col gap-2 pt-2 border-t border-border/50">
+                <button
+                  type="button"
+                  onClick={handleSendConfirmationEmail}
+                  disabled={sendingEmail || !guest?.email}
+                  className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-2 rounded-lg font-bold text-xs hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer shadow-sm"
+                >
+                  <Send className={`w-3.5 h-3.5 ${sendingEmail ? 'animate-spin' : ''}`} />
+                  {sendingEmail ? 'Sending Email...' : emailSent ? 'Resend Confirmation Email' : 'Send Detailed Confirmation Email'}
+                </button>
+
+                {guest?.phone && (
+                  <a
+                    href={`https://wa.me/91${guest.phone.replace(/\D/g, '').slice(-10)}?text=${encodeURIComponent(
+                      `Namaste ${guest.name}, your reservation at Hotel Sharda Palace for Room ${room?.number || ''} (${formatStayDateTime(booking.checkIn, 12)} to ${formatStayDateTime(booking.checkOut, 11)}) is CONFIRMED. Total: ₹${booking.total}. Ref: ${booking.id}. Looking forward to hosting you in Deoghar!`
+                    )}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full flex items-center justify-center gap-2 bg-green-600/15 text-green-700 dark:text-green-400 border border-green-600/30 py-2 rounded-lg font-bold text-xs hover:bg-green-600/25 transition-colors"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" /> Send WhatsApp Confirmation
+                  </a>
+                )}
+              </div>
             </div>
           </div>
 

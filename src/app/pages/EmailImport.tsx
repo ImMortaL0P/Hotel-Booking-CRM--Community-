@@ -150,11 +150,23 @@ export function EmailImport() {
 
   return (
     <div className="space-y-6 h-full flex flex-col">
+      {/* Inactive Notice Banner */}
+      <div className="bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 px-4 py-3 rounded-lg flex items-center justify-between text-xs font-mono">
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+          <span><strong>Module Inactive:</strong> Email import is currently set to inactive by administrator. Automated inbox processing is paused.</span>
+        </div>
+        <span className="px-2 py-0.5 rounded bg-amber-500/20 text-[10px] uppercase font-bold tracking-wider">Inactive</span>
+      </div>
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Mail className="w-6 h-6 text-primary" /> Email Booking Import
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <Mail className="w-6 h-6 text-primary" /> Email Booking Import
+            </h1>
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-muted text-muted-foreground border border-border">Inactive</span>
+          </div>
           <p className="text-sm text-muted-foreground">
             Reads OTA and website booking emails and adds them to bookings, the calendar and the ledger.
           </p>

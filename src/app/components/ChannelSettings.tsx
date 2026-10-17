@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Save, RefreshCw, Zap, ExternalLink } from 'lucide-react';
+import { Settings, Save, RefreshCw, Zap, ExternalLink, AlertTriangle } from 'lucide-react';
 import { apiFetch } from '../lib/api';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
@@ -116,8 +116,20 @@ export function ChannelSettings() {
 
   return (
     <div className="space-y-6">
+      {/* Inactive Notice Banner */}
+      <div className="bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 px-4 py-3 rounded-lg flex items-center justify-between text-xs font-mono">
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+          <span><strong>Module Inactive:</strong> Channel settings is currently marked inactive by administrator. OTA channel syncing is disabled.</span>
+        </div>
+        <span className="px-2 py-0.5 rounded bg-amber-500/20 text-[10px] uppercase font-bold tracking-wider">Inactive</span>
+      </div>
+
       <div>
-        <h1 className="text-2xl font-bold">Channel Manager Integrations</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold">Channel Manager Integrations</h1>
+          <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-muted text-muted-foreground border border-border">Inactive</span>
+        </div>
         <p className="text-muted-foreground">Configure connection with Booking.com, Agoda, MakeMyTrip via a Channel Manager.</p>
       </div>
 

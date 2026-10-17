@@ -3,7 +3,8 @@ import { useSearchParams } from 'react-router';
 import { useData } from '../data/DataContext';
 import { formatCurrency, formatDate, generateId } from '../lib/utils';
 import { BookingStatus, Booking } from '../data/types';
-import { Search, Plus, MoreHorizontal, FileText, CheckCircle2, ChevronRight, X, CreditCard, Download } from 'lucide-react';
+import { Search, Plus, MoreHorizontal, FileText, CheckCircle2, ChevronRight, X, CreditCard, Download, Share2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { NewBookingModal } from '../components/NewBookingModal';
 import { BookingDetailDrawer } from '../components/BookingDetailDrawer';
 import { PaymentModal } from '../components/PaymentModal';
@@ -237,6 +238,17 @@ export function Bookings() {
             className="flex items-center justify-center gap-2 bg-secondary text-secondary-foreground border border-border px-4 py-2 rounded-full font-medium hover:bg-muted transition-colors text-sm cursor-pointer"
           >
             <Download className="w-4 h-4" /> Export CSV
+          </button>
+          <button
+            onClick={() => {
+              const link = `${window.location.origin}/book`;
+              navigator.clipboard.writeText(link);
+              toast.success(`Guest Booking Link copied! Share this with customers: ${link}`);
+            }}
+            className="flex items-center justify-center gap-2 bg-secondary text-secondary-foreground border border-border px-3.5 py-2 rounded-full font-medium hover:bg-muted transition-colors text-sm cursor-pointer font-mono"
+            title="Copy guest booking form link to clipboard"
+          >
+            <Share2 className="w-3.5 h-3.5 text-primary" /> Guest Link (/book)
           </button>
           <button
             onClick={() => setIsNewBookingOpen(true)}

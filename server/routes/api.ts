@@ -1,7 +1,7 @@
 import express from 'express';
 import { requireAuth } from '../middleware/authMiddleware.js';
 import { saveInvoiceFile } from '../controllers/invoiceArchiveController.js';
-import { saveDocument, searchDocuments } from '../controllers/documentController.js';
+import { saveDocument, searchDocuments, deleteDocument } from '../controllers/documentController.js';
 import {
   initializeData,
   syncData,
@@ -28,10 +28,17 @@ import {
   testChannelConnection,
   triggerFullSync
 } from '../controllers/channelController.js';
+import {
+  submitPublicBooking,
+  sendConfirmationEmailHandler
+} from '../controllers/publicBookingController.js';
 
 const router = express.Router();
 
-// Secure all API routes
+// Public unauthenticated customer booking endpoint
+router.post('/public/booking-request', submitPublicBooking);
+
+// Secure all subsequent API routes
 router.use(requireAuth);
 
 router.get('/initialize', initializeData);
@@ -50,6 +57,7 @@ router.put('/bookings/:id', updateBooking);
 router.delete('/bookings/:id', deleteBooking);
 router.post('/bookings/:id/confirm-channel', confirmChannelBooking);
 router.post('/bookings/:id/reject-channel', rejectChannelBooking);
+router.post('/bookings/:id/send-confirmation-email', sendConfirmationEmailHandler);
 
 // Payments
 router.post('/payments', addPayment);
@@ -87,5 +95,6 @@ router.post('/save-invoice-file', saveInvoiceFile);
 // New Document (PDF to Drive) endpoints
 router.post('/documents/save', saveDocument);
 router.get('/documents/search', searchDocuments);
+router.delete('/documents/:id', deleteDocument);
 
 export default router;
