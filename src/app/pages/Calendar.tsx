@@ -18,7 +18,22 @@ export function Calendar() {
   const [prefilledBooking, setPrefilledBooking] = useState<{roomId?: string, checkIn?: string, checkOut?: string}>({});
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
-  const titleDate = currentDate.toLocaleString('default', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
+  const START_HOUR = 11; // Hotel checkout time is 11:00 AM; 24-hour operational cycle runs 11 AM -> 11 AM
+
+  const timelineStartTime = useMemo(() => {
+    const y = currentDate.getFullYear();
+    const m = currentDate.getMonth();
+    const d = currentDate.getDate();
+    return new Date(y, m, d, START_HOUR, 0, 0, 0).getTime();
+  }, [currentDate]);
+
+  const timelineEndTime = useMemo(() => {
+    return timelineStartTime + 24 * 60 * 60 * 1000;
+  }, [timelineStartTime]);
+
+  const nextDayDate = useMemo(() => new Date(timelineEndTime), [timelineEndTime]);
+
+  const titleDate = `${currentDate.toLocaleString('default', { weekday: 'short', day: 'numeric', month: 'short' })} 11:00 AM → ${nextDayDate.toLocaleString('default', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} 11:00 AM`;
 
   const nextDay = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1));
   const prevDay = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 1));
@@ -32,7 +47,8 @@ export function Calendar() {
     dateString: `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`
   }], [currentDate]);
 
-  const hours = useMemo(() => Array.from({ length: 24 }, (_, i) => i), []);
+  // 24 hours starting at 11:00 AM: 11, 12, ..., 23, 00, 01, ..., 10
+  const hours = useMemo(() => Array.from({ length: 24 }, (_, i) => (START_HOUR + i) % 24), []);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -63,17 +79,28 @@ export function Calendar() {
     return map;
   }, [bookings]);
 
-  const handleCellClick = (roomId: string, dateString: string, hour: number) => {
-    const checkInDate = new Date(dateString);
-    const checkOutDate = new Date(checkInDate);
-    checkOutDate.setDate(checkOutDate.getDate() + 1);
-    const checkOutString = `${checkOutDate.getFullYear()}-${String(checkOutDate.getMonth() + 1).padStart(2, '0')}-${String(checkOutDate.getDate()).padStart(2, '0')}`;
-    const hh = String(hour).padStart(2, '0');
+  const handleCellClick = (roomId: string, hourIdx: number) => {
+    const room = rooms.find(r => r.id === roomId);
+    if (room?.status === 'Coming Soon') {
+      import('sonner').then(({ toast }) => toast.info(`Room ${room.number} is coming soon and is not currently operational.`));
+      return;
+    }
+
+    const cellTime = new Date(timelineStartTime + hourIdx * 60 * 60 * 1000);
+    const y = cellTime.getFullYear();
+    const m = String(cellTime.getMonth() + 1).padStart(2, '0');
+    const d = String(cellTime.getDate()).padStart(2, '0');
+    const hh = String(cellTime.getHours()).padStart(2, '0');
+
+    const outTime = new Date(timelineEndTime);
+    const outY = outTime.getFullYear();
+    const outM = String(outTime.getMonth() + 1).padStart(2, '0');
+    const outD = String(outTime.getDate()).padStart(2, '0');
 
     setPrefilledBooking({
       roomId,
-      checkIn: `${dateString}T${hh}:00`,
-      checkOut: `${checkOutString}T11:00`
+      checkIn: `${y}-${m}-${d}T${hh}:00`,
+      checkOut: `${outY}-${outM}-${outD}T11:00`
     });
     setIsBookingModalOpen(true);
   };
@@ -83,9 +110,12 @@ export function Calendar() {
       {/* Header */}
       <div className="p-4 border-b border-border flex items-center justify-between shrink-0 bg-card">
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold text-foreground w-64 tracking-tight">{titleDate}</h1>
+          <div className="w-80">
+            <h1 className="text-base font-bold text-foreground font-mono tracking-tight">{titleDate}</h1>
+            <span className="text-[10px] font-mono uppercase text-muted-foreground tracking-wider">Hotel Operational Cycle · 11:00 AM Checkout</span>
+          </div>
           <div className="flex bg-background rounded-full border border-border overflow-hidden shadow-sm items-center p-0.5">
-            <button onClick={prevDay} className="px-2.5 py-1 hover:bg-muted border-r border-border text-foreground transition-colors"><ChevronLeft className="w-4 h-4"/></button>
+            <button onClick={prevDay} className="px-2.5 py-1 hover:bg-muted border-r border-border text-foreground transition-colors cursor-pointer"><ChevronLeft className="w-4 h-4"/></button>
             <input
               type="date"
               value={`${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`}
@@ -97,8 +127,8 @@ export function Calendar() {
               }}
               className="px-2.5 py-1 text-xs font-mono bg-transparent border-r border-border focus:outline-none text-foreground cursor-pointer"
             />
-            <button onClick={goToToday} className="px-3.5 py-1 text-xs font-mono font-medium hover:bg-muted text-foreground border-r border-border transition-colors">Today</button>
-            <button onClick={nextDay} className="px-2.5 py-1 hover:bg-muted text-foreground transition-colors"><ChevronRight className="w-4 h-4"/></button>
+            <button onClick={goToToday} className="px-3.5 py-1 text-xs font-mono font-medium hover:bg-muted text-foreground border-r border-border transition-colors cursor-pointer">Today</button>
+            <button onClick={nextDay} className="px-2.5 py-1 hover:bg-muted text-foreground transition-colors cursor-pointer"><ChevronRight className="w-4 h-4"/></button>
           </div>
         </div>
         <div className="flex items-center gap-2 text-xs font-mono">
@@ -106,6 +136,7 @@ export function Calendar() {
           <div className="chip gap-1.5"><div className="w-2 h-2 bg-blue-500 rounded-full"></div> Confirmed</div>
           <div className="chip gap-1.5"><div className="w-2 h-2 bg-amber-500 rounded-full"></div> Booked</div>
           <div className="chip gap-1.5"><div className="w-2 h-2 bg-muted-foreground rounded-full"></div> Checked-Out</div>
+          <div className="chip gap-1.5"><div className="w-2 h-2 bg-primary/60 rounded-full"></div> Coming Soon</div>
         </div>
       </div>
 
@@ -115,8 +146,8 @@ export function Calendar() {
 
           {/* Days Header */}
           <div className="flex border-b border-border sticky top-0 z-30 bg-card">
-            <div className="w-[200px] shrink-0 p-3 border-r border-border bg-muted font-bold text-sm text-foreground flex items-center justify-center sticky left-0 z-40 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
-              Room / Time
+            <div className="w-[200px] shrink-0 p-3 border-r border-border bg-muted font-mono uppercase text-xs text-muted-foreground tracking-wider flex items-center justify-center sticky left-0 z-40 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
+              Room / 11 AM - 11 AM
             </div>
             {days.map(day => (
               <div
@@ -125,38 +156,44 @@ export function Calendar() {
                 className={`shrink-0 border-r border-border flex flex-col ${day.isWeekend ? 'bg-muted/50' : 'bg-card'}`}
               >
                 {/* Day Label */}
-                <div className="w-full text-center py-2 border-b border-border/50 font-bold text-foreground text-sm flex items-center justify-center gap-2">
-                  <span className={`px-2 py-0.5 rounded ${day.dateString === new Date().toISOString().split('T')[0] ? 'bg-primary text-primary-foreground' : ''}`}>
-                    {day.dayName}, {day.dayNumber}
+                <div className="w-full text-center py-2 border-b border-border/50 font-mono text-xs text-foreground flex items-center justify-center gap-2">
+                  <span className={`px-3 py-0.5 rounded-full ${day.dateString === new Date().toISOString().split('T')[0] ? 'bg-foreground text-background font-semibold shadow-xs' : 'bg-secondary text-foreground'}`}>
+                    {day.dayName}, {day.dayNumber} · 11:00 AM → 11:00 AM (+1d)
                   </span>
                 </div>
                 {/* Activity counts below the date */}
                 {(() => {
-                  const checkIns = bookings.filter(b => b.checkIn.split('T')[0] === day.dateString).length;
-                  const checkOuts = bookings.filter(b => b.checkOut.split('T')[0] === day.dateString).length;
+                  const checkIns = bookings.filter(b => {
+                    const t = new Date(b.checkIn).getTime();
+                    return t >= timelineStartTime && t < timelineEndTime;
+                  }).length;
+                  const checkOuts = bookings.filter(b => {
+                    const t = new Date(b.checkOut).getTime();
+                    return t >= timelineStartTime && t < timelineEndTime;
+                  }).length;
                   const active = bookings.filter(b => {
-                    const s = b.checkIn.split('T')[0];
-                    const e = b.checkOut.split('T')[0];
-                    return s <= day.dateString && day.dateString < e && b.status !== 'Checked-Out';
+                    const s = new Date(b.checkIn).getTime();
+                    const e = new Date(b.checkOut).getTime();
+                    return s < timelineEndTime && e > timelineStartTime && b.status !== 'Checked-Out';
                   }).length;
                   return (
-                    <div className="w-full flex items-center justify-center gap-3 py-1 text-[10px] font-semibold border-b border-border/40">
-                      <span className="flex items-center gap-1 text-green-600" title={`${checkIns} check-in(s)`}>
-                        <LogIn className="w-3 h-3" />{checkIns}
+                    <div className="w-full flex items-center justify-center gap-4 py-1 text-[11px] font-mono border-b border-border/40">
+                      <span className="flex items-center gap-1 text-green-600" title={`${checkIns} check-in(s) in this 24h cycle`}>
+                        <LogIn className="w-3 h-3" /> {checkIns} check-in{checkIns !== 1 ? 's' : ''}
                       </span>
-                      <span className="flex items-center gap-1 text-red-500" title={`${checkOuts} check-out(s)`}>
-                        <LogOut className="w-3 h-3" />{checkOuts}
+                      <span className="flex items-center gap-1 text-primary" title={`${checkOuts} check-out(s) at 11:00 AM`}>
+                        <LogOut className="w-3 h-3" /> {checkOuts} check-out{checkOuts !== 1 ? 's' : ''}
                       </span>
-                      <span className="flex items-center gap-1 text-blue-600" title={`${active} guest(s) staying`}>
-                        <DoorOpen className="w-3 h-3" />{active}
+                      <span className="flex items-center gap-1 text-foreground" title={`${active} active guest(s) staying`}>
+                        <DoorOpen className="w-3 h-3" /> {active} staying
                       </span>
                     </div>
                   );
                 })()}
-                {/* Hours Label */}
-                <div className="flex w-full">
-                  {hours.map(h => (
-                    <div key={h} style={{ width: hourWidth }} className="shrink-0 text-[10px] text-muted-foreground font-medium text-center py-1 border-r border-border/50 last:border-r-0">
+                {/* Hours Label (starting from 11:00 AM) */}
+                <div className="flex w-full font-mono">
+                  {hours.map((h, idx) => (
+                    <div key={idx} style={{ width: hourWidth }} className={`shrink-0 text-[10px] text-center py-1.5 border-r border-border/50 last:border-r-0 ${h === 11 ? 'bg-primary/10 text-primary font-bold' : h === 12 ? 'bg-green-500/10 text-green-700 dark:text-green-400 font-semibold' : 'text-muted-foreground'}`}>
                       {String(h).padStart(2, '0')}:00
                     </div>
                   ))}
@@ -188,7 +225,13 @@ export function Calendar() {
                         <div className="w-[200px] shrink-0 p-4 border-r border-border bg-card sticky left-0 z-20 flex flex-col justify-center group-hover:bg-muted/30 transition-colors shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] h-[100px]">
                           <div className="flex items-center justify-between mb-1 gap-2">
                             <span className="font-bold text-base text-foreground font-mono truncate">Room {room.number}</span>
-                            <span className={`chip text-[10px] py-0.5 px-2 ${room.status === 'Available' ? 'text-green-600 border-green-600/30' : 'text-primary border-primary/30'}`}>
+                            <span className={`chip text-[10px] py-0.5 px-2 ${
+                              room.status === 'Coming Soon'
+                                ? 'text-primary/80 border-primary/40 bg-primary/5 font-semibold'
+                                : room.status === 'Available'
+                                ? 'text-green-600 border-green-600/30'
+                                : 'text-primary border-primary/30'
+                            }`}>
                               {room.status}
                             </span>
                           </div>
@@ -199,20 +242,30 @@ export function Calendar() {
                         <div className="flex relative items-center h-[100px]">
                           {days.map(day => (
                             <div key={day.dayNumber} className="flex h-full">
-                              {hours.map(h => (
+                              {hours.map((h, hourIdx) => (
                                 <div
                                   key={h}
                                   style={{ width: hourWidth }}
-                                  onClick={() => handleCellClick(room.id, day.dateString, h)}
-                                  className={`h-full shrink-0 border-r border-border/40 cursor-pointer hover:bg-muted/60 transition-colors
+                                  onClick={() => handleCellClick(room.id, hourIdx)}
+                                  className={`h-full shrink-0 border-r border-border/40 transition-colors
+                                            ${room.status === 'Coming Soon' ? 'cursor-not-allowed bg-muted/10' : 'cursor-pointer hover:bg-muted/60'}
                                             ${day.isWeekend ? 'bg-muted/20' : 'bg-transparent'}`}
                                 ></div>
                               ))}
                             </div>
                           ))}
 
+                          {/* Coming Soon overlay for non-operational rooms */}
+                          {room.status === 'Coming Soon' && (
+                            <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none bg-muted/15 border border-dashed border-border/50">
+                              <span className="font-mono text-xs text-muted-foreground/90 tracking-widest uppercase bg-card/90 px-3 py-1 rounded-full border border-border shadow-sm">
+                                Coming Soon · Non-Operational
+                              </span>
+                            </div>
+                          )}
+
                           {/* Bookings Blocks Overlay */}
-                          {roomBookings.map(booking => {
+                          {room.status !== 'Coming Soon' && roomBookings.map(booking => {
                             const guestMatch = guestById.get(booking.guestId);
                             const guestName = guestMatch?.name || booking.guestId;
 
@@ -226,34 +279,32 @@ export function Calendar() {
                                 if (h === '00' && (min === '00' || !min)) {
                                   return new Date(Number(y), Number(m) - 1, Number(d), defaultHour, 0, 0).getTime();
                                 }
-                                return new Date(Number(y), Number(m) - 1, Number(d), Number(h), Number(min), 0).getTime();
+                                return new Date(Number(y), Number(m) - 1, Number(d), Number(h), Number(min || 0), 0).getTime();
                               }
                               const [y, m, d] = dtStr.split('T')[0].split('-');
                               return new Date(Number(y), Number(m) - 1, Number(d), defaultHour, 0, 0).getTime();
                             };
 
-                // Check-in default 12:00 PM
-                const checkInTime = parseDateTime(booking.checkIn, 12);
-                // Check-out default 11:00 AM
-                const checkOutTime = parseDateTime(booking.checkOut, 11);
+                            // Check-in default 12:00 PM
+                            const checkInTime = parseDateTime(booking.checkIn, 12);
+                            // Check-out default 11:00 AM
+                            const checkOutTime = parseDateTime(booking.checkOut, 11);
 
-                            const monthStartTime = days[0].date.getTime();
-                            const monthEndTime = days[days.length-1].date.getTime() + (24*60*60*1000);
+                            // Skip if outside this 24-hour cycle (11:00 AM to 11:00 AM next day)
+                            if (checkOutTime <= timelineStartTime || checkInTime >= timelineEndTime) return null;
 
-                            // Skip if outside this day
-                            if (checkOutTime <= monthStartTime || checkInTime >= monthEndTime) return null;
-
-                            // Calculate position based on hours
-                            const startOffsetHours = (checkInTime - monthStartTime) / (1000 * 60 * 60);
-                            const endOffsetHours = (checkOutTime - monthStartTime) / (1000 * 60 * 60);
+                            // Calculate position based on hours relative to timelineStartTime
+                            const startOffsetHours = (checkInTime - timelineStartTime) / (1000 * 60 * 60);
+                            const endOffsetHours = (checkOutTime - timelineStartTime) / (1000 * 60 * 60);
 
                             const boundedStart = Math.max(0, startOffsetHours);
-                            const boundedEnd = Math.min(days.length * 24, endOffsetHours);
+                            const boundedEnd = Math.min(24, endOffsetHours);
 
                             const durationHours = boundedEnd - boundedStart;
+                            if (durationHours <= 0) return null;
 
-                            const isContinuation = checkInTime < monthStartTime;
-                            const hasContinuation = checkOutTime > monthEndTime;
+                            const isContinuation = checkInTime < timelineStartTime;
+                            const hasContinuation = checkOutTime > timelineEndTime;
 
                             const leftPos = boundedStart * hourWidth;
                             const width = durationHours * hourWidth;

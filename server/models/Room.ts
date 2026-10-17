@@ -4,7 +4,7 @@ const roomSchema = new mongoose.Schema({
   _id: { type: String, required: true },
   number: { type: String, required: true },
   category: { type: String, required: true, enum: ['Double Bed Room', 'Family Bed Room'] },
-  status: { type: String, required: true, enum: ['Available', 'Occupied', 'Maintenance', 'Cleaning'] },
+  status: { type: String, required: true, enum: ['Available', 'Occupied', 'Maintenance', 'Cleaning', 'Coming Soon'] },
   tariff: { type: Number, required: true },
   floor: { type: Number, required: true },
   amenities: [{ type: String }]

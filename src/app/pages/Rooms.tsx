@@ -24,18 +24,20 @@ export function Rooms() {
     'Family Bed Room': filteredRooms.filter(r => r.category === 'Family Bed Room'),
   };
 
-  const statusColors = {
+  const statusColors: Record<RoomStatus, string> = {
     'Available': 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25',
     'Occupied': 'bg-secondary text-foreground border-border',
     'Cleaning': 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25',
     'Maintenance': 'bg-primary/10 text-primary border-primary/25',
+    'Coming Soon': 'bg-secondary/70 text-muted-foreground border-border font-mono',
   };
 
-  const statusIcons = {
+  const statusIcons: Record<RoomStatus, React.ReactNode> = {
     'Available': <CheckCircle2 className="w-3 h-3" />,
     'Occupied': <AlertCircle className="w-3 h-3" />,
     'Cleaning': <Sparkles className="w-3 h-3" />,
-    'Maintenance': <DoorClosed className="w-3 h-3" />
+    'Maintenance': <DoorClosed className="w-3 h-3" />,
+    'Coming Soon': <Sparkles className="w-3 h-3 text-primary" />,
   };
 
   const handleStatusChange = (roomId: string, newStatus: RoomStatus) => {
@@ -67,12 +69,12 @@ export function Rooms() {
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-muted-foreground" />
           <span className="text-sm font-semibold text-foreground mr-2">Status:</span>
-          {(['All', 'Available', 'Occupied', 'Cleaning', 'Maintenance'] as const).map(s => (
+          {(['All', 'Available', 'Occupied', 'Cleaning', 'Maintenance', 'Coming Soon'] as const).map(s => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
-                statusFilter === s ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted/50 text-foreground border-border hover:bg-muted'
+              className={`px-3 py-1 text-xs font-mono font-medium rounded-full border transition-colors cursor-pointer ${
+                statusFilter === s ? 'bg-foreground text-background border-transparent font-semibold' : 'bg-secondary text-foreground border-border hover:bg-muted'
               }`}
             >
               {s}
@@ -130,29 +132,39 @@ export function Rooms() {
                              <p className="text-muted-foreground mt-1">Out: {formatDate(booking.checkOut)}</p>
                           </div>
                         ) : (
-                          <div className="h-12 flex items-center justify-center text-xs text-muted-foreground italic mb-3">
-                            {room.status === 'Available' ? 'Ready' : ''}
+                          <div className="h-12 flex items-center justify-center text-xs text-muted-foreground italic mb-3 text-center">
+                            {room.status === 'Coming Soon' ? (
+                              <span className="font-mono text-[11px] not-italic text-primary">Non-Operational</span>
+                            ) : room.status === 'Available' ? (
+                              'Ready'
+                            ) : ''}
                           </div>
                         )}
                         
-                        <div className="relative group/menu">
-                          <button className={`w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded text-xs font-bold border ${statusColors[room.status]}`}>
-                            {statusIcons[room.status]} {room.status}
-                          </button>
-                          
-                          {/* Hidden dropup menu on hover */}
-                          <div className="absolute bottom-full left-0 w-full mb-1 bg-card border border-border rounded-md shadow-sm opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all z-10 p-1 flex flex-col gap-1">
-                            {(['Available', 'Cleaning', 'Maintenance'] as RoomStatus[]).filter(s => s !== 'Occupied' && s !== room.status).map(s => (
-                              <button 
-                                key={s} 
-                                onClick={() => handleStatusChange(room.id, s)}
-                                className={`text-xs py-1.5 px-2 rounded text-left ${statusColors[s]} hover:opacity-80 transition-opacity`}
-                              >
-                                Set to {s}
-                              </button>
-                            ))}
+                        {room.status === 'Coming Soon' ? (
+                          <div className={`w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-mono font-medium border ${statusColors['Coming Soon']}`}>
+                            <Sparkles className="w-3 h-3 text-primary" /> Coming Soon
                           </div>
-                        </div>
+                        ) : (
+                          <div className="relative group/menu">
+                            <button className={`w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded text-xs font-bold border ${statusColors[room.status]}`}>
+                              {statusIcons[room.status]} {room.status}
+                            </button>
+                            
+                            {/* Hidden dropup menu on hover */}
+                            <div className="absolute bottom-full left-0 w-full mb-1 bg-card border border-border rounded-md shadow-sm opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all z-10 p-1 flex flex-col gap-1">
+                              {(['Available', 'Cleaning', 'Maintenance'] as RoomStatus[]).filter(s => s !== 'Occupied' && s !== room.status).map(s => (
+                                <button 
+                                  key={s} 
+                                  onClick={() => handleStatusChange(room.id, s)}
+                                  className={`text-xs py-1.5 px-2 rounded text-left ${statusColors[s]} hover:opacity-80 transition-opacity`}
+                                >
+                                  Set to {s}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
 
                       </div>
                     </div>

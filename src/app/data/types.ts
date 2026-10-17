@@ -10,7 +10,7 @@ export type User = {
 
 export type RoomCategory = 'Double Bed Room' | 'Family Bed Room';
 
-export type RoomStatus = 'Available' | 'Occupied' | 'Maintenance' | 'Cleaning';
+export type RoomStatus = 'Available' | 'Occupied' | 'Maintenance' | 'Cleaning' | 'Coming Soon';
 
 export interface Room {
   id: string;

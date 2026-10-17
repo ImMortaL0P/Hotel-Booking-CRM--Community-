@@ -25,6 +25,30 @@ export const INITAL_ROOMS: Room[] = [
     "floor": 1,
     "status": "Available",
     "tariff": 3000
+  },
+  {
+    "id": "rm-201",
+    "number": "201",
+    "category": "Double Bed Room",
+    "floor": 2,
+    "status": "Coming Soon",
+    "tariff": 1500
+  },
+  {
+    "id": "rm-202",
+    "number": "202",
+    "category": "Double Bed Room",
+    "floor": 2,
+    "status": "Coming Soon",
+    "tariff": 1500
+  },
+  {
+    "id": "rm-203",
+    "number": "203",
+    "category": "Family Bed Room",
+    "floor": 2,
+    "status": "Coming Soon",
+    "tariff": 3000
   }
 ];
 export const INITAL_GUESTS: Guest[] = [

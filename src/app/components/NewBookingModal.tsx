@@ -65,8 +65,8 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
     }
   }, [phone, guests]);
 
-  // Available rooms calculation based on selected type and dates
-  const availableRooms = rooms.filter(r => r.category === roomType);
+  // Available rooms calculation based on selected type and dates (exclude non-operational Coming Soon rooms)
+  const availableRooms = rooms.filter(r => r.category === roomType && r.status !== 'Coming Soon');
 
   useEffect(() => {
     if (availableRooms.length > 0 && !availableRooms.find(r => r.id === selectedRoomId)) {

@@ -3,6 +3,7 @@ import { readSnapshot, writeSnapshot, clearSnapshot } from '../lib/dataCache';
 import React, { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { generateId } from '../lib/utils';
 import { Room, Guest, Booking, PaymentTransaction, CommRecord, User, ActivityLog, StandaloneInvoice, Expense, StoredInvoiceData } from './types';
+import { INITAL_ROOMS } from './seedData';
 
 interface DataContextType {
   user: User | null;
@@ -173,7 +174,15 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const syncing = useRef<Promise<void> | null>(null);
 
   const applyFull = (data: Partial<Dataset>) => {
-    setRooms(data.rooms || []);
+    const incomingRooms = data.rooms || [];
+    const incomingIds = new Set(incomingRooms.map(r => r.id));
+    const mergedRooms = [...incomingRooms];
+    for (const initRoom of INITAL_ROOMS) {
+      if (!incomingIds.has(initRoom.id)) {
+        mergedRooms.push(initRoom);
+      }
+    }
+    setRooms(mergedRooms);
     setGuests(data.guests || []);
     setBookings(sortBookings(data.bookings || []));
     setPayments(data.payments || []);
@@ -186,7 +195,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const applyDelta = (d: Partial<Dataset> & { deleted?: Record<string, string[]> }) => {
     const del = d.deleted || {};
-    setRooms(prev => mergeById(prev, d.rooms, del.rooms));
+    setRooms(prev => {
+      const merged = mergeById(prev, d.rooms, del.rooms);
+      const ids = new Set(merged.map(r => r.id));
+      for (const initRoom of INITAL_ROOMS) {
+        if (!ids.has(initRoom.id)) merged.push(initRoom);
+      }
+      return merged;
+    });
     setGuests(prev => mergeById(prev, d.guests, del.guests));
     setBookings(prev => {
       const next = mergeById(prev, d.bookings, del.bookings);
