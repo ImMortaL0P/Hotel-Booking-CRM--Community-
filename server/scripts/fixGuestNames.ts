@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import { connectDB } from './db.js';
-import { Guest } from './models/Guest.js';
+import { connectDB } from '../db.js';
+import { Guest } from '../models/Guest.js';
 
 dotenv.config();
 

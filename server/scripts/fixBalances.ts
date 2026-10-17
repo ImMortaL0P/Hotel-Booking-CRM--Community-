@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import { connectDB } from './db.js';
-import { Booking } from './models/Booking.js';
+import { connectDB } from '../db.js';
+import { Booking } from '../models/Booking.js';
 
 dotenv.config();
 
