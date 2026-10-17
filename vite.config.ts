@@ -22,8 +22,9 @@ export default defineConfig({
     host: true, // Listen on all local IP addresses
     proxy: {
       '/api': {
-        target: 'http://localhost:5002',
-        changeOrigin: true
+        target: process.env.VITE_PROXY_TARGET || 'https://sharda-crm.onrender.com',
+        changeOrigin: true,
+        secure: false
       }
     }
   }
