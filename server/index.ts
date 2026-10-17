@@ -17,6 +17,7 @@ import { connectDB } from './db.js';
 import apiRoutes from './routes/api.js';
 import channelRoutes from './routes/channel.js';
 import authRoutes from './routes/auth.js';
+import { startEmailSyncScheduler } from './services/emailImportService.js';
 
 const PORT = process.env.PORT || 5000;
 
@@ -56,9 +57,14 @@ const globalLimiter = rateLimit({
   message: { error: 'Too many requests from this IP, please try again after 15 minutes.' }
 });
 
+// Brute-force protection for the login form only. It used to cover all of
+// /api/auth — including /verify, which runs on every page load — so a few
+// staff sharing the hotel's IP got locked out after 15 page loads. Only
+// failed attempts count now.
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 15, // strictly limit login attempts
+  max: 15, // strictly limit failed login attempts
+  skipSuccessfulRequests: true,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many login attempts, please try again after 15 minutes.' }
@@ -88,16 +94,25 @@ app.get('/api/health', (req, res) => {
 
 // Routes
 // Apply rate limiter to API routes only
-app.use('/api/auth', authLimiter, authRoutes);
+app.post('/api/auth/login', authLimiter);
+app.use('/api/auth', globalLimiter, authRoutes);
 app.use('/api', globalLimiter, apiRoutes);
 app.use('/api/channel', channelRoutes); // channel webhook has its own specific rate limits in middleware
 
 // Serve static frontend files continuously in production
 const distPath = path.join(__dirname, '../dist');
-app.use(express.static(distPath));
+// Vite emits content-hashed filenames under /assets, so they can be cached
+// forever; index.html must always revalidate so new deploys are picked up.
+app.use('/assets', express.static(path.join(distPath, 'assets'), { maxAge: '1y', immutable: true }));
+app.use(express.static(distPath, {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache');
+  }
+}));
 
 // Fallback to index.html for React Router
 app.get("*", (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
@@ -105,6 +120,7 @@ app.get("*", (req, res) => {
 if (process.env.NODE_ENV !== 'test') {
   connectDB().then(() => {
     // Listen on all network interfaces (0.0.0.0) so it's accessible over network
+    startEmailSyncScheduler();
     app.listen(PORT as number, '0.0.0.0', () => {
       console.log(`Server running on port ${PORT}`);
       console.log(`API securely restricted to ${process.env.FRONTEND_URL || 'https://hotel-booking-crm-community.vercel.app'}`);

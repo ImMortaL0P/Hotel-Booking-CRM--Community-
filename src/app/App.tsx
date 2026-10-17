@@ -15,6 +15,7 @@ const Payments = lazy(() => import('./pages/Payments').then(m => ({ default: m.P
 const Checkout = lazy(() => import('./pages/Checkout').then(m => ({ default: m.Checkout })));
 const InvoiceGenerator = lazy(() => import('./pages/InvoiceGenerator').then(m => ({ default: m.InvoiceGenerator })));
 const Expenses = lazy(() => import('./pages/Expenses').then(m => ({ default: m.Expenses })));
+const EmailImport = lazy(() => import('./pages/EmailImport').then(m => ({ default: m.EmailImport })));
 const Logs = lazy(() => import('./pages/Logs').then(m => ({ default: m.Logs })));
 const ChannelSettings = lazy(() => import('./components/ChannelSettings').then(m => ({ default: m.ChannelSettings })));
 
@@ -56,6 +57,7 @@ export default function App() {
             <Route path="/invoices" element={<InvoiceGenerator />} />
             <Route path="/expenses" element={<Expenses />} />
             <Route path="/channel-settings" element={<ChannelSettings />} />
+            <Route path="/email-import" element={<EmailImport />} />
             <Route path="/logs" element={<Logs />} />
           </Routes>
         </Suspense>

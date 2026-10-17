@@ -4,6 +4,8 @@ import { apiFetch } from '../lib/api';
 import { Receipt, Search, Printer, CheckCircle, Download } from 'lucide-react';
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { InvoiceTemplate, InvoiceDataProps } from '../components/InvoiceTemplate';
+import { buildPrintableHtml } from '../lib/printableHtml';
+import { generateId } from '../lib/utils';
 // @ts-ignore
 export function Checkout() {
   const { rooms, bookings, guests, payments, updateBooking, updateRoomStatus, addStoredInvoice, isLoading, addLog } = useData();
@@ -57,7 +59,7 @@ export function Checkout() {
     const paymentMode = bookingPayments.length > 0 ? bookingPayments[0].mode : 'Pending';
 
     return {
-      invoiceId: `SP-CHK-${Math.floor(Math.random()*10000)}`,
+      invoiceId: generateId('SP-CHK'),
       date: format(new Date(), 'MMM dd, yyyy'),
       billedTo: {
         name: guest.name,
@@ -120,7 +122,7 @@ export function Checkout() {
     const htmlObj = document.getElementById('invoice-capture-area')?.outerHTML;
     if (htmlObj) {
         // Embed some generic styling to make printed version look ok on backend
-        const fullHtml = `<!DOCTYPE html><html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="p-4 bg-white text-black print:m-0 w-[800px]">${htmlObj}</body></html>`;
+        const fullHtml = buildPrintableHtml(htmlObj);
 
         // Let's use standard toast if available, or just console log
         apiFetch('/api/documents/save', {

@@ -1,6 +1,4 @@
 import { Request, Response } from 'express';
-import { generatePdfFromHtml } from '../services/pdfService.js';
-import { uploadPdfToDrive } from '../services/driveService.js';
 import { DocumentModel } from '../models/Document.js';
 
 export const saveDocument = async (req: Request, res: Response): Promise<void> => {
@@ -16,6 +14,13 @@ export const saveDocument = async (req: Request, res: Response): Promise<void> =
              res.status(400).json({ success: false, message: 'Invalid document type. Must be Invoice, Receipt, or Expense' });
              return;
         }
+
+        // PDF (headless Chromium) and Drive clients are heavy; load them on first use
+        // instead of at server boot so cold starts stay fast.
+        const [{ generatePdfFromHtml }, { uploadPdfToDrive }] = await Promise.all([
+            import('../services/pdfService.js'),
+            import('../services/driveService.js')
+        ]);
 
         // 1. Generate PDF locally
         const pdfBuffer = await generatePdfFromHtml(html);
@@ -56,7 +61,8 @@ export const searchDocuments = async (req: Request, res: Response): Promise<void
         let query = {};
 
         if (q && typeof q === 'string') {
-            const regex = new RegExp(q, 'i');
+            // Escape user input: raw regex let "(" crash the query and allowed ReDoS patterns
+            const regex = new RegExp(q.slice(0, 100).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
             query = {
                 $or: [
                     { documentId: regex },

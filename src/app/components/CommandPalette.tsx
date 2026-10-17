@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Command } from "cmdk";
 import { useNavigate } from "react-router";
-import { Search, LayoutDashboard, BookOpenText, Users, BedDouble, CalendarDays, Key, Settings, CreditCard, LogOut } from "lucide-react";
+import { Search, LayoutDashboard, BookOpenText, Users, BedDouble, CalendarDays, Key, Settings, CreditCard, LogOut, Mail } from "lucide-react";
 import { useData } from "../data/DataContext";
 
 export function CommandPalette({ open, setOpen }: { open: boolean, setOpen: (o: boolean) => void }) {
@@ -71,6 +71,13 @@ export function CommandPalette({ open, setOpen }: { open: boolean, setOpen: (o: 
               >
                 <CalendarDays className="mr-2 h-4 w-4" />
                 <span>Calendar</span>
+              </Command.Item>
+              <Command.Item
+                onSelect={() => runCommand(() => navigate("/email-import"))}
+                className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none hover:bg-muted aria-selected:bg-muted aria-selected:text-foreground text-foreground mb-1"
+              >
+                <Mail className="mr-2 h-4 w-4" />
+                <span>Email Import</span>
               </Command.Item>
             </Command.Group>
 

@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Eye, EyeOff, MapPin, Phone, Clock, Bed } from 'lucide-react';
 import { useData } from '../data/DataContext';
-import { apiFetch } from '../lib/api';
+import { apiFetch, API_BASE_URL } from '../lib/api';
 import logoUrl from '../../assets/logo.png';
 
 export function StaffSignIn() {
@@ -11,6 +11,12 @@ export function StaffSignIn() {
   const [showPwd, setShowPwd] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Wake the (free-tier, sleep-on-idle) backend while the user is still typing
+  // their credentials, so the login request doesn't pay the whole cold start.
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/health`).catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

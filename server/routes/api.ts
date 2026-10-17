@@ -4,6 +4,7 @@ import { saveInvoiceFile } from '../controllers/invoiceArchiveController.js';
 import { saveDocument, searchDocuments } from '../controllers/documentController.js';
 import {
   initializeData,
+  syncData,
   updateRoom,
   addGuest,
   updateGuest,
@@ -20,6 +21,7 @@ import {
   addStoredInvoice,
   addLog
 } from '../controllers/dataController.js';
+import { getEmailImportStatus, runEmailSync, reprocessEmail, addTestEmail } from '../controllers/emailImportController.js';
 import {
   getChannelConfig,
   updateChannelConfig,
@@ -33,6 +35,7 @@ const router = express.Router();
 router.use(requireAuth);
 
 router.get('/initialize', initializeData);
+router.get('/sync', syncData);
 
 // Rooms
 router.put('/rooms/:id', updateRoom);
@@ -71,6 +74,12 @@ router.get('/channel/config', getChannelConfig);
 router.put('/channel/config', updateChannelConfig);
 router.post('/channel/test', testChannelConnection);
 router.post('/channel/full-sync', triggerFullSync);
+
+// Email booking import (stands in for the OTA channel-manager API)
+router.get('/email-import/status', getEmailImportStatus);
+router.post('/email-import/sync', runEmailSync);
+router.post('/email-import/dummy/test-email', addTestEmail);
+router.post('/email-import/:id/reprocess', reprocessEmail);
 
 // Save invoice file (HTML to github folder) // Keeping for backwards compatibility
 router.post('/save-invoice-file', saveInvoiceFile);

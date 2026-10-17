@@ -204,7 +204,7 @@ export function Expenses() {
         // Render the P&L report body inside the hidden print area so window.print() outputs it
         area.innerHTML = html;
       }
-      const reportId = `PL-RPT-${Math.floor(Math.random()*100000)}`;
+      const reportId = generateId('PL-RPT');
       apiFetch('/api/documents/save', {
         method: 'POST',
         body: JSON.stringify({

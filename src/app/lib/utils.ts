@@ -26,7 +26,20 @@ export function formatDate(dateString: string): string {
   }).format(date)
 }
 
+/**
+ * Short, collision-resistant ids like "RCPT-MFX3K2A9Q". The old 4-digit random
+ * suffix allowed only 9,000 ids per prefix, so saves started failing with
+ * duplicate-key errors once a few dozen records existed.
+ */
 export function generateId(prefix: string): string {
-  const ran = Math.floor(1000 + Math.random() * 9000);
-  return `${prefix}-${ran}`;
+  const time = Date.now().toString(36).slice(-6);
+  const rand = (typeof crypto !== 'undefined' && 'getRandomValues' in crypto)
+    ? Array.from(crypto.getRandomValues(new Uint8Array(3)), b => (b % 36).toString(36)).join('')
+    : Math.random().toString(36).slice(2, 5);
+  return `${prefix}-${time}${rand}`.toUpperCase();
+}
+
+/** Booking ids keep the "SP-<year>-" shape staff are used to */
+export function generateBookingId(date = new Date()): string {
+  return generateId(`SP-${date.getFullYear()}`);
 }

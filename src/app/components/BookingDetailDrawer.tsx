@@ -1,7 +1,7 @@
 import { X, FileText, CreditCard, Globe } from 'lucide-react';
 import { Booking } from '../data/types';
 import { useData } from '../data/DataContext';
-import { formatCurrency, formatDate } from '../lib/utils';
+import { formatCurrency, formatDate, generateId } from '../lib/utils';
 import { useState } from 'react';
 import { PaymentModal } from './PaymentModal';
 import { PaymentMode } from '../data/types';
@@ -284,15 +284,14 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
         defaultAmount={booking.balance || 0}
         onSubmit={(amount, mode) => {
           addPayment({
-            id: `RCPT-${Math.floor(Math.random() * 9000) + 1000}`,
+            id: generateId('RCPT'),
             bookingId: booking.id,
             guestId: booking.guestId,
             date: new Date().toISOString().split('T')[0],
             mode,
             amount,
             status: 'Completed'
-          });
-          updateBooking({ ...booking, paid: booking.paid + amount, balance: booking.balance - amount });
+          }); // the server applies it to the booking balance and returns the updated booking
         }}
       />
     </div>

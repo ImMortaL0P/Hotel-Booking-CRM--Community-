@@ -3,6 +3,8 @@ import { useData } from '../data/DataContext';
 import { apiFetch } from '../lib/api';
 import { FileText, Plus, Printer, CheckCircle, Trash, Download, Archive, ArrowLeft, Eye } from 'lucide-react';
 import { InvoiceTemplate, InvoiceDataProps, InvoiceItem } from '../components/InvoiceTemplate';
+import { buildPrintableHtml } from '../lib/printableHtml';
+import { generateId } from '../lib/utils';
 // @ts-ignore
 export function InvoiceGenerator() {
   const { storedInvoices, addInvoice, addStoredInvoice, addLog } = useData();
@@ -32,7 +34,7 @@ export function InvoiceGenerator() {
 
   const invoiceData = useMemo<InvoiceDataProps>(() => {
     return {
-      invoiceId: `SP-CUST-${Math.floor(Math.random()*10000)}`,
+      invoiceId: generateId('SP-CUST'),
       date,
       billedTo: {
         name: customerName || 'Walk-In Customer',
@@ -89,7 +91,7 @@ export function InvoiceGenerator() {
     // Optional: save HTML to archive via backend
     const htmlObj = document.getElementById('invoice-capture-area')?.outerHTML;
     if (htmlObj) {
-        const fullHtml = `<!DOCTYPE html><html><head><script src="https://cdn.tailwindcss.com"></script></head><body class="p-4 bg-white text-black print:m-0 w-[800px]">${htmlObj}</body></html>`;
+        const fullHtml = buildPrintableHtml(htmlObj);
         apiFetch('/api/documents/save', {
           method: 'POST',
           body: JSON.stringify({
