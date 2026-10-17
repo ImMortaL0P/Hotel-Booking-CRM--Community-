@@ -70,7 +70,16 @@ const authLimiter = rateLimit({
   message: { error: 'Too many login attempts, please try again after 15 minutes.' }
 });
 
-app.use(compression());
+import fs from 'fs';
+
+app.use(compression({
+  threshold: 512,
+  filter: (req, res) => {
+    // If client already received a precompressed file, don't re-compress
+    if (res.getHeader('Content-Encoding')) return false;
+    return compression.filter(req, res);
+  }
+}));
 // 10mb body limit: P&L / invoice export HTML documents (a multi-month report's
 // ledger detail can exceed the default 100kb) are POSTed here as JSON.
 app.use(express.json({ limit: '10mb' }));
@@ -101,6 +110,63 @@ app.use('/api/channel', channelRoutes); // channel webhook has its own specific 
 
 // Serve static frontend files continuously in production
 const distPath = path.join(__dirname, '../dist');
+
+// MIME mapping for pre-compressed static files
+const MIME_TYPES: Record<string, string> = {
+  '.js': 'application/javascript; charset=UTF-8',
+  '.css': 'text/css; charset=UTF-8',
+  '.html': 'text/html; charset=UTF-8',
+  '.svg': 'image/svg+xml',
+  '.json': 'application/json; charset=UTF-8',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg'
+};
+
+// High-speed static handler for precompressed (.br / .gz) bundles
+app.use((req, res, next) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+  
+  const acceptEncoding = (req.headers['accept-encoding'] || '') as string;
+  const reqUrl = req.path === '/' ? '/index.html' : req.path;
+  const ext = path.extname(reqUrl).toLowerCase();
+
+  if (['.js', '.css', '.html', '.svg', '.json'].includes(ext)) {
+    const rawPath = path.join(distPath, reqUrl);
+    const brPath = `${rawPath}.br`;
+    const gzPath = `${rawPath}.gz`;
+    const mime = MIME_TYPES[ext] || 'application/octet-stream';
+
+    // Brotli priority (highest compression)
+    if (acceptEncoding.includes('br') && fs.existsSync(brPath)) {
+      res.setHeader('Content-Type', mime);
+      res.setHeader('Content-Encoding', 'br');
+      res.setHeader('Vary', 'Accept-Encoding');
+      if (reqUrl.startsWith('/assets/')) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      } else {
+        res.setHeader('Cache-Control', 'no-cache');
+      }
+      return res.sendFile(brPath);
+    }
+
+    // Gzip fallback
+    if (acceptEncoding.includes('gzip') && fs.existsSync(gzPath)) {
+      res.setHeader('Content-Type', mime);
+      res.setHeader('Content-Encoding', 'gzip');
+      res.setHeader('Vary', 'Accept-Encoding');
+      if (reqUrl.startsWith('/assets/')) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      } else {
+        res.setHeader('Cache-Control', 'no-cache');
+      }
+      return res.sendFile(gzPath);
+    }
+  }
+
+  next();
+});
+
 // Vite emits content-hashed filenames under /assets, so they can be cached
 // forever; index.html must always revalidate so new deploys are picked up.
 app.use('/assets', express.static(path.join(distPath, 'assets'), { maxAge: '1y', immutable: true }));
@@ -113,6 +179,23 @@ app.use(express.static(distPath, {
 // Fallback to index.html for React Router
 app.get("*", (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
+  const acceptEncoding = (req.headers['accept-encoding'] || '') as string;
+  const htmlBr = path.join(distPath, 'index.html.br');
+  const htmlGz = path.join(distPath, 'index.html.gz');
+
+  if (acceptEncoding.includes('br') && fs.existsSync(htmlBr)) {
+    res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+    res.setHeader('Content-Encoding', 'br');
+    res.setHeader('Vary', 'Accept-Encoding');
+    return res.sendFile(htmlBr);
+  }
+  if (acceptEncoding.includes('gzip') && fs.existsSync(htmlGz)) {
+    res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+    res.setHeader('Content-Encoding', 'gzip');
+    res.setHeader('Vary', 'Accept-Encoding');
+    return res.sendFile(htmlGz);
+  }
+
   res.sendFile(path.join(distPath, 'index.html'));
 });
 

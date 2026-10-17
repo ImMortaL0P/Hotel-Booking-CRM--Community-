@@ -216,8 +216,8 @@ export function generateBookingConfirmationHtml(details: BookingConfirmationDeta
               <p style="margin: 0 0 8px 0; font-size: 13px; font-weight: 600; color: #f5f2eb;">Hotel Sharda Palace</p>
               <p style="margin: 0 0 12px 0; font-size: 12px; color: #71717a; line-height: 1.5;">
                 Opposite Circuit House Road, Near Baidyanath Dham, Deoghar, Jharkhand 814112<br>
-                Phone / WhatsApp: <a href="tel:+919431131088" style="color: #a87444; text-decoration: none;">+91 94311 31088</a> &nbsp;|&nbsp; 
-                Reception: <a href="tel:+919835741088" style="color: #a87444; text-decoration: none;">+91 98357 41088</a>
+                Phone / WhatsApp: <a href="tel:+917970735251" style="color: #a87444; text-decoration: none;">+91 79707 35251</a> &nbsp;|&nbsp; 
+                Reception: <a href="tel:+919110137334" style="color: #a87444; text-decoration: none;">+91 91101 37334</a>
               </p>
               <div style="margin-top: 14px;">
                 <a href="https://maps.google.com/?q=Hotel+Sharda+Palace+Deoghar" style="display: inline-block; background-color: #27272a; color: #ffffff; text-decoration: none; font-size: 11px; padding: 8px 16px; border-radius: 6px; font-weight: 600;">

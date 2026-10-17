@@ -1,6 +1,12 @@
-import { ReactNode, useState, useEffect, useMemo, useCallback } from 'react';
+import { ReactNode, useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router';
-import { LayoutDashboard, BookOpenText, Users, BedDouble, CalendarDays, MessageSquare, CreditCard, LogOut, ChevronLeft, ChevronRight, Building, FileText, Receipt, History, Moon, Sun, Bell, Search, WalletCards, Activity, Globe, Server, Database, Mail, ExternalLink } from 'lucide-react';
+import { 
+  LayoutDashboard, BookOpenText, Users, BedDouble, CalendarDays, 
+  MessageSquare, CreditCard, LogOut, ChevronLeft, ChevronRight, 
+  Building, FileText, Receipt, History, Moon, Sun, Bell, Search, 
+  WalletCards, Activity, Globe, Server, Database, Mail, ExternalLink,
+  Menu, X
+} from 'lucide-react';
 import { useData } from '../data/DataContext';
 import { useTheme } from './ThemeProvider';
 import { cn } from '../lib/utils';
@@ -8,15 +14,15 @@ import { format } from 'date-fns';
 import logoUrl from '../../assets/logo.png';
 import { CommandPalette } from './CommandPalette';
 import { API_BASE_URL } from '../lib/api';
+import { motion, AnimatePresence } from 'motion/react';
 
-// Defined at module scope: declaring it inside AppShell gave it a new identity
-// every render, so React unmounted and remounted the whole nav each time.
-const NavItem = ({ to, icon: Icon, label, badge, collapsed, inactive }: any) => {
+// Defined at module scope with tactile micro-interactions and active indicator bar
+const NavItem = ({ to, icon: Icon, label, badge, collapsed, inactive, onClick }: any) => {
   if (inactive) {
     return (
       <div
         className={cn(
-          "flex items-center gap-3 px-3 py-2 rounded-lg mb-0.5 transition-colors text-sm font-medium opacity-50 cursor-not-allowed select-none text-muted-foreground hover:bg-muted/30",
+          "flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all text-xs font-medium opacity-40 cursor-not-allowed select-none text-muted-foreground",
           collapsed && "justify-center px-0"
         )}
         title={`${label} (Inactive)`}
@@ -25,7 +31,7 @@ const NavItem = ({ to, icon: Icon, label, badge, collapsed, inactive }: any) => 
         {!collapsed && (
           <div className="flex-1 flex items-center justify-between">
             <span className="tracking-tight text-muted-foreground/75">{label}</span>
-            <span className="px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider rounded border border-border/70 bg-muted/60 text-muted-foreground font-semibold">
+            <span className="px-1.5 py-0.5 text-[8.5px] font-mono uppercase tracking-wider rounded border border-border/70 bg-muted/60 text-muted-foreground font-semibold">
               Inactive
             </span>
           </div>
@@ -37,26 +43,39 @@ const NavItem = ({ to, icon: Icon, label, badge, collapsed, inactive }: any) => 
   return (
     <NavLink
       to={to}
+      onClick={onClick}
       className={({ isActive }) => cn(
-        "flex items-center gap-3 px-3 py-2 rounded-lg mb-0.5 transition-colors text-sm font-medium",
+        "group relative flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-sm font-medium transition-all duration-200 select-none min-h-[44px]",
         isActive
-          ? "bg-primary text-primary-foreground font-semibold shadow-none"
-          : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+          ? "bg-primary text-primary-foreground font-semibold shadow-sm shadow-primary/25"
+          : "text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
       )}
     >
-      <Icon className="w-4 h-4 shrink-0" />
-      {!collapsed && (
-        <div className="flex-1 flex items-center justify-between">
-          <span className="tracking-tight">{label}</span>
-          {badge > 0 && (
-            <span className={cn(
-              "px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold tracking-tight border",
-              "bg-primary/15 text-primary border-primary/30 dark:bg-primary/20 dark:text-primary-foreground dark:border-primary/40"
-            )}>
-              {badge}
-            </span>
+      {({ isActive }) => (
+        <>
+          {isActive && (
+            <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-primary-foreground/90 shadow-sm" />
           )}
-        </div>
+          <Icon className={cn(
+            "w-4 h-4 shrink-0 transition-transform duration-200",
+            isActive ? "scale-110" : "group-hover:scale-110 group-hover:text-foreground"
+          )} />
+          {!collapsed && (
+            <div className="flex-1 flex items-center justify-between">
+              <span className="tracking-tight text-xs sm:text-sm">{label}</span>
+              {badge > 0 && (
+                <span className={cn(
+                  "px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold tracking-tight border transition-transform group-hover:scale-105",
+                  isActive
+                    ? "bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30"
+                    : "bg-primary/10 text-primary border-primary/25"
+                )}>
+                  {badge}
+                </span>
+              )}
+            </div>
+          )}
+        </>
       )}
     </NavLink>
   );
@@ -65,9 +84,34 @@ const NavItem = ({ to, icon: Icon, label, badge, collapsed, inactive }: any) => 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, logout, bookings, payments, rooms } = useData();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const { theme, setTheme } = useTheme();
-    const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const location = useLocation();
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+
+  // GPU-accelerated scroll container reference
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Instant hardware scroll reset and drawer close on route change
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: 0, behavior: 'instant' });
+    }
+    setMobileDrawerOpen(false);
+  }, [location.pathname]);
+
+  // Prevent background scrolling when mobile drawer is open
+  useEffect(() => {
+    if (mobileDrawerOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileDrawerOpen]);
 
   // Health Status
   const [health, setHealth] = useState({
@@ -77,8 +121,6 @@ export function AppShell({ children }: { children: ReactNode }) {
     pingMs: 0
   });
 
-  // Plain fetch (not apiFetch): a background poll should never pop
-  // "waking up" / error toasts over whatever the user is doing.
   const checkHealth = useCallback(async () => {
     const start = Date.now();
     try {
@@ -94,14 +136,13 @@ export function AppShell({ children }: { children: ReactNode }) {
         return;
       }
     } catch {
-      // fall through to offline
+      // fall through
     }
     setHealth({ frontend: 'Online', backend: 'Offline', database: 'Offline', pingMs: 0 });
   }, []);
 
   useEffect(() => {
     checkHealth();
-    // Skip polling while the tab is hidden; re-check as soon as it's visible again
     const interval = setInterval(() => { if (!document.hidden) checkHealth(); }, 30000);
     const onVisible = () => { if (!document.hidden) checkHealth(); };
     document.addEventListener('visibilitychange', onVisible);
@@ -111,9 +152,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     };
   }, [checkHealth]);
 
-
   // Calculate badges
-    // Using real dynamic date per IST
   const getISTDate = () => {
     const d = new Date();
     const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
@@ -141,37 +180,214 @@ export function AppShell({ children }: { children: ReactNode }) {
   ];
 
   return (
-    <div className="min-h-screen bg-background flex text-foreground print:block print:bg-white">
-      {/* Sidebar */}
+    <div className="min-h-screen bg-background flex flex-col md:flex-row text-foreground print:block print:bg-white selection:bg-primary/20 selection:text-primary">
+      
+      {/* =========================================================================
+          MOBILE TOP HEADER BAR (Strictly < md screens)
+          ========================================================================= */}
+      <header className="md:hidden sticky top-0 z-30 bg-card/95 backdrop-blur-md border-b border-border h-14 px-3 flex items-center justify-between shrink-0 print:hidden">
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => setMobileDrawerOpen(true)}
+            className="p-2 -ml-1 text-muted-foreground hover:text-foreground active:scale-95 transition-transform rounded-xl cursor-pointer"
+            aria-label="Open Navigation Menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-2">
+            <img src={logoUrl} alt="Logo" className="w-7 h-7 rounded-lg object-cover border border-border shadow-2xs" />
+            <span className="font-bold text-sm text-foreground tracking-tight">Sharda Palace</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setShowCommandPalette(true)}
+            className="p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-lg cursor-pointer"
+            title="Search (Cmd+K)"
+          >
+            <Search className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-lg relative cursor-pointer"
+            title="Notifications"
+          >
+            <Bell className="w-4 h-4" />
+            {notifications.length > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full" />
+            )}
+          </button>
+
+          <button
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-lg cursor-pointer"
+            title="Toggle Theme"
+          >
+            {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+          </button>
+        </div>
+      </header>
+
+      {/* =========================================================================
+          MOBILE SLIDE-OUT DRAWER / SHEET (< md screens)
+          ========================================================================= */}
+      <AnimatePresence>
+        {mobileDrawerOpen && (
+          <div className="fixed inset-0 z-50 md:hidden flex" role="dialog" aria-modal="true">
+            {/* Backdrop Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+              onClick={() => setMobileDrawerOpen(false)}
+            />
+
+            {/* Sliding Panel */}
+            <motion.div
+              initial={{ x: '-100%' }}
+              animate={{ x: '0%' }}
+              exit={{ x: '-100%' }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="relative w-[85%] max-w-xs bg-card h-full flex flex-col border-r border-border shadow-2xl z-10"
+            >
+              {/* Header */}
+              <div className="p-4 border-b border-border/70 flex items-center justify-between shrink-0 h-16">
+                <div className="flex items-center gap-3">
+                  <img src={logoUrl} alt="Logo" className="w-9 h-9 rounded-xl object-cover border border-border shadow-xs" />
+                  <div>
+                    <h2 className="font-bold text-foreground text-sm leading-tight">Sharda Palace</h2>
+                    <p className="text-[10px] font-mono text-muted-foreground">Deoghar · Ground Floor</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setMobileDrawerOpen(false)}
+                  className="p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-lg cursor-pointer"
+                  aria-label="Close Navigation Menu"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Navigation Items */}
+              <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-0.5">
+                <p className="text-[10px] font-mono font-bold text-muted-foreground opacity-60 mb-1.5 px-3 uppercase tracking-[0.2em]">
+                  Management
+                </p>
+                <NavItem to="/dashboard" icon={LayoutDashboard} label="Dashboard" onClick={() => setMobileDrawerOpen(false)} />
+                <NavItem to="/bookings" icon={BookOpenText} label="Bookings" badge={todaysCheckins} onClick={() => setMobileDrawerOpen(false)} />
+                <NavItem to="/guests" icon={Users} label="Guests" onClick={() => setMobileDrawerOpen(false)} />
+                <NavItem to="/rooms" icon={BedDouble} label="Rooms" onClick={() => setMobileDrawerOpen(false)} />
+                <NavItem to="/calendar" icon={CalendarDays} label="Calendar" onClick={() => setMobileDrawerOpen(false)} />
+                <NavItem to="/email-import" icon={Mail} label="Email Import" inactive={true} />
+                <NavItem to="/communications" icon={MessageSquare} label="Communications" onClick={() => setMobileDrawerOpen(false)} />
+                {['manager', 'owner', 'superadmin'].includes(user?.role || '') && (
+                  <NavItem to="/payments" icon={CreditCard} label="Payments" badge={pendingPayments} onClick={() => setMobileDrawerOpen(false)} />
+                )}
+                <NavItem to="/checkout" icon={Receipt} label="Checkout & Bill" onClick={() => setMobileDrawerOpen(false)} />
+                <NavItem to="/invoices" icon={FileText} label="Custom Invoice" onClick={() => setMobileDrawerOpen(false)} />
+                {['manager', 'owner', 'superadmin'].includes(user?.role || '') && (
+                  <NavItem to="/expenses" icon={WalletCards} label="Expenses & Ledger" onClick={() => setMobileDrawerOpen(false)} />
+                )}
+                {['manager', 'owner', 'superadmin'].includes(user?.role || '') && (
+                  <NavItem to="/channel-settings" icon={Globe} label="Channel Settings" inactive={true} />
+                )}
+                <NavItem to="/logs" icon={History} label="Activity Logs" onClick={() => setMobileDrawerOpen(false)} />
+
+                {/* Direct Public Booking Page Link */}
+                <div className="pt-2 mt-2 border-t border-border/50">
+                  <a
+                    href="/book"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group relative flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all text-xs font-medium border border-primary/25 bg-primary/5 hover:bg-primary/10 text-primary shadow-xs"
+                  >
+                    <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <ExternalLink className="w-3.5 h-3.5 text-primary" />
+                    </div>
+                    <div className="flex-1 flex items-center justify-between">
+                      <span className="font-semibold tracking-tight font-mono">Guest Booking</span>
+                      <span className="text-[9px] uppercase font-mono px-2 py-0.5 rounded-md bg-primary text-primary-foreground font-bold">
+                        Public ↗
+                      </span>
+                    </div>
+                  </a>
+                </div>
+              </div>
+
+              {/* Mobile Drawer User Footer */}
+              <div className="p-3 border-t border-border/70 shrink-0 bg-secondary/30">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold font-mono text-xs border border-primary/20">
+                      {user?.avatar}
+                    </div>
+                    <div className="overflow-hidden">
+                      <p className="text-xs font-semibold text-foreground truncate">{user?.name}</p>
+                      <p className="text-[10px] font-mono text-muted-foreground capitalize truncate">{user?.role.replace('-', ' ')}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={logout}
+                    className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
+                    title="Logout"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* =========================================================================
+          DESKTOP PERSISTENT SIDEBAR (Hidden on < md screens)
+          ========================================================================= */}
       <aside className={cn(
-        "bg-card border-r border-border flex flex-col transition-all duration-300 print:hidden",
+        "hidden md:flex bg-card/95 backdrop-blur-md border-r border-border flex-col transition-all duration-300 print:hidden relative z-20 shadow-xs",
         collapsed ? "w-20" : "w-64"
       )}>
         {/* Header */}
-        <div className="p-4 border-b border-border flex items-center justify-between shrink-0 h-[73px]">
+        <div className="p-4 border-b border-border/70 flex items-center justify-between shrink-0 h-[73px]">
           {!collapsed ? (
             <div className="flex items-center gap-3 overflow-hidden">
-              <img src={logoUrl} alt="Logo" className="w-10 h-10 rounded shrink-0 object-cover dark:bg-card dark:p-1" />
+              <div className="relative group">
+                <img src={logoUrl} alt="Logo" className="w-10 h-10 rounded-xl shrink-0 object-cover border border-border shadow-xs transition-transform group-hover:scale-105" />
+                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-card" />
+              </div>
               <div className="truncate">
-                <h2 className="font-bold text-foreground truncate leading-tight">Sharda Palace</h2>
-                <p className="text-[10px] text-muted-foreground truncate">Deoghar, Jharkhand</p>
+                <h2 className="font-bold text-foreground truncate leading-tight tracking-tight">Sharda Palace</h2>
+                <p className="text-[10.5px] font-mono text-muted-foreground truncate">Deoghar · Ground Floor</p>
               </div>
             </div>
           ) : (
-            <img src={logoUrl} alt="Logo" className="w-10 h-10 rounded shrink-0 object-cover mx-auto dark:bg-card dark:p-1" />
+            <div className="mx-auto relative">
+              <img src={logoUrl} alt="Logo" className="w-10 h-10 rounded-xl shrink-0 object-cover border border-border shadow-xs" />
+              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-card" />
+            </div>
           )}
 
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="p-1 text-muted-foreground hover:text-foreground rounded-md transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary transition-all tactile-btn cursor-pointer"
+            title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
-            {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+            {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </button>
         </div>
 
         {/* Navigation */}
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-1">
-          {!collapsed && <p className="text-xs font-semibold text-muted-foreground opacity-70 mb-2 px-2 uppercase tracking-wider">Main</p>}
+        <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-0.5">
+          {!collapsed && (
+            <p className="text-[10px] font-mono font-bold text-muted-foreground opacity-60 mb-1.5 px-3 uppercase tracking-[0.2em]">
+              Management
+            </p>
+          )}
           <NavItem collapsed={collapsed} to="/dashboard" icon={LayoutDashboard} label="Dashboard" />
           <NavItem collapsed={collapsed} to="/bookings" icon={BookOpenText} label="Bookings" badge={todaysCheckins} />
           <NavItem collapsed={collapsed} to="/guests" icon={Users} label="Guests" />
@@ -200,17 +416,19 @@ export function AppShell({ children }: { children: ReactNode }) {
               target="_blank"
               rel="noreferrer"
               className={cn(
-                "flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs font-medium border border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary group",
+                "group relative flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all duration-300 text-xs font-medium border border-primary/25 bg-primary/5 hover:bg-primary/10 text-primary shadow-xs hover:shadow-sm hover:border-primary/40",
                 collapsed && "justify-center px-0"
               )}
               title="Open Public Customer Booking Page (/book)"
             >
-              <ExternalLink className="w-4 h-4 shrink-0 text-primary" />
+              <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <ExternalLink className="w-3.5 h-3.5 text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </div>
               {!collapsed && (
                 <div className="flex-1 flex items-center justify-between">
                   <span className="font-semibold tracking-tight font-mono">Guest Booking</span>
-                  <span className="text-[9px] uppercase font-mono px-1.5 py-0.5 rounded bg-primary text-primary-foreground font-bold">
-                    Public
+                  <span className="text-[9px] uppercase font-mono px-2 py-0.5 rounded-md bg-primary text-primary-foreground font-bold shadow-xs">
+                    Public ↗
                   </span>
                 </div>
               )}
@@ -220,17 +438,17 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         {/* System Health Monitor */}
         {!collapsed && ['manager', 'owner', 'superadmin'].includes(user?.role || '') && (
-          <div className="mx-4 mb-4 p-3 bg-secondary/30 rounded-lg border border-border/50 shrink-0">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <Activity className="w-3 h-3" /> System Health
+          <div className="mx-3 mb-3 p-3 bg-secondary/40 rounded-xl border border-border/60 shrink-0 backdrop-blur-xs">
+            <div className="flex items-center justify-between mb-2.5">
+              <h3 className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                <Activity className="w-3 h-3 text-primary" /> Live Infrastructure
               </h3>
               <button
                 onClick={() => {
                   setHealth(h => ({ ...h, backend: 'Checking...', database: 'Checking...' }));
                   checkHealth();
                 }}
-                className="text-[9px] font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                className="text-[9px] font-mono font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 title="Refresh Status"
               >
                 Refresh
@@ -238,39 +456,36 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
             
             <div className="flex flex-col gap-2">
-              {/* Frontend Status */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Globe className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span className="text-xs font-medium text-foreground">Frontend</span>
+                  <span className="text-xs font-medium text-foreground">Client App</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className={`w-1.5 h-1.5 rounded-full ${health.frontend === 'Online' ? 'bg-green-500 shadow-[0_0_4px_#22c55e]' : 'bg-red-500'}`}></span>
-                  <span className="text-[10px] text-muted-foreground">{health.frontend}</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]"></span>
+                  <span className="text-[10px] font-mono text-muted-foreground">{health.frontend}</span>
                 </div>
               </div>
 
-              {/* Backend Status */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Server className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span className="text-xs font-medium text-foreground">Backend</span>
+                  <span className="text-xs font-medium text-foreground">Express API</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className={`w-1.5 h-1.5 rounded-full ${health.backend === 'Online' ? 'bg-green-500 shadow-[0_0_4px_#22c55e]' : 'bg-amber-500 animate-pulse'}`}></span>
-                  <span className="text-[10px] text-muted-foreground">{health.backend} {health.pingMs > 0 ? `(${health.pingMs}ms)` : ''}</span>
+                  <span className={`w-1.5 h-1.5 rounded-full ${health.backend === 'Online' ? 'bg-emerald-500 shadow-[0_0_6px_#10b981]' : 'bg-amber-500 animate-pulse'}`}></span>
+                  <span className="text-[10px] font-mono text-muted-foreground">{health.backend} {health.pingMs > 0 ? `(${health.pingMs}ms)` : ''}</span>
                 </div>
               </div>
 
-              {/* DB Status */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Database className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span className="text-xs font-medium text-foreground">Database</span>
+                  <span className="text-xs font-medium text-foreground">MongoDB</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className={`w-1.5 h-1.5 rounded-full ${(health.database === 'Connected' || health.database === 'Online') ? 'bg-green-500 shadow-[0_0_4px_#22c55e]' : 'bg-amber-500 animate-pulse'}`}></span>
-                  <span className="text-[10px] text-muted-foreground">{health.database}</span>
+                  <span className={`w-1.5 h-1.5 rounded-full ${(health.database === 'Connected' || health.database === 'Online') ? 'bg-emerald-500 shadow-[0_0_6px_#10b981]' : 'bg-amber-500 animate-pulse'}`}></span>
+                  <span className="text-[10px] font-mono text-muted-foreground">{health.database}</span>
                 </div>
               </div>
             </div>
@@ -278,23 +493,25 @@ export function AppShell({ children }: { children: ReactNode }) {
         )}
 
         {/* User Footer */}
-
-        <div className="p-4 border-t border-border shrink-0">
-          <div className="flex justify-around mb-4 border-b border-border pb-3">
+        <div className="p-3 border-t border-border/70 shrink-0">
+          <div className="flex justify-around mb-3 border-b border-border/50 pb-2.5">
              <button
                 onClick={() => setShowCommandPalette(true)}
-                className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                className="text-muted-foreground hover:text-foreground hover:bg-secondary p-1.5 rounded-lg transition-all tactile-btn cursor-pointer"
                 title="Search (Cmd+K)"
              >
-                <Search className="w-5 h-5" />
+                <Search className="w-4 h-4" />
              </button>
              <div className="relative">
                <button
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className="text-muted-foreground hover:text-foreground transition-colors p-1 relative"
+                  className="text-muted-foreground hover:text-foreground hover:bg-secondary p-1.5 rounded-lg transition-all tactile-btn cursor-pointer relative"
                   title="Notifications"
                >
-                  <Bell className="w-5 h-5" />
+                  <Bell className="w-4 h-4" />
+                  {notifications.length > 0 && (
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full animate-ping"></span>
+                  )}
                   {notifications.length > 0 && (
                     <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full"></span>
                   )}
@@ -305,17 +522,17 @@ export function AppShell({ children }: { children: ReactNode }) {
                      className="fixed inset-0 z-40"
                      onClick={() => setShowNotifications(false)}
                    ></div>
-                   <div className="absolute bottom-12 left-0 w-72 bg-popover text-popover-foreground border border-border rounded-lg shadow-sm z-50 overflow-hidden animate-in fade-in slide-in-from-bottom-2">
-                     <div className="p-3 border-b border-border font-semibold flex items-center justify-between">
-                       Notifications
-                       <span className="text-xs bg-muted px-2 py-0.5 rounded-full">{notifications.length}</span>
+                   <div className="absolute bottom-12 left-0 w-72 bg-popover text-popover-foreground border border-border rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
+                     <div className="p-3 border-b border-border/70 font-semibold flex items-center justify-between">
+                       <span>Notifications</span>
+                       <span className="text-xs bg-muted px-2 py-0.5 rounded-full font-mono">{notifications.length}</span>
                      </div>
                      <div className="max-h-64 overflow-y-auto">
                        {notifications.length === 0 ? (
                          <div className="p-4 text-center text-sm text-muted-foreground">No new notifications</div>
                        ) : (
                          notifications.map(n => (
-                           <div key={n.id} className="p-3 border-b border-border last:border-0 hover:bg-muted/50 transition-colors cursor-pointer">
+                           <div key={n.id} className="p-3 border-b border-border/50 last:border-0 hover:bg-muted/50 transition-colors cursor-pointer">
                              <div className="flex items-start gap-2">
                                <div className={cn(
                                  "w-2 h-2 rounded-full mt-1.5 shrink-0",
@@ -336,25 +553,28 @@ export function AppShell({ children }: { children: ReactNode }) {
              </div>
              <button
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                className="text-muted-foreground hover:text-foreground hover:bg-secondary p-1.5 rounded-lg transition-all tactile-btn cursor-pointer hover:rotate-45"
                 title="Toggle Theme"
              >
-                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
              </button>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold shrink-0">
-              {user?.avatar}
+            <div className="relative">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold font-mono shrink-0 border border-primary/20">
+                {user?.avatar}
+              </div>
+              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-card" />
             </div>
             {!collapsed && (
               <div className="flex-1 overflow-hidden">
-                <p className="text-sm font-semibold text-foreground truncate">{user?.name}</p>
-                <p className="text-xs text-muted-foreground capitalize truncate">{user?.role.replace('-', ' ')}</p>
+                <p className="text-sm font-semibold text-foreground truncate tracking-tight">{user?.name}</p>
+                <p className="text-[11px] font-mono text-muted-foreground capitalize truncate">{user?.role.replace('-', ' ')}</p>
               </div>
             )}
             <button
               onClick={logout}
-              className="p-1.5 text-muted-foreground hover:text-destructive rounded-md transition-colors"
+              className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all tactile-btn cursor-pointer"
               title="Logout"
             >
               <LogOut className="w-4 h-4" />
@@ -363,13 +583,100 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden print:h-auto print:overflow-visible print:block">
-        {/* We can add a top bar here if needed, but per requirements most screens manage their own header area in Main */}
-        <div data-lenis-prevent className="flex-1 overflow-auto p-4 md:p-6 bg-background print:p-0 print:overflow-visible print:block text-foreground">
-          {children}
+      {/* =========================================================================
+          MAIN CONTENT AREA (GPU Compositor Scrolling + Mobile Padding)
+          ========================================================================= */}
+      <main className="flex-1 flex flex-col h-[calc(100vh-3.5rem)] md:h-screen overflow-hidden print:h-auto print:overflow-visible print:block bg-background gpu-layer">
+        <div 
+          ref={scrollRef}
+          className="smooth-scroll-container flex-1 overflow-y-auto p-3.5 pb-24 md:p-6 md:pb-6 bg-background print:p-0 print:overflow-visible print:block text-foreground"
+        >
+          <div className="max-w-7xl mx-auto">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, transform: 'translate3d(0, 5px, 0)' }}
+              animate={{ opacity: 1, transform: 'translate3d(0, 0px, 0)' }}
+              transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+              style={{ willChange: 'opacity, transform' }}
+            >
+              {children}
+            </motion.div>
+          </div>
         </div>
       </main>
+
+      {/* =========================================================================
+          MOBILE BOTTOM NAVIGATION BAR (Thumb Ergonomics on < md screens)
+          ========================================================================= */}
+      <nav 
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-lg border-t border-border flex items-center justify-around py-1 px-2 pb-safe print:hidden shadow-lg"
+        aria-label="Mobile Bottom Navigation"
+      >
+        <NavLink
+          to="/dashboard"
+          className={({ isActive }) => cn(
+            "flex flex-col items-center justify-center min-w-[56px] py-1.5 px-2 rounded-xl text-[10px] font-medium transition-all min-h-[44px]",
+            isActive ? "text-primary font-bold" : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <LayoutDashboard className="w-5 h-5 mb-0.5" />
+          <span>Desk</span>
+        </NavLink>
+
+        <NavLink
+          to="/bookings"
+          className={({ isActive }) => cn(
+            "flex flex-col items-center justify-center min-w-[56px] py-1.5 px-2 rounded-xl text-[10px] font-medium transition-all relative min-h-[44px]",
+            isActive ? "text-primary font-bold" : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <div className="relative">
+            <BookOpenText className="w-5 h-5 mb-0.5" />
+            {todaysCheckins > 0 && (
+              <span className="absolute -top-1 -right-2 px-1 py-0.2 bg-primary text-primary-foreground text-[8px] font-bold rounded-full font-mono">
+                {todaysCheckins}
+              </span>
+            )}
+          </div>
+          <span>Bookings</span>
+        </NavLink>
+
+        <NavLink
+          to="/rooms"
+          className={({ isActive }) => cn(
+            "flex flex-col items-center justify-center min-w-[56px] py-1.5 px-2 rounded-xl text-[10px] font-medium transition-all relative min-h-[44px]",
+            isActive ? "text-primary font-bold" : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <div className="relative">
+            <BedDouble className="w-5 h-5 mb-0.5" />
+            {cleaningRooms > 0 && (
+              <span className="absolute -top-0.5 -right-1 w-2 h-2 bg-amber-500 rounded-full" />
+            )}
+          </div>
+          <span>Rooms</span>
+        </NavLink>
+
+        <NavLink
+          to="/checkout"
+          className={({ isActive }) => cn(
+            "flex flex-col items-center justify-center min-w-[56px] py-1.5 px-2 rounded-xl text-[10px] font-medium transition-all min-h-[44px]",
+            isActive ? "text-primary font-bold" : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <Receipt className="w-5 h-5 mb-0.5" />
+          <span>Checkout</span>
+        </NavLink>
+
+        <button
+          type="button"
+          onClick={() => setMobileDrawerOpen(true)}
+          className="flex flex-col items-center justify-center min-w-[56px] py-1.5 px-2 rounded-xl text-[10px] font-medium text-muted-foreground hover:text-foreground cursor-pointer min-h-[44px]"
+        >
+          <Menu className="w-5 h-5 mb-0.5" />
+          <span>Menu</span>
+        </button>
+      </nav>
 
       <CommandPalette open={showCommandPalette} setOpen={setShowCommandPalette} />
     </div>

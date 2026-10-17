@@ -21,7 +21,9 @@ import {
   Database,
   Globe,
   Search,
-  Trash2
+  Trash2,
+  Sparkles,
+  ArrowUpRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
@@ -29,6 +31,7 @@ import { NewBookingModal } from '../components/NewBookingModal';
 import { useNavigate } from 'react-router';
 import { format } from 'date-fns';
 import logoUrl from '../../assets/logo.png';
+import { motion } from 'motion/react';
 
 export function Dashboard() {
   const { user, bookings, rooms, guestById, roomById, comms } = useData();
@@ -42,9 +45,9 @@ export function Dashboard() {
   const handleDocSearch = async () => {
     setIsSearching(true);
     try {
-       const res = await apiFetch(`/api/documents/search?q=${encodeURIComponent(docSearch)}`);
+       const res = await apiFetch(`/api/documents/search?q=${encodeURIComponent(docSearch)}`, {}, { quiet: true });
        if (res && res.success) {
-           setDocs(res.data);
+           setDocs(res.data || []);
        }
     } catch(err) {
        console.error("Search failed", err);
@@ -177,92 +180,159 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Top Header with Tactile Greeting & New Booking CTA */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-1">
         <div className="flex items-center gap-4">
-          <img src={logoUrl} alt="Sharda Palace" className="w-16 h-16 object-contain hidden md:block" />
+          <div className="relative group">
+            <img src={logoUrl} alt="Sharda Palace" className="w-14 h-14 object-contain rounded-2xl p-1 bg-card border border-border/80 shadow-xs transition-transform group-hover:scale-105" />
+            <span className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-background animate-pulse" />
+          </div>
           <div>
-            <h1 className="text-2xl font-bold text-card-foreground">
-              {getGreeting()}, {user?.name.split(' ')[0]} 🙏
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {format(getISTDate(), "EEEE, dd MMM yy")} · Sharda Palace, Deoghar
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold tracking-tight text-card-foreground">
+                {getGreeting()}, {user?.name.split(' ')[0]} 🙏
+              </h1>
+              <span className="hidden sm:inline-flex items-center gap-1 text-[10.5px] font-mono uppercase tracking-wider bg-primary/10 text-primary border border-primary/25 px-2 py-0.5 rounded-full font-semibold">
+                <Sparkles className="w-3 h-3" /> Live Desk
+              </span>
+            </div>
+            <p className="text-xs font-mono text-muted-foreground mt-0.5">
+              {format(getISTDate(), "EEEE, dd MMM yyyy")} · Hotel Sharda Palace, Deoghar
             </p>
           </div>
         </div>
+
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-full font-semibold hover:opacity-90 transition-opacity shadow-none text-sm self-start md:self-auto cursor-pointer"
+          className="group relative inline-flex items-center gap-2.5 bg-primary text-primary-foreground pl-4 pr-3.5 py-2.5 rounded-full font-semibold text-xs uppercase tracking-wider shadow-sm hover:shadow-md hover:bg-primary/95 transition-all tactile-btn cursor-pointer self-start md:self-auto"
         >
-          <Plus className="w-4 h-4" /> New Booking
+          <span>New Reservation</span>
+          <span className="w-6 h-6 rounded-full bg-primary-foreground/20 flex items-center justify-center transition-transform group-hover:rotate-90">
+            <Plus className="w-3.5 h-3.5 text-primary-foreground" />
+          </span>
         </button>
       </div>
 
-      {/* 4 Stat Cards */}
+      {/* 4 Stat Cards with Double-Bezel Architecture & Staggered Animations */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1 */}
-        <div className="bg-card p-5 rounded-lg border border-border flex flex-col justify-between">
-          <div>
-            <span className="text-[11px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">Today's Check-ins</span>
-            <div className="text-3xl font-mono font-bold tracking-tight text-card-foreground mt-2">{todayCheckIns.length}</div>
+        {/* Card 1: Today's Check-ins */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.04 }}
+          className="bg-card/90 border border-border/80 rounded-2xl p-5 shadow-xs hover:border-primary/40 tactile-card flex flex-col justify-between relative overflow-hidden group"
+        >
+          <div className="flex items-start justify-between">
+            <div>
+              <span className="text-[10.5px] font-mono font-bold text-muted-foreground uppercase tracking-[0.18em]">
+                Today's Check-ins
+              </span>
+              <div className="text-3xl font-mono font-bold tracking-tight text-card-foreground mt-1.5">
+                {todayCheckIns.length}
+              </div>
+            </div>
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20 group-hover:scale-110 transition-transform">
+              <Users className="w-4 h-4" />
+            </div>
           </div>
-          <div className="text-xs text-muted-foreground mt-3 flex items-center gap-1.5 font-mono">
+          <div className="text-xs text-muted-foreground mt-4 pt-3 border-t border-border/50 flex items-center gap-1.5 font-mono">
             <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             <span>{checkedInCount} already checked in</span>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Card 2 */}
-        <div className="bg-card p-5 rounded-lg border border-border flex flex-col justify-between">
-          <div>
-            <span className="text-[11px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">Today's Check-outs</span>
-            <div className="text-3xl font-mono font-bold tracking-tight text-card-foreground mt-2">{todayCheckOuts.length}</div>
-          </div>
-          <div className="text-xs text-muted-foreground mt-3 flex items-center gap-1.5 font-mono">
-            <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-            <span>Check-out by 11:00 AM</span>
-          </div>
-        </div>
-
-        {/* Card 3 */}
-        <div className="bg-card p-5 rounded-lg border border-border flex flex-col justify-between">
-          <div className="flex justify-between items-start">
+        {/* Card 2: Today's Check-outs */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.08 }}
+          className="bg-card/90 border border-border/80 rounded-2xl p-5 shadow-xs hover:border-primary/40 tactile-card flex flex-col justify-between relative overflow-hidden group"
+        >
+          <div className="flex items-start justify-between">
             <div>
-              <span className="text-[11px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">Occupied Rooms</span>
-              <div className="text-3xl font-mono font-bold tracking-tight text-card-foreground mt-2">{occupiedRooms}/{rooms.length}</div>
+              <span className="text-[10.5px] font-mono font-bold text-muted-foreground uppercase tracking-[0.18em]">
+                Today's Check-outs
+              </span>
+              <div className="text-3xl font-mono font-bold tracking-tight text-card-foreground mt-1.5">
+                {todayCheckOuts.length}
+              </div>
             </div>
-            <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-full border border-border bg-secondary text-foreground">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/20 group-hover:scale-110 transition-transform">
+              <Clock className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-xs text-muted-foreground mt-4 pt-3 border-t border-border/50 flex items-center gap-1.5 font-mono">
+            <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+            <span>Standard checkout by 11:00 AM</span>
+          </div>
+        </motion.div>
+
+        {/* Card 3: Occupied Rooms */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.12 }}
+          className="bg-card/90 border border-border/80 rounded-2xl p-5 shadow-xs hover:border-primary/40 tactile-card flex flex-col justify-between relative overflow-hidden group"
+        >
+          <div className="flex items-start justify-between">
+            <div>
+              <span className="text-[10.5px] font-mono font-bold text-muted-foreground uppercase tracking-[0.18em]">
+                Room Occupancy
+              </span>
+              <div className="text-3xl font-mono font-bold tracking-tight text-card-foreground mt-1.5">
+                {occupiedRooms}<span className="text-base text-muted-foreground font-normal">/{rooms.length}</span>
+              </div>
+            </div>
+            <div className="flex flex-col items-end gap-1.5">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20 group-hover:scale-110 transition-transform">
+                <Bed className="w-4 h-4" />
+              </div>
+            </div>
+          </div>
+          <div className="text-xs text-muted-foreground mt-4 pt-3 border-t border-border/50 flex items-center justify-between font-mono">
+            <span>{availableRooms} rooms vacant</span>
+            <span className="font-semibold text-primary px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20">
               {occupancyPercent}%
             </span>
           </div>
-          <div className="text-xs text-muted-foreground mt-3 font-mono">
-            {availableRooms} rooms available
-          </div>
-        </div>
+        </motion.div>
 
-        {/* Card 4 - Tinted Primary */}
-        <div className="bg-card p-5 rounded-lg border border-border flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute top-0 left-0 bottom-0 w-1 bg-primary"></div>
-          <div>
-            <span className="text-[11px] font-mono font-semibold text-primary uppercase tracking-wider">Total Collection</span>
-            <div className="text-3xl font-mono font-bold tracking-tight text-primary mt-2">{formatCurrency(totalCollections)}</div>
+        {/* Card 4: Total Collections */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.16 }}
+          className="bg-card/90 border border-primary/30 rounded-2xl p-5 shadow-xs hover:border-primary/60 tactile-card flex flex-col justify-between relative overflow-hidden group bg-gradient-to-br from-primary/5 via-card to-card"
+        >
+          <div className="flex items-start justify-between">
+            <div>
+              <span className="text-[10.5px] font-mono font-bold text-primary uppercase tracking-[0.18em]">
+                Total Revenue
+              </span>
+              <div className="text-3xl font-mono font-bold tracking-tight text-primary mt-1.5">
+                {formatCurrency(totalCollections)}
+              </div>
+            </div>
+            <div className="w-9 h-9 rounded-xl bg-primary/15 text-primary flex items-center justify-center border border-primary/30 group-hover:scale-110 transition-transform">
+              <TrendingUp className="w-4 h-4" />
+            </div>
           </div>
-          <div className="text-xs text-muted-foreground mt-3 flex justify-between font-mono">
-            <span>{checkedOutBookings.length} guests checked out</span>
+          <div className="text-xs text-muted-foreground mt-4 pt-3 border-t border-border/50 flex items-center justify-between font-mono">
+            <span>{checkedOutBookings.length} completed stays</span>
             <span className="font-semibold text-primary">Com: {formatCurrency(totalCommission)}</span>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Grid: Occupancy Chart + Upcoming Arrivals */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Grouped Bar Chart */}
-        <div className="lg:col-span-2 bg-card p-6 rounded-lg border border-border">
+        <div className="lg:col-span-2 bg-card/90 p-6 rounded-2xl border border-border/80 shadow-xs tactile-card">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <h2 className="text-base font-bold text-card-foreground tracking-tight">Room Occupancy by Type</h2>
-              <span className="flex items-center gap-1.5 text-[10px] font-mono font-semibold tracking-wider bg-primary/10 text-primary border border-primary/25 px-2.5 py-0.5 rounded-full">
-                <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></span> LIVE
+              <span className="flex items-center gap-1.5 text-[10px] font-mono font-semibold tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 px-2.5 py-0.5 rounded-full">
+                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span> Live Status
               </span>
             </div>
           </div>
@@ -271,65 +341,75 @@ export function Dashboard() {
               <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} domain={[0, 2]} ticks={[0, 1, 2]} />
-                <Tooltip cursor={{ fill: 'rgba(0,0,0,0.02)' }} />
+                <Tooltip cursor={{ fill: 'rgba(0,0,0,0.03)' }} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
-                <Bar dataKey="Occupied" fill="var(--primary)" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Available" fill="#10b981" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Maintenance" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Occupied" fill="var(--primary)" radius={[4, 4, 0, 0]} isAnimationActive={true} animationDuration={800} />
+                <Bar dataKey="Available" fill="#10b981" radius={[4, 4, 0, 0]} isAnimationActive={true} animationDuration={800} />
+                <Bar dataKey="Maintenance" fill="#f59e0b" radius={[4, 4, 0, 0]} isAnimationActive={true} animationDuration={800} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Right 1 Col: Upcoming Arrivals */}
-        <div className="bg-card p-6 rounded-lg border border-border">
-          <h2 className="text-base font-bold text-card-foreground mb-4">Upcoming Arrivals</h2>
-          <div className="space-y-4">
-            {upcomingArrivals.map(b => {
-              const guest = guestById.get(b.guestId);
-              const room = roomById.get(b.roomId);
-              return (
-                <div key={b.id} className="flex items-center justify-between pb-3 border-b border-border/50 last:border-0 last:pb-0">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-secondary text-foreground font-mono font-semibold rounded-full flex items-center justify-center text-xs border border-border">
-                      {guest?.avatarInitial || 'G'}
+        <div className="bg-card/90 p-6 rounded-2xl border border-border/80 shadow-xs tactile-card flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-bold text-card-foreground tracking-tight">Upcoming Arrivals</h2>
+              <span className="text-[11px] font-mono text-muted-foreground">{upcomingArrivals.length} queued</span>
+            </div>
+            <div className="space-y-2">
+              {upcomingArrivals.map(b => {
+                const guest = guestById.get(b.guestId);
+                const room = roomById.get(b.roomId);
+                return (
+                  <div key={b.id} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-secondary/70 transition-all duration-200 border border-transparent hover:border-border/60 group">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-secondary text-foreground font-mono font-semibold rounded-full flex items-center justify-center text-xs border border-border group-hover:scale-105 transition-transform">
+                        {guest?.avatarInitial || 'G'}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-card-foreground tracking-tight">{guest?.name}</p>
+                        <p className="text-xs text-muted-foreground font-mono">
+                          Room {room?.number} · {b.nights}n ({b.adults}A {b.children}C)
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold text-card-foreground tracking-tight">{guest?.name}</p>
-                      <p className="text-xs text-muted-foreground font-mono">
-                        Room {room?.number} · {b.nights}n ({b.adults}A {b.children}C)
-                      </p>
-                    </div>
+                    <span className={`text-[10.5px] font-mono px-2.5 py-0.5 rounded-full border font-medium ${
+                      b.status === 'Confirmed' ? 'bg-secondary text-foreground border-border' : 'bg-primary/10 text-primary border-primary/20'
+                    }`}>
+                      {b.status}
+                    </span>
                   </div>
-                  <span className={`text-[11px] font-mono px-2.5 py-0.5 rounded-full border font-medium ${
-                    b.status === 'Confirmed' ? 'bg-secondary text-foreground border-border' : 'bg-primary/10 text-primary border-primary/20'
-                  }`}>
-                    {b.status}
-                  </span>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Channel Analytics */}
-      <div className="bg-card p-6 rounded-lg border border-border">
+      <div className="bg-card/90 p-6 rounded-2xl border border-border/80 shadow-xs tactile-card">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
-          <h2 className="text-base font-bold text-card-foreground">Channel Performance</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-base font-bold text-card-foreground tracking-tight">Channel Performance</h2>
+            <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md bg-secondary text-muted-foreground border border-border font-semibold">
+              Live Distribution
+            </span>
+          </div>
           <div className="flex items-center gap-2">
             <input
               type="date"
               value={channelStartDate}
               onChange={(e) => setChannelStartDate(e.target.value)}
-              className="px-2 py-1.5 text-sm border border-border rounded bg-background text-foreground"
+              className="px-3 py-1.5 text-xs font-mono border border-border/80 rounded-xl bg-background/80 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-xs"
             />
-            <span className="text-muted-foreground text-sm">to</span>
+            <span className="text-muted-foreground text-xs font-mono">to</span>
             <input
               type="date"
               value={channelEndDate}
               onChange={(e) => setChannelEndDate(e.target.value)}
-              className="px-2 py-1.5 text-sm border border-border rounded bg-background text-foreground"
+              className="px-3 py-1.5 text-xs font-mono border border-border/80 rounded-xl bg-background/80 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-xs"
             />
           </div>
         </div>
@@ -356,14 +436,14 @@ export function Dashboard() {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="text-sm text-muted-foreground flex items-center justify-center h-full">No bookings found for selected dates</div>
+              <div className="text-sm font-mono text-muted-foreground flex items-center justify-center h-full">No bookings found for selected dates</div>
             )}
           </div>
           <div className="lg:col-span-3">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-border text-xs font-semibold text-muted-foreground uppercase">
+                  <tr className="border-b border-border/70 text-xs font-semibold text-muted-foreground uppercase font-mono">
                     <th className="pb-3">Source Channel</th>
                     <th className="pb-3 text-center">Bookings</th>
                     <th className="pb-3 text-right">Gross Revenue</th>
@@ -371,24 +451,24 @@ export function Dashboard() {
                     <th className="pb-3 text-right">Net Revenue</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border/50">
+                <tbody className="divide-y divide-border/40 font-mono text-xs">
                   {Object.entries(channelStatsBySource)
                     .sort((a, b) => b[1].count - a[1].count)
                     .map(([source, stats], idx) => (
-                    <tr key={source} className="hover:bg-muted/50">
-                      <td className="py-3 font-medium text-foreground flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></span>
+                    <tr key={source} className="hover:bg-muted/40 transition-colors">
+                      <td className="py-3 font-medium text-foreground flex items-center gap-2 font-sans text-sm">
+                        <span className="w-2.5 h-2.5 rounded-full shadow-xs" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></span>
                         {source}
                       </td>
-                      <td className="py-3 text-center text-foreground">{stats.count}</td>
+                      <td className="py-3 text-center text-foreground font-semibold">{stats.count}</td>
                       <td className="py-3 text-right font-medium text-foreground">{formatCurrency(stats.revenue)}</td>
-                      <td className="py-3 text-right text-destructive">{formatCurrency(stats.commission)}</td>
+                      <td className="py-3 text-right text-destructive font-medium">{formatCurrency(stats.commission)}</td>
                       <td className="py-3 text-right font-bold text-primary">{formatCurrency(stats.netRevenue)}</td>
                     </tr>
                   ))}
                   {Object.keys(channelStatsBySource).length === 0 && (
                      <tr>
-                       <td colSpan={5} className="py-4 text-center text-muted-foreground">No channel data available for the selected dates.</td>
+                       <td colSpan={5} className="py-4 text-center text-muted-foreground font-sans text-sm">No channel data available for the selected dates.</td>
                      </tr>
                   )}
                 </tbody>
@@ -401,20 +481,26 @@ export function Dashboard() {
       {/* Grid: Recent Bookings + Recent Comms */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Recent Bookings Table */}
-        <div className="lg:col-span-2 bg-card p-6 rounded-lg border border-border">
+        <div className="lg:col-span-2 bg-card/90 p-6 rounded-2xl border border-border/80 shadow-xs tactile-card">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-bold text-card-foreground">Recent Bookings</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-bold text-card-foreground tracking-tight">Recent Bookings</h2>
+              <span className="text-[10px] font-mono text-muted-foreground bg-secondary px-2 py-0.5 rounded-md border border-border font-semibold">
+                Latest 5
+              </span>
+            </div>
             <button 
               onClick={() => navigate('/bookings')}
-              className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+              className="group text-xs font-mono font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
             >
-              View All <ArrowRight className="w-3 h-3" />
+              <span>View All</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-border text-xs font-semibold text-muted-foreground uppercase">
+                <tr className="border-b border-border/70 text-xs font-semibold text-muted-foreground uppercase font-mono">
                   <th className="pb-3">Booking ID</th>
                   <th className="pb-3">Guest</th>
                   <th className="pb-3">Room</th>
@@ -423,23 +509,23 @@ export function Dashboard() {
                   <th className="pb-3">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border/50">
+              <tbody className="divide-y divide-border/40">
                 {recentBookings.map(b => {
                   const guest = guestById.get(b.guestId);
                   const room = roomById.get(b.roomId);
                   return (
-                    <tr key={b.id} className="hover:bg-muted/50">
-                      <td className="py-3 font-medium text-primary">{b.id}</td>
+                    <tr key={b.id} className="hover:bg-muted/40 transition-colors">
+                      <td className="py-3 font-mono text-xs font-bold text-primary">{b.id}</td>
                       <td className="py-3">
-                        <p className="font-medium text-card-foreground">{guest?.name}</p>
-                        <p className="text-xs text-muted-foreground">{guest?.phone}</p>
+                        <p className="font-semibold text-card-foreground tracking-tight">{guest?.name}</p>
+                        <p className="text-[11px] font-mono text-muted-foreground">{guest?.phone}</p>
                       </td>
-                      <td className="py-3 text-foreground">Room {room?.number}</td>
-                      <td className="py-3 text-foreground">{formatDate(b.checkIn)}</td>
-                      <td className="py-3 font-semibold font-mono text-card-foreground">{formatCurrency(b.total)}</td>
+                      <td className="py-3 text-foreground font-mono text-xs">Room {room?.number}</td>
+                      <td className="py-3 text-foreground font-mono text-xs">{formatDate(b.checkIn)}</td>
+                      <td className="py-3 font-bold font-mono text-card-foreground">{formatCurrency(b.total)}</td>
                       <td className="py-3">
-                        <span className={`text-[11px] font-mono px-2.5 py-0.5 rounded-full border font-medium ${
-                          b.status === 'Checked-In' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25' :
+                        <span className={`text-[10.5px] font-mono px-2.5 py-0.5 rounded-full border font-semibold ${
+                          b.status === 'Checked-In' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25 shadow-xs' :
                           b.status === 'Confirmed' ? 'bg-secondary text-foreground border-border' :
                           b.status === 'Booked' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25' :
                           'bg-muted text-muted-foreground border-border'
@@ -456,131 +542,139 @@ export function Dashboard() {
         </div>
 
         {/* Right 1 Col: Recent Comms */}
-        <div className="bg-card p-6 rounded-lg border border-border">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-bold text-card-foreground">Recent Comms</h2>
-            <button 
-              onClick={() => navigate('/communications')}
-              className="text-xs font-semibold text-primary hover:underline"
-            >
-              View All
-            </button>
-          </div>
-          <div className="space-y-4">
-            {comms.slice(0, 4).map(c => {
-              const guest = guestById.get(c.guestId);
-              return (
-                <div key={c.id} className="flex items-start gap-3 pb-3 border-b border-border/50 last:border-0">
-                  <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0 text-primary font-semibold text-xs border border-border">
-                    {c.channel === 'WhatsApp' ? 'W' : c.channel === 'Email' ? 'E' : 'S'}
+        <div className="bg-card/90 p-6 rounded-2xl border border-border/80 shadow-xs tactile-card flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-bold text-card-foreground tracking-tight">Recent Comms</h2>
+              <button 
+                onClick={() => navigate('/communications')}
+                className="text-xs font-mono font-semibold text-primary hover:underline cursor-pointer"
+              >
+                View All
+              </button>
+            </div>
+            <div className="space-y-3">
+              {comms.slice(0, 4).map(c => {
+                const guest = guestById.get(c.guestId);
+                return (
+                  <div key={c.id} className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-secondary/70 transition-all duration-200 border border-transparent hover:border-border/60">
+                    <div className="w-8 h-8 rounded-xl bg-secondary flex items-center justify-center shrink-0 text-primary font-mono font-bold text-xs border border-border">
+                      {c.channel === 'WhatsApp' ? 'W' : c.channel === 'Email' ? 'E' : 'S'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-card-foreground truncate tracking-tight">{guest?.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{c.template}</p>
+                      <p className="text-[10px] font-mono text-muted-foreground mt-0.5">{formatDate(c.timestamp)}</p>
+                    </div>
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded-md font-semibold ${c.status === 'Delivered' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25' : 'bg-muted text-muted-foreground'}`}>
+                      {c.status}
+                    </span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-card-foreground truncate">{guest?.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{c.template}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{formatDate(c.timestamp)}</p>
-                  </div>
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${c.status === 'Delivered' ? 'bg-green-100 text-green-700' : 'bg-muted text-foreground'}`}>
-                    {c.status}
-                  </span>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Manager Quick Actions Row */}
+      {/* Manager Quick Actions Row with Tactile Buttons */}
       {['manager', 'owner', 'superadmin'].includes(user?.role || '') && (
-        <div className="bg-card p-5 rounded-lg border border-border">
-          <h2 className="text-sm font-bold text-card-foreground mb-3 uppercase tracking-wider">Manager Quick Actions</h2>
-          <div className="flex flex-wrap gap-3">
+        <div className="bg-card/90 p-6 rounded-2xl border border-border/80 shadow-xs tactile-card">
+          <div className="flex items-center gap-2 mb-3">
+            <h2 className="text-xs font-mono font-bold text-muted-foreground uppercase tracking-[0.2em]">Manager Quick Actions</h2>
+          </div>
+          <div className="flex flex-wrap gap-2.5">
             <button 
               onClick={() => navigate('/payments')}
-              className="px-4 py-2 border border-border rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-primary transition-colors"
+              className="tactile-btn px-4 py-2.5 border border-border/80 rounded-xl text-xs font-semibold text-muted-foreground hover:bg-primary/5 hover:text-primary hover:border-primary/40 transition-all flex items-center gap-2 cursor-pointer shadow-xs bg-background/50"
             >
-              View All Payments
+              <CreditCard className="w-3.5 h-3.5 text-primary" />
+              <span>View All Payments</span>
             </button>
             <button 
               onClick={() => navigate('/rooms')}
-              className="px-4 py-2 border border-border rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-primary transition-colors"
+              className="tactile-btn px-4 py-2.5 border border-border/80 rounded-xl text-xs font-semibold text-muted-foreground hover:bg-primary/5 hover:text-primary hover:border-primary/40 transition-all flex items-center gap-2 cursor-pointer shadow-xs bg-background/50"
             >
-              Room Status
+              <Bed className="w-3.5 h-3.5 text-primary" />
+              <span>Room Status</span>
             </button>
             <button 
               onClick={() => navigate('/calendar')}
-              className="px-4 py-2 border border-border rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-primary transition-colors"
+              className="tactile-btn px-4 py-2.5 border border-border/80 rounded-xl text-xs font-semibold text-muted-foreground hover:bg-primary/5 hover:text-primary hover:border-primary/40 transition-all flex items-center gap-2 cursor-pointer shadow-xs bg-background/50"
             >
-              Availability Calendar
+              <Calendar className="w-3.5 h-3.5 text-primary" />
+              <span>Availability Calendar</span>
             </button>
             <button
               onClick={() => navigate('/communications')}
-              className="px-4 py-2 border border-border rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-primary transition-colors"
+              className="tactile-btn px-4 py-2.5 border border-border/80 rounded-xl text-xs font-semibold text-muted-foreground hover:bg-primary/5 hover:text-primary hover:border-primary/40 transition-all flex items-center gap-2 cursor-pointer shadow-xs bg-background/50"
             >
-              Send Bulk Communication
+              <MessageSquare className="w-3.5 h-3.5 text-primary" />
+              <span>Send Bulk Communication</span>
             </button>
           </div>
         </div>
       )}
 
       {/* Cloud Document Repository Section */}
-      <div className="bg-card p-6 rounded-lg border border-border mt-6 print:hidden">
-        <div className="flex justify-between items-center mb-4 border-b border-border/50 pb-2">
-            <h2 className="text-base font-bold text-card-foreground flex items-center gap-2">
-               <Database className="w-5 h-5 text-primary" /> Cloud Document Repository
+      <div className="bg-card/90 p-6 rounded-2xl border border-border/80 shadow-xs tactile-card mt-6 print:hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 border-b border-border/50 pb-3">
+            <h2 className="text-base font-bold text-card-foreground flex items-center gap-2 tracking-tight">
+               <Database className="w-4 h-4 text-primary" /> Cloud Document Repository
             </h2>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary px-2 py-1 rounded">
-               <Globe className="w-3 h-3" /> Synced with Google Drive
+            <div className="flex items-center gap-1.5 text-[10.5px] font-mono text-muted-foreground bg-secondary px-2.5 py-1 rounded-lg border border-border/70 font-semibold self-start sm:self-auto">
+               <Globe className="w-3 h-3 text-emerald-500" /> Synced with Google Drive
             </div>
         </div>
-        <div className="flex gap-4 items-center mb-6">
+        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center mb-6">
            <div className="relative flex-1">
-             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
              <input
                type="text"
                placeholder="Search by Document ID (e.g. SP-CHK-...) or Type..."
                value={docSearch}
                onChange={(e) => setDocSearch(e.target.value)}
-               className="w-full pl-9 pr-4 py-2 border border-border rounded-lg text-sm bg-background/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+               className="w-full pl-9 pr-4 py-2.5 border border-border/80 rounded-xl text-xs bg-background/60 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-mono shadow-xs"
                onKeyDown={(e) => e.key === 'Enter' && handleDocSearch()}
              />
            </div>
            <button
              onClick={handleDocSearch}
              disabled={isSearching}
-             className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-bold text-sm hover:bg-[#60171a] transition-colors disabled:opacity-50"
+             className="tactile-btn bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider hover:opacity-95 transition-all disabled:opacity-50 shadow-xs cursor-pointer"
            >
-              {isSearching ? 'Searching...' : 'Search'}
+              {isSearching ? 'Searching...' : 'Search Archive'}
            </button>
         </div>
 
         <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm border border-border rounded-lg overflow-hidden">
-                <thead className="bg-secondary/50">
-                   <tr className="text-xs font-semibold text-muted-foreground uppercase">
-                      <th className="px-4 py-3 border-b border-border">Doc ID</th>
-                      <th className="px-4 py-3 border-b border-border">Title</th>
-                      <th className="px-4 py-3 border-b border-border">Type</th>
-                      <th className="px-4 py-3 border-b border-border">Saved Date</th>
-                      <th className="px-4 py-3 border-b border-border">Actions</th>
+            <table className="w-full text-left text-sm border border-border/80 rounded-xl overflow-hidden">
+                <thead className="bg-secondary/60">
+                   <tr className="text-xs font-semibold text-muted-foreground uppercase font-mono">
+                      <th className="px-4 py-3 border-b border-border/70">Doc ID</th>
+                      <th className="px-4 py-3 border-b border-border/70">Title</th>
+                      <th className="px-4 py-3 border-b border-border/70">Type</th>
+                      <th className="px-4 py-3 border-b border-border/70">Saved Date</th>
+                      <th className="px-4 py-3 border-b border-border/70">Actions</th>
                    </tr>
                 </thead>
-                <tbody className="divide-y divide-border/50">
+                <tbody className="divide-y divide-border/40 font-mono text-xs">
                     {docs.length === 0 ? (
                         <tr>
-                            <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
-                                No documents matched your search.
+                            <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground font-sans text-sm">
+                                No documents matched your search query.
                             </td>
                         </tr>
                     ) : (
                         docs.map((d: any) => (
-                           <tr key={d.id} className="hover:bg-muted/30">
-                              <td className="px-4 py-3 font-medium text-foreground">{d.documentId}</td>
-                              <td className="px-4 py-3 font-medium text-primary max-w-[200px] truncate" title={d.title}>{d.title}</td>
+                           <tr key={d.id} className="hover:bg-muted/40 transition-colors">
+                              <td className="px-4 py-3 font-bold text-foreground">{d.documentId}</td>
+                              <td className="px-4 py-3 font-semibold text-primary max-w-[200px] truncate font-sans text-xs" title={d.title}>{d.title}</td>
                               <td className="px-4 py-3">
-                                  <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider ${
-                                      d.type === 'Invoice' ? 'bg-blue-100 text-blue-700' :
-                                      d.type === 'Receipt' ? 'bg-green-100 text-green-700' :
-                                      'bg-amber-100 text-amber-700'
+                                  <span className={`text-[9.5px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider border ${
+                                      d.type === 'Invoice' ? 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/25' :
+                                      d.type === 'Receipt' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25' :
+                                      'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25'
                                   }`}>
                                       {d.type}
                                   </span>
@@ -590,16 +684,16 @@ export function Dashboard() {
                               </td>
                               <td className="px-4 py-3">
                                  <div className="flex items-center gap-2">
-                                     <a href={d.webViewLink} target="_blank" rel="noreferrer" className="text-xs font-bold bg-secondary border border-border px-3 py-1.5 rounded hover:bg-muted text-foreground transition-colors">
+                                     <a href={d.webViewLink} target="_blank" rel="noreferrer" className="tactile-btn text-xs font-bold bg-secondary border border-border/80 px-3 py-1.5 rounded-lg hover:bg-muted text-foreground transition-all shadow-xs">
                                         View
                                      </a>
-                                     <a href={d.webContentLink} target="_blank" rel="noreferrer" className="text-xs font-bold bg-primary text-primary-foreground px-3 py-1.5 rounded hover:opacity-90 transition-colors">
+                                     <a href={d.webContentLink} target="_blank" rel="noreferrer" className="tactile-btn text-xs font-bold bg-primary text-primary-foreground px-3 py-1.5 rounded-lg hover:opacity-90 transition-all shadow-xs">
                                         Download PDF
                                      </a>
                                      <button
                                         onClick={() => handleDeleteDoc(d._id || d.id || d.documentId, d.documentId)}
                                         disabled={deletingDocId === (d._id || d.id || d.documentId)}
-                                        className="text-xs font-bold text-destructive bg-destructive/10 hover:bg-destructive hover:text-destructive-foreground border border-destructive/30 px-2.5 py-1.5 rounded transition-colors flex items-center gap-1 disabled:opacity-50"
+                                        className="tactile-btn text-xs font-bold text-destructive bg-destructive/10 hover:bg-destructive hover:text-destructive-foreground border border-destructive/30 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1 disabled:opacity-50 cursor-pointer shadow-xs"
                                         title="Delete file permanently"
                                      >
                                         <Trash2 className="w-3.5 h-3.5" />

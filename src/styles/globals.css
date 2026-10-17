@@ -319,3 +319,114 @@ html.lenis, html.lenis body {
   pointer-events: none;
 }
 
+/* GPU Hardware Compositing & Offloading */
+.gpu-layer,
+.gpu-accelerated,
+.tactile-card,
+.tactile-btn,
+.recharts-wrapper {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Offload scroll compositing to GPU compositor thread */
+.smooth-scroll-container {
+  scroll-behavior: smooth;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  transform: translateZ(0);
+  will-change: scroll-position;
+}
+
+/* Content visibility optimization for long-scroll pages */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 450px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Tactile CRM Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* Tactile Micro-Interactions & Double-Bezel Enclosures */
+.tactile-card {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.tactile-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.07);
+}
+.dark .tactile-card:hover {
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.45);
+}
+
+.tactile-btn {
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.15s ease;
+}
+.tactile-btn:hover {
+  transform: translateY(-1px);
+}
+.tactile-btn:active {
+  transform: scale(0.98);
+}
+
+/* Touch & Mobile Responsiveness Optimizations */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, a, input, select, textarea, [role="button"], .tactile-btn {
+  touch-action: manipulation;
+}
+
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important; /* Prevents auto-zoom in iOS Safari */
+  }
+}
+
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.touch-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+.pt-safe {
+  padding-top: max(0.5rem, env(safe-area-inset-top));
+}
+
+

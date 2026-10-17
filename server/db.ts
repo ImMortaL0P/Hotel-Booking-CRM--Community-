@@ -1,5 +1,9 @@
 import mongoose from 'mongoose';
 
+// Disable query buffering so disconnected DB operations never hang for 10 seconds
+mongoose.set('bufferCommands', false);
+mongoose.set('bufferTimeoutMS', 2000);
+
 export const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI || '');

@@ -20,15 +20,9 @@ interface ApiFetchOptions {
 export async function apiFetch(endpoint: string, options: RequestInit = {}, { quiet = false }: ApiFetchOptions = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
 
-  // Timeout for long requests
+  // Standard timeout for network requests (30 seconds)
   const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), 120000); // 120 second timeout for cold starts
-
-  // Warn if the (free-tier) server is still waking up
-  let toastId: string | number | null = null;
-  const slowWarning = quiet ? undefined : setTimeout(() => {
-    toastId = toast.loading('Waking up the server (this may take up to 60+ seconds)...');
-  }, 8000);
+  const id = setTimeout(() => controller.abort(), 30000);
 
   const token = localStorage.getItem('token');
 
@@ -43,9 +37,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}, { qu
       signal: controller.signal
     });
 
-    clearTimeout(slowWarning);
     clearTimeout(id);
-    if (toastId) toast.dismiss(toastId);
 
     if (!response.ok) {
       if (response.status === 401 && !endpoint.includes('/auth/login')) {
@@ -63,13 +55,11 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}, { qu
 
     return await response.json();
   } catch (error: any) {
-    clearTimeout(slowWarning);
     clearTimeout(id);
-    if (toastId) toast.dismiss(toastId);
 
     if (!quiet) {
       if (error.name === 'AbortError') {
-        toast.error('Server is taking too long to respond. Please try again.');
+        toast.error('Request timed out. Please check your connection and try again.');
       } else {
         toast.error(error.message || 'Network error occurred');
       }

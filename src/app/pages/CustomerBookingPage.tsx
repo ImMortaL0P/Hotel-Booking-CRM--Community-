@@ -1,73 +1,93 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import Lenis from 'lenis';
 import { 
   Building, Calendar, Users, CheckCircle, ShieldCheck, Phone, 
   MapPin, Clock, CreditCard, Sparkles, AlertCircle, ArrowRight, 
   Bed, Wifi, Tv, Coffee, Bath, ChevronRight, ChevronLeft, Share2, Copy,
   Star, Compass, Check, Heart, Info, ArrowUpRight, Sun, Moon,
-  Car, Eye, Bell, Flame, Shield, Key, CheckSquare, ExternalLink, QrCode
+  Car, Eye, Bell, Flame, Shield, Key, CheckSquare, ExternalLink, QrCode,
+  Maximize2, ZoomIn, ZoomOut, Download, X
 } from 'lucide-react';
 import { format, addDays, differenceInCalendarDays } from 'date-fns';
 import { toast } from 'sonner';
 import { API_BASE_URL } from '../lib/api';
-import { useData } from '../data/DataContext';
 import { useTheme } from '../components/ThemeProvider';
 import logoUrl from '../../assets/logo.png';
 
-// Local High-Resolution Photographs Scraped Directly from Booking.com
+// Local High-Resolution Photographs Scraped Directly from Booking.com with Downloaded Resolutions
 const HOTEL_IMAGES = [
   {
     url: '/hotel-images/facade.jpg',
     title: 'Hotel Entrance & Frontage',
     category: 'Exterior',
-    subtitle: 'Quiet sanctum on Bambam Baba Path, Main Shivganga Road'
+    subtitle: 'Quiet sanctum on Bambam Baba Path, Main Shivganga Road',
+    width: 1024,
+    height: 768
   },
   {
     url: '/hotel-images/double-room.jpg',
     title: 'Double Bed Room (Ground Floor)',
     category: 'Rooms',
-    subtitle: 'Step-free ground floor room with silent split AC, King double bed, and sanitized linens'
+    subtitle: 'Step-free ground floor room with silent split AC, King double bed, and sanitized linens',
+    width: 576,
+    height: 768
   },
   {
     url: '/hotel-images/family-room.jpg',
     title: 'Family Bed Suite (Ground Floor)',
     category: 'Rooms',
-    subtitle: 'Two double beds on ground floor, ideal for senior devotees and family pilgrimage'
+    subtitle: 'Two double beds on ground floor, ideal for senior devotees and family pilgrimage',
+    width: 1020,
+    height: 768
   },
   {
     url: '/hotel-images/bathroom.jpg',
     title: 'Private Ensuite Bathroom',
     category: 'Bathrooms',
-    subtitle: 'Spotlessly maintained tiles with 24/7 instantaneous hot water geyser'
+    subtitle: 'Spotlessly maintained tiles with 24/7 instantaneous hot water geyser',
+    width: 576,
+    height: 768
   },
   {
     url: '/hotel-images/interior.jpg',
     title: 'Room Living & Satellite TV',
     category: 'Rooms',
-    subtitle: 'Modern LED flat-screen TV, luggage rack, and vanity mirror'
+    subtitle: 'Modern LED flat-screen TV, luggage rack, and vanity mirror',
+    width: 576,
+    height: 768
   },
   {
     url: '/hotel-images/reception.jpg',
     title: '24-Hour Front Desk Lobby',
     category: 'Lobby',
-    subtitle: 'Front desk staffed 24/7 for check-ins, Jasidih cabs, and Darshan assistance'
+    subtitle: 'Front desk staffed 24/7 for check-ins, Jasidih cabs, and Darshan assistance',
+    width: 576,
+    height: 768
   },
   {
     url: '/hotel-images/corridor.jpg',
     title: 'Ground Floor Guest Passages',
     category: 'Lobby',
-    subtitle: 'Bright, sanitized step-free ground floor corridor'
+    subtitle: 'Bright, sanitized step-free ground floor corridor',
+    width: 1020,
+    height: 768
   },
   {
     url: '/hotel-images/terrace.jpg',
     title: 'Rooftop Open Terrace',
     category: 'Terrace',
-    subtitle: 'Open breeze and peaceful views of the holy Deoghar city surroundings'
+    subtitle: 'Open breeze and peaceful views of the holy Deoghar city surroundings',
+    width: 576,
+    height: 768
   },
   {
     url: '/hotel-images/street.jpg',
     title: 'Shivganga Approach Road',
     category: 'Exterior',
-    subtitle: 'Direct 4-minute walking path to Baba Baidyanath Mandir & Shivganga Kund'
+    subtitle: 'Direct 5-6 minute walking path to Baba Baidyanath Mandir & Shivganga Kund',
+    width: 576,
+    height: 768
   }
 ];
 
@@ -88,7 +108,7 @@ const GENUINE_REVIEWS = [
     stayType: "Devotee Darshan Visit"
   },
   {
-    quote: "Excellent location, just a short 4-minute peaceful walk to Baba Baidyanath Mandir and Shivganga. Hot water geyser was prompt and AC cooling was very effective.",
+    quote: "Excellent location, just a short 500m peaceful walk to Baba Baidyanath Mandir and Shivganga. Hot water geyser was prompt and AC cooling was very effective.",
     author: "Alok S., Patna",
     platform: "Google Reviews",
     score: "4.5 ★ / 5.0",
@@ -104,8 +124,6 @@ const GENUINE_REVIEWS = [
 ];
 
 export function CustomerBookingPage() {
-  const dataContext = useData();
-  const rooms = dataContext?.rooms || [];
   const { theme, setTheme } = useTheme();
 
   // Date state
@@ -119,6 +137,8 @@ export function CustomerBookingPage() {
   const [selectedCategory, setSelectedCategory] = useState<'Double Bed Room' | 'Family Bed Room'>('Double Bed Room');
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
   const [activeGalleryTab, setActiveGalleryTab] = useState<'All' | 'Rooms' | 'Lobby' | 'Exterior'>('All');
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isNativeZoom, setIsNativeZoom] = useState(false);
 
   // Guest details
   const [guestName, setGuestName] = useState('');
@@ -180,6 +200,58 @@ export function CustomerBookingPage() {
     };
   }, []);
 
+  const lenisRef = useRef<Lenis | null>(null);
+  const touchStartX = useRef<number | null>(null);
+
+  // Smooth scrolling with Lenis on customer booking page
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.0,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      touchMultiplier: 1.2,
+    });
+    lenisRef.current = lenis;
+
+    let rafId: number;
+    function raf(time: number) {
+      lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
+    }
+    rafId = requestAnimationFrame(raf);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+      lenisRef.current = null;
+    };
+  }, []);
+
+  // Keyboard navigation & body scroll lock when full-resolution lightbox is active
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsLightboxOpen(false);
+        setIsNativeZoom(false);
+      } else if (e.key === 'ArrowLeft') {
+        setActivePhotoIdx((prev) => (prev - 1 + HOTEL_IMAGES.length) % HOTEL_IMAGES.length);
+      } else if (e.key === 'ArrowRight') {
+        setActivePhotoIdx((prev) => (prev + 1) % HOTEL_IMAGES.length);
+      }
+    };
+
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isLightboxOpen]);
+
   // Tariff & 20% Advance calculation based on live rates
   const roomTariff = selectedCategory === 'Family Bed Room' ? roomRates.familyRoomRate : roomRates.doubleRoomRate;
   const totalAmount = roomTariff * nights;
@@ -189,7 +261,9 @@ export function CustomerBookingPage() {
   const scrollToForm = (category?: 'Double Bed Room' | 'Family Bed Room') => {
     if (category) setSelectedCategory(category);
     const formEl = document.getElementById('reservation-form');
-    if (formEl) {
+    if (lenisRef.current && formEl) {
+      lenisRef.current.scrollTo(formEl, { offset: -30, duration: 1.1 });
+    } else if (formEl) {
       formEl.scrollIntoView({ behavior: 'smooth' });
     }
   };
@@ -254,6 +328,62 @@ export function CustomerBookingPage() {
     }
 
     const generatedRefId = serverSuccessData?.bookingId || `SP-${Date.now().toString().slice(-6).toUpperCase()}`;
+    const generatedGuestId = serverSuccessData?.guestId || `guest-${Date.now().toString(36)}`;
+    const assignedRoomId = serverSuccessData?.roomId || (selectedCategory === 'Family Bed Room' ? 'rm-103' : 'rm-101');
+
+    // 1. Construct standard CRM Booking and Guest records
+    const crmGuest = {
+      id: generatedGuestId,
+      name: guestName.trim(),
+      phone: guestPhone.trim(),
+      email: guestEmail.trim(),
+      city: guestCity.trim() || 'Online Reservation',
+      state: 'Jharkhand',
+      idProofType: 'Aadhaar',
+      idProofNumber: '',
+      totalStays: 1,
+      lastStay: checkIn,
+      totalSpent: advanceAmount,
+      isVIP: false,
+      notes: specialRequests.trim(),
+      avatarInitial: (guestName.trim()[0] || 'G').toUpperCase()
+    };
+
+    const crmBooking = {
+      id: generatedRefId,
+      guestId: generatedGuestId,
+      roomId: assignedRoomId,
+      checkIn: checkIn,
+      checkOut: checkOut,
+      adults: Number(adults) || 1,
+      children: Number(children) || 0,
+      nights,
+      subtotal: Math.round(totalAmount / 1.12),
+      gst: totalAmount - Math.round(totalAmount / 1.12),
+      total: totalAmount,
+      paid: advanceAmount,
+      balance: balanceAmount,
+      status: 'Booked',
+      createdAt: new Date().toISOString().split('T')[0],
+      notes: specialRequests.trim(),
+      source: 'Website'
+    };
+
+    // 2. Synchronize to shared CRM desk queue
+    try {
+      const DESK_QUEUE_KEY = 'shardacrm_desk_queue';
+      const existingQueue = JSON.parse(localStorage.getItem(DESK_QUEUE_KEY) || '{"bookings":[],"guests":[]}');
+      existingQueue.bookings = [crmBooking, ...(existingQueue.bookings || []).filter((b: any) => b.id !== crmBooking.id)];
+      existingQueue.guests = [crmGuest, ...(existingQueue.guests || []).filter((g: any) => g.id !== crmGuest.id)];
+      localStorage.setItem(DESK_QUEUE_KEY, JSON.stringify(existingQueue));
+
+      // 3. Broadcast real-time event for CRM listeners
+      window.dispatchEvent(new CustomEvent('shardacrm_new_booking', {
+        detail: { booking: crmBooking, guest: crmGuest }
+      }));
+    } catch (e) {
+      console.warn('Could not write to shared desk queue:', e);
+    }
 
     // Cache to customer history
     try {
@@ -299,7 +429,7 @@ export function CustomerBookingPage() {
             <span className="text-[var(--ink)] font-bold tracking-[0.22em] uppercase text-[11px] font-mono">Hotel Sharda Palace Deoghar</span>
             <span className="text-[var(--line)] hidden sm:inline">|</span>
             <span className="hidden sm:inline font-serif italic text-sm text-[var(--ink)]/80 font-normal">
-              300m Walk to Baidyanath Jyotirlinga · All Rooms on Ground Floor
+              500m Walk to Baidyanath Jyotirlinga · All Rooms on Ground Floor
             </span>
           </div>
           <div className="flex items-center gap-3.5 text-[10.5px] uppercase tracking-[0.2em] font-mono">
@@ -317,6 +447,9 @@ export function CustomerBookingPage() {
             <img 
               src={logoUrl} 
               alt="Hotel Sharda Palace" 
+              width={40}
+              height={40}
+              decoding="async"
               className="w-10 h-10 rounded border border-[var(--line)] object-cover shadow-xs" 
             />
             <div>
@@ -333,11 +466,11 @@ export function CustomerBookingPage() {
           <div className="flex items-center gap-3">
             {/* Phone Concierge */}
             <a 
-              href="tel:+919431131088" 
+              href="tel:+917970735251" 
               className="hidden md:inline-flex items-center gap-2 font-mono text-xs text-[var(--ink)] border border-[var(--line)] hover:border-[var(--ink)] px-3.5 py-1.5 rounded-full transition-colors"
             >
               <Phone className="w-3.5 h-3.5 text-[var(--reg)]" />
-              <span>+91 94311 31088</span>
+              <span>+91 79707 35251</span>
             </a>
 
             {/* Light / Dark Mode Toggle */}
@@ -479,7 +612,7 @@ export function CustomerBookingPage() {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <a
-                href={`https://wa.me/919431131088?text=${encodeURIComponent(`Namaste Sharda Palace, I have submitted booking request ${bookingSuccess.refId} for ${bookingSuccess.guestName} (${bookingSuccess.category}, ${bookingSuccess.nights} nights). Please share the UPI details for the 20% advance of ₹${bookingSuccess.advanceAmount}.`)}`}
+                href={`https://wa.me/917970735251?text=${encodeURIComponent(`Namaste Sharda Palace, I have submitted booking request ${bookingSuccess.refId} for ${bookingSuccess.guestName} (${bookingSuccess.category}, ${bookingSuccess.nights} nights). Please share the UPI details for the 20% advance of ₹${bookingSuccess.advanceAmount}.`)}`}
                 target="_blank"
                 rel="noreferrer"
                 className="flex-1 bg-[#22c55e] hover:bg-[#16a34a] text-white font-mono text-xs font-bold uppercase tracking-wider py-3.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
@@ -516,7 +649,7 @@ export function CustomerBookingPage() {
                   A tranquil retreat at Baba Baidyanath Dham.
                 </h1>
                 <p className="font-sans text-base sm:text-lg text-muted-foreground max-w-3xl leading-relaxed">
-                  Clean air-conditioned accommodations located entirely on the <strong>ground floor (completely step-free and stair-free)</strong>, 24/7 instantaneous geyser hot water, and authentic hospitality — located just 300 meters from Shree Baba Baidyanath Jyotirlinga Temple.
+                  Clean air-conditioned accommodations located entirely on the <strong>ground floor (completely step-free and stair-free)</strong>, 24/7 instantaneous geyser hot water, and authentic hospitality — located just 500 meters from Shree Baba Baidyanath Jyotirlinga Temple.
                 </p>
               </div>
 
@@ -607,18 +740,47 @@ export function CustomerBookingPage() {
                 </div>
               </div>
 
-              {/* Primary Active Image Display with Gallery Navigation Arrows */}
-              <div className="relative rounded-2xl overflow-hidden border border-[var(--line)] bg-[var(--surface)] h-[350px] sm:h-[500px] shadow-sm group">
+              {/* Primary Active Image Display with Gallery Navigation Arrows & Click/Enter to View in Full Downloaded Resolution */}
+              <div 
+                tabIndex={0}
+                role="button"
+                aria-label={`View ${HOTEL_IMAGES[activePhotoIdx].title} in downloaded resolution`}
+                onClick={() => { setIsLightboxOpen(true); setIsNativeZoom(false); }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setIsLightboxOpen(true);
+                    setIsNativeZoom(false);
+                  }
+                }}
+                className="relative rounded-2xl overflow-hidden border border-[var(--line)] bg-[var(--surface)] h-[350px] sm:h-[500px] shadow-sm group cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-[var(--reg)] select-none"
+              >
                 <img 
                   src={HOTEL_IMAGES[activePhotoIdx].url} 
                   alt={HOTEL_IMAGES[activePhotoIdx].title}
-                  className="w-full h-full object-cover transition-opacity duration-300 select-none"
+                  fetchPriority="high"
+                  decoding="async"
+                  width={HOTEL_IMAGES[activePhotoIdx].width}
+                  height={HOTEL_IMAGES[activePhotoIdx].height}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                 />
+
+                {/* Click / Enter To View Full Downloaded Resolution Badge */}
+                <div className="absolute top-4 right-4 z-20 flex items-center gap-2 bg-[var(--paper)]/90 hover:bg-[var(--paper)] text-[var(--ink)] border border-[var(--line)] px-3.5 py-1.5 rounded-full font-mono text-xs font-semibold backdrop-blur-md transition-all shadow-md group-hover:border-[var(--reg)] group-hover:text-[var(--reg)]">
+                  <Maximize2 className="w-3.5 h-3.5" />
+                  <span>View in Full Resolution</span>
+                  <span className="hidden md:inline font-normal text-[10px] text-muted-foreground border-l border-[var(--line)] pl-2">
+                    {HOTEL_IMAGES[activePhotoIdx].width}×{HOTEL_IMAGES[activePhotoIdx].height}
+                  </span>
+                </div>
 
                 {/* Gallery Navigation Left Arrow */}
                 <button
                   type="button"
-                  onClick={() => setActivePhotoIdx((prev) => (prev - 1 + HOTEL_IMAGES.length) % HOTEL_IMAGES.length)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActivePhotoIdx((prev) => (prev - 1 + HOTEL_IMAGES.length) % HOTEL_IMAGES.length);
+                  }}
                   className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[var(--paper)]/85 hover:bg-[var(--paper)] text-[var(--ink)] border border-[var(--line)] backdrop-blur-md flex items-center justify-center transition-all shadow-lg active:scale-90 cursor-pointer hover:border-[var(--reg)]"
                   title="Previous image"
                   aria-label="Previous image"
@@ -629,7 +791,10 @@ export function CustomerBookingPage() {
                 {/* Gallery Navigation Right Arrow */}
                 <button
                   type="button"
-                  onClick={() => setActivePhotoIdx((prev) => (prev + 1) % HOTEL_IMAGES.length)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActivePhotoIdx((prev) => (prev + 1) % HOTEL_IMAGES.length);
+                  }}
                   className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[var(--paper)]/85 hover:bg-[var(--paper)] text-[var(--ink)] border border-[var(--line)] backdrop-blur-md flex items-center justify-center transition-all shadow-lg active:scale-90 cursor-pointer hover:border-[var(--reg)]"
                   title="Next image"
                   aria-label="Next image"
@@ -647,9 +812,14 @@ export function CustomerBookingPage() {
                       {HOTEL_IMAGES[activePhotoIdx].subtitle}
                     </p>
                   </div>
-                  <span className="font-mono text-xs text-muted-foreground bg-[var(--surface)]/90 px-2.5 py-1 rounded-md border border-[var(--line)]">
-                    {activePhotoIdx + 1} / {HOTEL_IMAGES.length}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="hidden sm:inline font-mono text-[11px] text-[var(--reg)] bg-[var(--surface)]/90 px-2.5 py-1 rounded-md border border-[var(--line)]">
+                      Click image or press Enter to view full size
+                    </span>
+                    <span className="font-mono text-xs text-muted-foreground bg-[var(--surface)]/90 px-2.5 py-1 rounded-md border border-[var(--line)]">
+                      {activePhotoIdx + 1} / {HOTEL_IMAGES.length}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -658,17 +828,195 @@ export function CustomerBookingPage() {
                 {HOTEL_IMAGES.map((img, idx) => (
                   <button
                     key={img.url}
-                    onClick={() => setActivePhotoIdx(idx)}
+                    type="button"
+                    onClick={() => {
+                      setActivePhotoIdx(idx);
+                      setIsLightboxOpen(true);
+                      setIsNativeZoom(false);
+                    }}
                     className={`relative rounded-xl overflow-hidden aspect-video border transition-all cursor-pointer ${
                       activePhotoIdx === idx 
                         ? 'border-[var(--reg)] ring-2 ring-[var(--reg)]/40 scale-[1.03]' 
                         : 'border-[var(--line)] opacity-70 hover:opacity-100'
                     }`}
+                    title={`${img.title} (Click to view full resolution)`}
                   >
-                    <img src={img.url} alt={img.title} className="w-full h-full object-cover" />
+                    <img 
+                      src={img.url} 
+                      alt={img.title} 
+                      loading="lazy"
+                      decoding="async"
+                      width={160}
+                      height={90}
+                      className="w-full h-full object-cover" 
+                    />
                   </button>
                 ))}
               </div>
+
+              {/* Full-Resolution Lightbox Modal Portalled to document.body */}
+              {isLightboxOpen && typeof document !== 'undefined' && createPortal(
+                <div 
+                  className="fixed inset-0 z-[99999] flex flex-col bg-black/95 text-white backdrop-blur-xl animate-in fade-in duration-200"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="Full Downloaded Resolution Image Viewer"
+                >
+                  {/* Top Bar with Image Title, Resolution Info & Controls */}
+                  <div className="flex items-center justify-between px-4 sm:px-8 py-3.5 border-b border-white/10 bg-black/60 shrink-0">
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <span className="font-mono text-xs uppercase tracking-wider text-[var(--reg)] px-2.5 py-0.5 rounded bg-white/10 font-bold shrink-0">
+                        {HOTEL_IMAGES[activePhotoIdx].category}
+                      </span>
+                      <h3 className="font-sans text-sm sm:text-base font-bold text-white truncate max-w-xs sm:max-w-md">
+                        {HOTEL_IMAGES[activePhotoIdx].title}
+                      </h3>
+                      <span className="hidden lg:inline-flex font-mono text-[11px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded">
+                        Native Downloaded Resolution: {HOTEL_IMAGES[activePhotoIdx].width} × {HOTEL_IMAGES[activePhotoIdx].height} px
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {/* Zoom Toggle: Fit vs 100% Native Pixels */}
+                      <button
+                        type="button"
+                        onClick={() => setIsNativeZoom(!isNativeZoom)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/20 bg-white/10 hover:bg-white/20 text-xs font-mono transition-colors cursor-pointer text-white"
+                        title={isNativeZoom ? "Fit image to window" : "Display 1:1 original downloaded pixel resolution"}
+                      >
+                        {isNativeZoom ? <ZoomOut className="w-3.5 h-3.5" /> : <ZoomIn className="w-3.5 h-3.5" />}
+                        <span className="hidden sm:inline">{isNativeZoom ? 'Fit Screen' : '100% Native Size'}</span>
+                      </button>
+
+                      {/* Download / Open Original Image */}
+                      <a
+                        href={HOTEL_IMAGES[activePhotoIdx].url}
+                        download
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/20 bg-white/10 hover:bg-white/20 text-xs font-mono transition-colors text-white"
+                        title="Download exact high-resolution file"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Save Image</span>
+                      </a>
+
+                      {/* Close Lightbox */}
+                      <button
+                        type="button"
+                        onClick={() => { setIsLightboxOpen(false); setIsNativeZoom(false); }}
+                        className="p-2 rounded-lg bg-white/10 hover:bg-white/25 text-white transition-colors cursor-pointer ml-1"
+                        title="Close viewer (Esc)"
+                        aria-label="Close viewer"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Main Image Viewport: Displays in exact downloaded resolution without forced cropping */}
+                  <div 
+                    className={`flex-1 relative flex items-center justify-center p-4 sm:p-8 overflow-auto touch-pan-y ${
+                      isNativeZoom ? 'cursor-grab active:cursor-grabbing block text-center' : ''
+                    }`}
+                    onTouchStart={(e) => {
+                      touchStartX.current = e.touches[0].clientX;
+                    }}
+                    onTouchEnd={(e) => {
+                      if (touchStartX.current === null) return;
+                      const diff = e.changedTouches[0].clientX - touchStartX.current;
+                      if (diff > 45) {
+                        // Swiped right -> previous image
+                        setActivePhotoIdx((prev) => (prev - 1 + HOTEL_IMAGES.length) % HOTEL_IMAGES.length);
+                      } else if (diff < -45) {
+                        // Swiped left -> next image
+                        setActivePhotoIdx((prev) => (prev + 1) % HOTEL_IMAGES.length);
+                      }
+                      touchStartX.current = null;
+                    }}
+                    onClick={(e) => {
+                      if (e.target === e.currentTarget) {
+                        setIsLightboxOpen(false);
+                        setIsNativeZoom(false);
+                      }
+                    }}
+                  >
+                    {/* Previous Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActivePhotoIdx((prev) => (prev - 1 + HOTEL_IMAGES.length) % HOTEL_IMAGES.length);
+                      }}
+                      className="fixed left-4 sm:left-8 top-1/2 -translate-y-1/2 z-30 w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-black/75 hover:bg-black text-white border border-white/20 backdrop-blur-md flex items-center justify-center transition-all shadow-2xl active:scale-95 cursor-pointer hover:border-[var(--reg)]"
+                      title="Previous image (Left Arrow)"
+                      aria-label="Previous image"
+                    >
+                      <ChevronLeft className="w-6 h-6 sm:w-7 sm:h-7" />
+                    </button>
+
+                    {/* Next Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActivePhotoIdx((prev) => (prev + 1) % HOTEL_IMAGES.length);
+                      }}
+                      className="fixed right-4 sm:right-8 top-1/2 -translate-y-1/2 z-30 w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-black/75 hover:bg-black text-white border border-white/20 backdrop-blur-md flex items-center justify-center transition-all shadow-2xl active:scale-95 cursor-pointer hover:border-[var(--reg)]"
+                      title="Next image (Right Arrow)"
+                      aria-label="Next image"
+                    >
+                      <ChevronRight className="w-6 h-6 sm:w-7 sm:h-7" />
+                    </button>
+
+                    {/* The Full Downloaded Image (Uncropped) */}
+                    <div className="relative flex items-center justify-center max-w-full max-h-full">
+                      <img
+                        key={HOTEL_IMAGES[activePhotoIdx].url}
+                        src={HOTEL_IMAGES[activePhotoIdx].url}
+                        alt={HOTEL_IMAGES[activePhotoIdx].title}
+                        width={HOTEL_IMAGES[activePhotoIdx].width}
+                        height={HOTEL_IMAGES[activePhotoIdx].height}
+                        className={`transition-all duration-200 select-none shadow-[0_0_50px_rgba(0,0,0,0.8)] rounded-lg ${
+                          isNativeZoom
+                            ? 'w-auto h-auto max-w-none inline-block my-auto'
+                            : 'max-h-[72vh] max-w-[88vw] object-contain'
+                        }`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Bottom Information & Thumbnails Bar */}
+                  <div className="px-4 sm:px-8 py-3 bg-black/70 border-t border-white/10 shrink-0 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div className="text-center sm:text-left">
+                      <p className="text-xs text-zinc-300 font-sans">{HOTEL_IMAGES[activePhotoIdx].subtitle}</p>
+                      <p className="text-[10px] text-zinc-500 font-mono mt-0.5">
+                        Keyboard shortcuts: <kbd className="px-1 py-0.5 bg-white/10 rounded">←</kbd> / <kbd className="px-1 py-0.5 bg-white/10 rounded">→</kbd> to navigate · <kbd className="px-1 py-0.5 bg-white/10 rounded">Esc</kbd> to exit
+                      </p>
+                    </div>
+
+                    {/* Quick Thumbnails Ribbon */}
+                    <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-1 sm:pb-0">
+                      {HOTEL_IMAGES.map((img, idx) => (
+                        <button
+                          key={img.url}
+                          type="button"
+                          onClick={() => { setActivePhotoIdx(idx); }}
+                          className={`w-12 h-9 rounded-md overflow-hidden shrink-0 border transition-all cursor-pointer ${
+                            activePhotoIdx === idx 
+                              ? 'border-[var(--reg)] ring-2 ring-[var(--reg)]/80 scale-105' 
+                              : 'border-white/20 opacity-50 hover:opacity-100'
+                          }`}
+                          title={img.title}
+                        >
+                          <img src={img.url} alt={img.title} className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>,
+                document.body
+              )}
             </section>
 
             {/* Room Categories Showcase (Ground Floor Step-Free) */}
@@ -691,12 +1039,25 @@ export function CustomerBookingPage() {
                   }`}
                 >
                   <div>
-                    <div className="relative h-52 overflow-hidden border-b border-[var(--line)]">
+                    <div 
+                      onClick={() => { setActivePhotoIdx(1); setIsLightboxOpen(true); setIsNativeZoom(false); }}
+                      className="relative h-52 overflow-hidden border-b border-[var(--line)] cursor-zoom-in group/img"
+                      title="Click to view room in full downloaded resolution"
+                    >
                       <img 
                         src="/hotel-images/double-room.jpg" 
                         alt="Double Bed Room" 
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" 
+                        loading="lazy"
+                        decoding="async"
+                        width={1024}
+                        height={768}
+                        className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500" 
                       />
+                      <div className="absolute top-3 right-3 opacity-0 group-hover/img:opacity-100 transition-opacity">
+                        <span className="px-2.5 py-1 rounded-md text-[10px] font-mono font-bold bg-black/75 text-white flex items-center gap-1 backdrop-blur-sm">
+                          <Maximize2 className="w-3 h-3" /> Full View
+                        </span>
+                      </div>
                       <div className="absolute top-3 left-3">
                         <span className="px-2.5 py-1 rounded-md text-[10px] font-mono uppercase font-bold tracking-wider bg-[var(--paper)]/90 text-[var(--ink)] border border-[var(--line)]">
                           Ground Floor · Cat 01
@@ -764,12 +1125,25 @@ export function CustomerBookingPage() {
                   }`}
                 >
                   <div>
-                    <div className="relative h-52 overflow-hidden border-b border-[var(--line)]">
+                    <div 
+                      onClick={() => { setActivePhotoIdx(2); setIsLightboxOpen(true); setIsNativeZoom(false); }}
+                      className="relative h-52 overflow-hidden border-b border-[var(--line)] cursor-zoom-in group/img"
+                      title="Click to view suite in full downloaded resolution"
+                    >
                       <img 
                         src="/hotel-images/family-room.jpg" 
                         alt="Family Bed Room" 
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" 
+                        loading="lazy"
+                        decoding="async"
+                        width={1024}
+                        height={768}
+                        className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500" 
                       />
+                      <div className="absolute top-3 right-3 opacity-0 group-hover/img:opacity-100 transition-opacity">
+                        <span className="px-2.5 py-1 rounded-md text-[10px] font-mono font-bold bg-black/75 text-white flex items-center gap-1 backdrop-blur-sm">
+                          <Maximize2 className="w-3 h-3" /> Full View
+                        </span>
+                      </div>
                       <div className="absolute top-3 left-3">
                         <span className="px-2.5 py-1 rounded-md text-[10px] font-mono uppercase font-bold tracking-wider bg-[var(--paper)]/90 text-[var(--ink)] border border-[var(--line)]">
                           Ground Floor · Cat 02
@@ -831,7 +1205,7 @@ export function CustomerBookingPage() {
             </section>
 
             {/* Genuine Reviews from Booking.com and Google */}
-            <section className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl p-6 sm:p-10 space-y-8 transition-colors duration-300">
+            <section className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl p-6 sm:p-10 space-y-8 transition-colors duration-300 content-visibility-auto">
               <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[var(--line)] pb-6">
                 <div>
                   <div className="flex items-center gap-3 mb-1.5">
@@ -877,7 +1251,7 @@ export function CustomerBookingPage() {
             </section>
 
             {/* Complete Property Facilities (No Elevator, Ground Floor Emphasized) */}
-            <section className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl p-6 sm:p-10 space-y-8 transition-colors duration-300">
+            <section className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl p-6 sm:p-10 space-y-8 transition-colors duration-300 content-visibility-auto">
               <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[var(--line)] pb-5">
                 <div>
                   <span className="text-[11px] font-mono uppercase tracking-[0.24em] text-[var(--reg)] font-bold">Property Facilities</span>
@@ -927,7 +1301,7 @@ export function CustomerBookingPage() {
                     <Compass className="w-4 h-4" /> Pilgrimage & Transport
                   </h3>
                   <ul className="text-xs space-y-2 text-muted-foreground leading-relaxed">
-                    <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-[#22c55e]" /> 300m Walk to Baidyanath Mandir</li>
+                    <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-[#22c55e]" /> 500m Walk to Baidyanath Mandir</li>
                     <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-[#22c55e]" /> 2-Minute Walk to Shivganga Lake</li>
                     <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-[#22c55e]" /> VIP Puja & Darshan Assistance</li>
                     <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-[#22c55e]" /> Jasidih Jn (7km) Cab Arrangement</li>
@@ -940,18 +1314,35 @@ export function CustomerBookingPage() {
             </section>
 
             {/* Map Location & Surroundings */}
-            <section className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl p-6 sm:p-10 space-y-6 transition-colors duration-300">
+            <section className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl p-6 sm:p-10 space-y-6 transition-colors duration-300 content-visibility-auto">
               <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[var(--line)] pb-4">
                 <div>
                   <span className="text-[11px] font-mono uppercase tracking-[0.24em] text-[var(--reg)] font-bold">Interactive Location</span>
                   <h2 className="font-serif italic text-2xl sm:text-4xl text-[var(--ink)]">Location & Nearby Holy Landmarks</h2>
-                  <p className="text-xs text-muted-foreground mt-1">Main Shivganga Road, Bambam Baba Path, Near Matri Mandir Girls High School, Deoghar, Jharkhand 814112</p>
+                  <div className="flex flex-wrap items-center gap-2 mt-1">
+                    <p className="text-xs text-muted-foreground">
+                      Main Shivganga Road, Bambam Baba Path, Near Matri Mandir Girls High School, Deoghar, Jharkhand 814112
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText("FPX3+CQ Deoghar, Jharkhand");
+                        toast.success("Plus Code copied: FPX3+CQ Deoghar, Jharkhand");
+                      }}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[var(--paper)] border border-[var(--line)] hover:border-[var(--reg)] text-[11px] font-mono text-[var(--ink)] transition-colors cursor-pointer shadow-2xs"
+                      title="Copy Google Maps Plus Code"
+                    >
+                      <span className="text-[var(--reg)] font-bold">Plus Code:</span>
+                      <span className="font-semibold">FPX3+CQ</span>
+                      <Copy className="w-3 h-3 text-muted-foreground ml-0.5" />
+                    </button>
+                  </div>
                 </div>
                 <a 
-                  href="https://maps.app.goo.gl/HkyEH6BBTiCvLvcR7" 
+                  href="https://www.google.com/maps/search/?api=1&query=FPX3%2BCQ+Deoghar,+Jharkhand" 
                   target="_blank" 
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 text-xs font-mono text-[var(--reg)] hover:underline"
+                  className="inline-flex items-center gap-2 text-xs font-mono text-[var(--reg)] hover:underline shrink-0"
                 >
                   <MapPin className="w-3.5 h-3.5 text-[var(--reg)]" />
                   <span>Open in Google Maps</span>
@@ -959,17 +1350,17 @@ export function CustomerBookingPage() {
                 </a>
               </div>
 
-              {/* Responsive Google Maps Embed with Verified Pin for Sharda Palace Hotel */}
+              {/* Responsive Google Maps Embed with Verified Pin for Sharda Palace Hotel (Plus Code: FPX3+CQ Deoghar) */}
               <div className="relative rounded-xl overflow-hidden border border-[var(--line)] h-[340px] sm:h-[440px] shadow-xs">
                 <iframe
-                  title="SHARDA PALACE DEOGHAR Location Pin"
+                  title="SHARDA PALACE DEOGHAR Location Pin (FPX3+CQ Deoghar, Jharkhand)"
                   width="100%"
                   height="100%"
                   frameBorder="0"
                   scrolling="no"
                   marginHeight={0}
                   marginWidth={0}
-                  src="https://maps.google.com/maps?q=SHARDA+PALACE+DEOGHAR,+Bambam+Baba+Path,+Deoghar&t=&z=17&ie=UTF8&iwloc=B&output=embed"
+                  src="https://maps.google.com/maps?q=FPX3%2BCQ+Deoghar,+Jharkhand&t=&z=17&ie=UTF8&iwloc=B&output=embed"
                   className="w-full h-full filter contrast-105"
                   loading="lazy"
                 ></iframe>
@@ -986,7 +1377,7 @@ export function CustomerBookingPage() {
                     SHARDA PALACE DEOGHAR
                   </p>
                   <p className="font-mono text-[10px] text-muted-foreground mt-0.5">
-                    Bambam Baba Path · 300m walk to Mandir
+                    Plus Code: <strong className="text-[var(--ink)]">FPX3+CQ</strong> · 500m walk to Mandir
                   </p>
                 </div>
               </div>
@@ -995,7 +1386,7 @@ export function CustomerBookingPage() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
                 <div className="p-3 rounded-lg bg-[var(--paper)] border border-[var(--line)]">
                   <span className="text-muted-foreground uppercase text-[10px] block">Baidyanath Temple</span>
-                  <span className="font-bold text-[var(--ink)]">300 meters (4 min walk)</span>
+                  <span className="font-bold text-[var(--ink)]">500 meters (6 min walk)</span>
                 </div>
                 <div className="p-3 rounded-lg bg-[var(--paper)] border border-[var(--line)]">
                   <span className="text-muted-foreground uppercase text-[10px] block">Shivganga Kund</span>
@@ -1313,27 +1704,62 @@ export function CustomerBookingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-[var(--line)] bg-[var(--surface)] py-12 px-4 sm:px-6 mt-16 font-mono text-xs text-muted-foreground transition-colors duration-300">
+      <footer className="border-t border-[var(--line)] bg-[var(--surface)] pt-12 pb-28 md:pb-12 px-4 sm:px-6 mt-16 font-mono text-xs text-muted-foreground transition-colors duration-300">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-1">
             <div className="text-sm font-bold text-[var(--ink)] tracking-wider uppercase">Hotel Sharda Palace Deoghar</div>
-            <p>Bambam Baba Path, Main Shivganga Road, Near Matri Mandir, Deoghar, Jharkhand 814112</p>
-            <p className="text-[11px]">300m from Baba Baidyanath Mandir · All Rooms on Ground Floor · Google 4.4★ · Booking.com 8.4</p>
+            <p>Bambam Baba Path, Main Shivganga Road, Near Matri Mandir, Deoghar, Jharkhand 814112 · Plus Code: FPX3+CQ</p>
+            <p className="text-[11px]">500m from Baba Baidyanath Mandir · All Rooms on Ground Floor · Google 4.4★ · Booking.com 8.4</p>
           </div>
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 text-[11px]">
-            <a href="tel:+919431131088" className="hover:text-[var(--ink)] transition-colors">
-              Phone: +91 94311 31088
+            <a href="tel:+917970735251" className="hover:text-[var(--ink)] transition-colors">
+              Phone: +91 79707 35251
             </a>
             <span className="hidden sm:inline opacity-30">/</span>
-            <a href="tel:+919835741088" className="hover:text-[var(--ink)] transition-colors">
-              +91 98357 41088
+            <a href="tel:+919110137334" className="hover:text-[var(--ink)] transition-colors">
+              +91 91101 37334
             </a>
             <span className="hidden sm:inline opacity-30">/</span>
             <span className="text-[var(--reg)] font-bold">Official Direct Reservation Desk</span>
           </div>
         </div>
       </footer>
+
+      {/* Mobile Sticky Booking Action Bar (Instant Thumb Action for Devotees on Mobile) */}
+      <div 
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[var(--paper)]/95 backdrop-blur-md border-t border-[var(--line)] p-2.5 px-4 flex items-center justify-between pb-safe shadow-xl"
+        role="region"
+        aria-label="Mobile Quick Booking"
+      >
+        <div className="flex flex-col">
+          <span className="text-[10px] uppercase font-mono tracking-wider text-muted-foreground leading-none">
+            Direct Tariff
+          </span>
+          <span className="text-sm font-bold font-mono text-[var(--ink)] mt-0.5">
+            ₹{roomRates.doubleRoomRate.toLocaleString('en-IN')}<span className="text-[10px] font-normal text-muted-foreground">/nt · Ground Floor</span>
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <a
+            href="tel:+917970735251"
+            className="w-10 h-10 rounded-full border border-[var(--line)] bg-[var(--surface)] text-[var(--ink)] flex items-center justify-center active:scale-95 transition-transform"
+            title="Call Hotel Concierge"
+            aria-label="Call Front Desk"
+          >
+            <Phone className="w-4 h-4 text-[var(--reg)]" />
+          </a>
+          <button
+            type="button"
+            onClick={scrollToForm}
+            className="bg-[var(--ink)] text-[var(--paper)] px-4 py-2.5 rounded-full font-mono text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 shadow-sm active:scale-95 transition-transform cursor-pointer"
+          >
+            <span>Book Stay</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

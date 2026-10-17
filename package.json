@@ -12,6 +12,7 @@
     "dev:server": "cd server && npm run dev",
     "dev:full": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
     "seed": "cd server && npm run seed",
+    "rooms:available": "cd server && npm run rooms:available",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
   },

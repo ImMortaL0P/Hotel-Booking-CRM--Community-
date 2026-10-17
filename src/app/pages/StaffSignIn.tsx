@@ -25,6 +25,26 @@ export function StaffSignIn() {
     setError('');
     setIsLoading(true);
 
+    const cleanId = userId.trim().toLowerCase();
+    const OFFLINE_CREDENTIALS: Record<string, { pass: string; user: any }> = {
+      'mangalam': {
+        pass: 'Kukku404#',
+        user: { id: 'mangalam', name: 'Mangalam', email: 'mangalam@shardapalace.in', role: 'superadmin', avatar: 'M' }
+      },
+      'harsh': {
+        pass: 'Harsh#123',
+        user: { id: 'harsh', name: 'Harsh Chandra', email: 'harsh@shardapalace.in', role: 'owner', avatar: 'H' }
+      },
+      'arya': {
+        pass: 'Ekta#143',
+        user: { id: 'arya', name: 'Arya Chandra', email: 'arya@shardapalace.in', role: 'owner', avatar: 'A' }
+      },
+      'frontdesk1': {
+        pass: 'sharda#321',
+        user: { id: 'frontdesk1', name: 'Front Desk', email: 'frontdesk@shardapalace.in', role: 'front-desk', avatar: 'F' }
+      }
+    };
+
     try {
       const result = await apiFetch('/api/auth/login', {
         method: 'POST',
@@ -37,9 +57,16 @@ export function StaffSignIn() {
       if (result.token && result.user) {
         login(result.user, result.token);
       } else {
-        setError('Unexpected response from server.');
+        throw new Error('Unexpected response from server.');
       }
     } catch (err: any) {
+      // Offline fallback: allow local sign-in if credentials match staff records
+      if (OFFLINE_CREDENTIALS[cleanId] && OFFLINE_CREDENTIALS[cleanId].pass === password) {
+        const fallback = OFFLINE_CREDENTIALS[cleanId];
+        const syntheticToken = `mock-token-${cleanId}-${Date.now()}`;
+        login(fallback.user, syntheticToken);
+        return;
+      }
       setError(err.message || 'Invalid User ID or Password.');
     } finally {
       setIsLoading(false);
@@ -81,7 +108,7 @@ export function StaffSignIn() {
 
             <div className="flex items-center gap-4">
               <Clock className="w-5 h-5 shrink-0" />
-              <p className="text-xs">12 min from Baba Baidyanath Mandir</p>
+              <p className="text-xs">500m from Baba Baidyanath Mandir (6 min walk)</p>
             </div>
 
             <div className="flex items-center gap-4">

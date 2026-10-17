@@ -269,7 +269,7 @@ export const INITAL_BOOKINGS: Booking[] = [
     "total": 2688,
     "paid": 2688,
     "balance": 0,
-    "status": "Checked-In",
+    "status": "Checked-Out",
     "createdAt": "2026-08-25",
     "notes": ""
   },
@@ -377,7 +377,7 @@ export const INITAL_BOOKINGS: Booking[] = [
     "total": 3360,
     "paid": 3360,
     "balance": 0,
-    "status": "Checked-In",
+    "status": "Checked-Out",
     "createdAt": "2026-08-25",
     "notes": ""
   },
@@ -395,7 +395,7 @@ export const INITAL_BOOKINGS: Booking[] = [
     "total": 8064,
     "paid": 4000,
     "balance": 4064,
-    "status": "Checked-In",
+    "status": "Checked-Out",
     "createdAt": "2026-08-25",
     "notes": ""
   },
@@ -413,7 +413,7 @@ export const INITAL_BOOKINGS: Booking[] = [
     "total": 4480,
     "paid": 4480,
     "balance": 0,
-    "status": "Checked-In",
+    "status": "Checked-Out",
     "createdAt": "2026-08-25",
     "notes": ""
   },

@@ -53,3 +53,4 @@ bookingSchema.index({ updatedAt: 1 });
 bookingSchema.index({ channelBookingId: 1 });
 
 export const Booking = mongoose.model('Booking', bookingSchema);
+export const BookingModel = Booking;

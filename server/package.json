@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx watch index.ts",
     "seed": "tsx scripts/seed.ts",
+    "rooms:available": "tsx scripts/markAllRoomsAvailable.ts",
     "start": "tsx index.ts",
     "build": "echo 'No build required for server, using tsx directly'",
     "test:email-parser": "tsx scripts/testEmailParser.ts"

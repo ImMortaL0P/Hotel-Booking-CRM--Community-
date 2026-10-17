@@ -22,3 +22,4 @@ const logSchema = new mongoose.Schema({
 logSchema.index({ createdAt: 1 });
 
 export const Log = mongoose.model('Log', logSchema);
+export const LogModel = Log;

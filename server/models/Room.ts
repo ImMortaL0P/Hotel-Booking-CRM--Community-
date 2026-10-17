@@ -23,3 +23,4 @@ const roomSchema = new mongoose.Schema({
 roomSchema.index({ updatedAt: 1 });
 
 export const Room = mongoose.model('Room', roomSchema);
+export const RoomModel = Room;

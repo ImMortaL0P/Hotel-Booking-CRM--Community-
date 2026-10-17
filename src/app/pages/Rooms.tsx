@@ -6,7 +6,7 @@ import { Search, Home, DoorClosed, BedDouble, Filter, AlertCircle, Sparkles, Che
 import { toast } from 'sonner';
 
 export function Rooms() {
-  const { rooms, bookings, updateRoomStatus } = useData();
+  const { rooms, bookings, updateRoomStatus, markAllRoomsAvailable } = useData();
   const [statusFilter, setStatusFilter] = useState<RoomStatus | 'All'>('All');
   const [categoryFilter, setCategoryFilter] = useState<RoomCategory | 'All'>('All');
 
@@ -43,22 +43,37 @@ export function Rooms() {
     toast.success(`Room status updated to ${newStatus}`);
   };
 
+  const handleMarkAllAvailable = () => {
+    markAllRoomsAvailable();
+    toast.success('All rooms marked Available! ✨');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Rooms</h1>
-          <p className="text-sm text-muted-foreground">Manage room status and availability across 4 categories.</p>
+          <p className="text-sm text-muted-foreground">Manage room status and availability across suites.</p>
         </div>
-        <div className="flex bg-card rounded-lg p-1 border border-border shadow-sm">
-           <div className="flex items-center gap-1 px-3 py-1 border-r border-border">
-             <CheckCircle2 className="w-4 h-4 text-green-600" />
-             <span className="text-sm font-semibold">{rooms.filter(r => r.status === 'Available').length} Available</span>
-           </div>
-           <div className="flex items-center gap-1 px-3 py-1">
-             <AlertCircle className="w-4 h-4 text-blue-600" />
-             <span className="text-sm font-semibold">{rooms.filter(r => r.status === 'Occupied').length} Occupied</span>
-           </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex bg-card rounded-lg p-1 border border-border shadow-sm">
+             <div className="flex items-center gap-1.5 px-3 py-1.5 border-r border-border">
+               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+               <span className="text-sm font-semibold">{rooms.filter(r => r.status === 'Available').length} Available</span>
+             </div>
+             <div className="flex items-center gap-1.5 px-3 py-1.5">
+               <AlertCircle className="w-4 h-4 text-blue-600" />
+               <span className="text-sm font-semibold">{rooms.filter(r => r.status === 'Occupied').length} Occupied</span>
+             </div>
+          </div>
+          <button
+            onClick={handleMarkAllAvailable}
+            className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+            title="Mark all rooms available and check out active stays"
+          >
+            <CheckCircle2 className="w-4 h-4" />
+            <span>Mark All Available</span>
+          </button>
         </div>
       </div>
 

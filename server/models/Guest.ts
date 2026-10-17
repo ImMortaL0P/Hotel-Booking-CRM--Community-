@@ -30,3 +30,4 @@ const guestSchema = new mongoose.Schema({
 guestSchema.index({ updatedAt: 1 });
 
 export const Guest = mongoose.model('Guest', guestSchema);
+export const GuestModel = Guest;

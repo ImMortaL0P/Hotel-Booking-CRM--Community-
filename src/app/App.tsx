@@ -1,10 +1,12 @@
 import { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
-import Lenis from 'lenis';
 import { useData } from './data/DataContext';
 import { StaffSignIn } from './pages/StaffSignIn';
 import { AppShell } from './components/AppShell';
 import { Toaster } from 'sonner';
+import { Preloader } from './components/Preloader';
+import { ContentAwareCursor } from './components/ContentAwareCursor';
+import logoUrl from '../assets/logo.png';
 
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
 const Bookings = lazy(() => import('./pages/Bookings').then(m => ({ default: m.Bookings })));
@@ -19,100 +21,109 @@ const Expenses = lazy(() => import('./pages/Expenses').then(m => ({ default: m.E
 const EmailImport = lazy(() => import('./pages/EmailImport').then(m => ({ default: m.EmailImport })));
 const Logs = lazy(() => import('./pages/Logs').then(m => ({ default: m.Logs })));
 const ChannelSettings = lazy(() => import('./components/ChannelSettings').then(m => ({ default: m.ChannelSettings })));
-const CustomerBookingPage = lazy(() => import('./pages/CustomerBookingPage').then(m => ({ default: m.CustomerBookingPage })));
+import { CustomerBookingPage } from './pages/CustomerBookingPage';
 
 const LoadingFallback = () => (
-  <div className="h-full flex items-center justify-center bg-background">
-    <div className="relative">
-      <div className="w-12 h-12 border-4 border-border rounded-full"></div>
-      <div className="w-12 h-12 border-4 border-transparent border-t-primary rounded-full animate-spin absolute inset-0"></div>
+  <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 bg-transparent selection:bg-primary/20">
+    <div className="relative w-16 h-16 flex items-center justify-center mb-3">
+      <div className="absolute inset-0 rounded-2xl border border-primary/25 border-dashed animate-[spin_10s_linear_infinite]" />
+      <div className="w-11 h-11 rounded-xl bg-card border border-border shadow-xs p-1.5 flex items-center justify-center">
+        <img src={logoUrl} alt="Sharda Palace" className="w-full h-full object-contain" />
+      </div>
+    </div>
+    <div className="text-[11px] font-mono uppercase tracking-[0.22em] text-muted-foreground animate-pulse font-semibold">
+      Connecting to Sanctum...
     </div>
   </div>
 );
 
+// Lightweight non-blocking route fallback to prevent layout thrashing
+const CrmTabLoading = () => (
+  <div className="w-full min-h-[300px] flex flex-col items-center justify-center opacity-70">
+    <div className="w-6 h-6 border-2 border-primary/25 border-t-primary rounded-full animate-spin mb-2.5" />
+    <span className="text-[10.5px] font-mono uppercase tracking-widest text-muted-foreground font-semibold">Updating View...</span>
+  </div>
+);
+
+function AuthenticatedCrmRoutes() {
+  // Background pre-warm all CRM chunks so navigation is instant 0ms
+  useEffect(() => {
+    const prefetch = () => {
+      import('./pages/Dashboard');
+      import('./pages/Bookings');
+      import('./pages/GuestProfiles');
+      import('./pages/Rooms');
+      import('./pages/Calendar');
+      import('./pages/Communications');
+      import('./pages/Payments');
+      import('./pages/Checkout');
+      import('./pages/InvoiceGenerator');
+      import('./pages/Expenses');
+      import('./pages/Logs');
+    };
+
+    if (typeof window !== 'undefined') {
+      if ('requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(prefetch);
+      } else {
+        setTimeout(prefetch, 100);
+      }
+    }
+  }, []);
+
+  return (
+    <AppShell>
+      <Suspense fallback={<CrmTabLoading />}>
+        <Routes>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/bookings" element={<Bookings />} />
+          <Route path="/guests" element={<GuestProfiles />} />
+          <Route path="/rooms" element={<Rooms />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/communications" element={<Communications />} />
+          <Route path="/payments" element={<Payments />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/invoices" element={<InvoiceGenerator />} />
+          <Route path="/expenses" element={<Expenses />} />
+          <Route path="/channel-settings" element={<ChannelSettings />} />
+          <Route path="/email-import" element={<EmailImport />} />
+          <Route path="/logs" element={<Logs />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </Suspense>
+    </AppShell>
+  );
+}
+
 export default function App() {
   const { user } = useData();
 
-  const isPublicBookingRoute = 
-    window.location.pathname.startsWith('/book') || 
-    window.location.pathname.startsWith('/reserve') ||
-    window.location.pathname.startsWith('/booking-request') ||
-    window.location.hash.startsWith('#/book') ||
-    window.location.hash.startsWith('#/reserve');
-
-  useEffect(() => {
-    // Only activate Kraft Studios smooth scroll on public booking routes
-    if (!isPublicBookingRoute) return;
-
-    const lenis = new Lenis({
-      duration: 1.1,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-    });
-
-    let rafId: number;
-    function raf(time: number) {
-      lenis.raf(time);
-      rafId = requestAnimationFrame(raf);
-    }
-    rafId = requestAnimationFrame(raf);
-
-    return () => {
-      cancelAnimationFrame(rafId);
-      lenis.destroy();
-    };
-  }, [isPublicBookingRoute]);
-
-  if (isPublicBookingRoute) {
-    return (
-      <BrowserRouter>
-        <Suspense fallback={<LoadingFallback />}>
-          <Routes>
-            <Route path="/book" element={<CustomerBookingPage />} />
-            <Route path="/reserve" element={<CustomerBookingPage />} />
-            <Route path="/booking-request" element={<CustomerBookingPage />} />
-            <Route path="*" element={<CustomerBookingPage />} />
-          </Routes>
-        </Suspense>
-        <Toaster />
-      </BrowserRouter>
-    );
-  }
-
-  if (!user) {
-    return (
-      <BrowserRouter>
-        <StaffSignIn />
-        <Toaster />
-      </BrowserRouter>
-    );
-  }
-
   return (
     <BrowserRouter>
-      <AppShell>
-        <Suspense fallback={<LoadingFallback />}>
-          <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/bookings" element={<Bookings />} />
-            <Route path="/guests" element={<GuestProfiles />} />
-            <Route path="/rooms" element={<Rooms />} />
-            <Route path="/calendar" element={<Calendar />} />
-            <Route path="/communications" element={<Communications />} />
-            <Route path="/payments" element={<Payments />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/invoices" element={<InvoiceGenerator />} />
-            <Route path="/expenses" element={<Expenses />} />
-            <Route path="/channel-settings" element={<ChannelSettings />} />
-            <Route path="/email-import" element={<EmailImport />} />
-            <Route path="/logs" element={<Logs />} />
-            <Route path="/book" element={<CustomerBookingPage />} />
-            <Route path="/reserve" element={<CustomerBookingPage />} />
-          </Routes>
-        </Suspense>
-      </AppShell>
+      {/* Brand Luxury Editorial Preloader */}
+      <Preloader />
+
+      {/* Content-Aware Fluid Smooth Cursor */}
+      <ContentAwareCursor />
+
       <Toaster />
+      <Suspense fallback={<LoadingFallback />}>
+        <Routes>
+          {/* Public customer booking routes - accessible directly without staff login */}
+          <Route path="/book" element={<CustomerBookingPage />} />
+          <Route path="/reserve" element={<CustomerBookingPage />} />
+          <Route path="/booking-request" element={<CustomerBookingPage />} />
+
+          {/* If not logged in as staff, any other path renders StaffSignIn */}
+          {!user ? (
+            <Route path="*" element={<StaffSignIn />} />
+          ) : (
+            /* Staff CRM routes wrapped in AppShell */
+            <Route path="/*" element={<AuthenticatedCrmRoutes />} />
+          )}
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

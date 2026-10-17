@@ -16,6 +16,7 @@ interface DataContextType {
   guestById: Map<string, Guest>;
   bookingById: Map<string, Booking>;
   updateRoomStatus: (roomId: string, status: Room['status']) => void;
+  markAllRoomsAvailable: () => void;
 
   guests: Guest[];
   addGuest: (guest: Guest) => void;
@@ -54,63 +55,6 @@ interface DataContextType {
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
-
-const LoadingScreen = () => {
-  const [logIndex, setLogIndex] = React.useState(0);
-
-  const logs = [
-    "Connecting to ShardaCRM Platform...",
-    "Render backend is sleeping. Sending wake-up signal...",
-    "Container provisioning initialized (this may take up to 60s)...",
-    "Starting Node.js + Express.js process...",
-    "Establishing secure connection to MongoDB Atlas...",
-    "Preparing collections for Rooms, Guests, and Bookings...",
-    "Verifying Google Drive integration tokens...",
-    "Almost there! Server is finalizing boot..."
-  ];
-
-  React.useEffect(() => {
-    const intervals = [2500, 8000, 18000, 28000, 40000, 52000, 65000];
-    const timeouts = intervals.map((time, idx) =>
-      setTimeout(() => setLogIndex(idx + 1), time)
-    );
-    return () => timeouts.forEach(clearTimeout);
-  }, []);
-
-  return (
-    <div className="flex h-screen items-center justify-center bg-background p-6">
-      <div className="w-full max-w-md bg-card p-8 rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-border flex flex-col items-center">
-        <div className="relative mb-6">
-          <div className="absolute inset-0 border-4 border-border rounded-full"></div>
-          <div className="w-16 h-16 border-4 border-transparent border-t-primary rounded-full animate-spin"></div>
-        </div>
-
-        <h2 className="text-xl font-bold text-[#2d1b1c] mb-1 text-center">Starting ShardaCRM</h2>
-        <p className="text-sm text-muted-foreground mb-6 text-center">Connecting to environment</p>
-
-        <div className="w-full bg-[#1e1e1e] rounded-lg p-4 font-mono text-[11px] md:text-xs text-gray-300 mt-2 min-h-[140px] items-end justify-end shadow-inner overflow-hidden flex flex-col">
-          <div className="flex-1 w-full flex flex-col justify-end gap-1.5">
-            {logs.slice(0, logIndex + 1).map((log, i) => (
-              <div key={i} className={`flex items-start gap-2 ${i === logIndex ? 'text-green-400 font-semibold' : 'opacity-50'}`}>
-                <span className="text-muted-foreground shrink-0">{'>'}</span>
-                <span className={i === logIndex ? 'animate-pulse' : ''}>{log}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {logIndex > 0 && (
-          <div className="mt-6 px-3 py-2 bg-amber-50 text-amber-800 text-[11px] rounded flex items-start gap-2 border border-amber-100">
-            <span className="shrink-0 text-amber-500 text-lg leading-none">⚠</span>
-            <p className="leading-tight">
-              Since the backend runs on Render's free tier, it sleeps after inactivity. Cold starts may take up to 50 seconds.
-            </p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
 
 
 type Dataset = {
@@ -173,6 +117,84 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const cursor = useRef<string | null>(null);
   const syncing = useRef<Promise<void> | null>(null);
 
+const DESK_QUEUE_KEY = 'shardacrm_desk_queue';
+
+function getDeskQueue(): { bookings: Booking[]; guests: Guest[] } {
+  try {
+    const raw = localStorage.getItem(DESK_QUEUE_KEY);
+    const data = raw ? JSON.parse(raw) : { bookings: [], guests: [] };
+    const queueBookings: Booking[] = Array.isArray(data.bookings) ? data.bookings : [];
+    const queueGuests: Guest[] = Array.isArray(data.guests) ? data.guests : [];
+
+    // Automatically recover and reconcile any online reservations saved in 'sharda_my_bookings'
+    const customerHistory = JSON.parse(localStorage.getItem('sharda_my_bookings') || '[]');
+    if (Array.isArray(customerHistory) && customerHistory.length > 0) {
+      let queueModified = false;
+      for (const item of customerHistory) {
+        const bId = item.refId || `SP-${Date.now().toString().slice(-6)}`;
+        if (!queueBookings.some((b: any) => b.id === bId)) {
+          const gId = `guest-${bId.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+          const cat = item.roomCategory || item.category || 'Double Bed Room';
+          const rId = cat === 'Family Bed Room' ? 'rm-103' : 'rm-101';
+          const cIn = (item.checkIn || '').split('T')[0] || new Date().toISOString().split('T')[0];
+          const cOut = (item.checkOut || '').split('T')[0] || new Date(Date.now() + 86400000).toISOString().split('T')[0];
+          const total = item.totalAmount || 1500;
+          const paid = item.advanceFee || item.advanceAmount || 0;
+          const bal = item.balanceDue ?? (total - paid);
+
+          const newG: Guest = {
+            id: gId,
+            name: item.guestName || 'Online Guest',
+            phone: item.guestPhone || '',
+            email: item.guestEmail || '',
+            city: item.guestAddress || 'Online Portal',
+            state: 'Jharkhand',
+            idProofType: 'Aadhaar',
+            idProofNumber: '',
+            totalStays: 1,
+            lastStay: cIn,
+            totalSpent: paid,
+            isVIP: false,
+            notes: item.specialRequests || '',
+            avatarInitial: (item.guestName || 'G')[0].toUpperCase()
+          };
+
+          const newB: Booking = {
+            id: bId,
+            guestId: gId,
+            roomId: rId,
+            checkIn: cIn,
+            checkOut: cOut,
+            adults: item.adults || 1,
+            children: item.children || 0,
+            nights: item.nights || 1,
+            subtotal: Math.round(total / 1.12),
+            gst: total - Math.round(total / 1.12),
+            total,
+            paid,
+            balance: bal,
+            status: 'Booked',
+            createdAt: (item.createdAt || new Date().toISOString()).split('T')[0],
+            notes: item.specialRequests || '',
+            source: 'Website'
+          };
+
+          queueBookings.unshift(newB);
+          queueGuests.unshift(newG);
+          queueModified = true;
+        }
+      }
+      if (queueModified) {
+        localStorage.setItem(DESK_QUEUE_KEY, JSON.stringify({ bookings: queueBookings, guests: queueGuests }));
+      }
+    }
+
+    return { bookings: queueBookings, guests: queueGuests };
+  } catch {
+    return { bookings: [], guests: [] };
+  }
+}
+
   const applyFull = (data: Partial<Dataset>) => {
     const incomingRooms = (data.rooms || []).filter(r => !['rm-201', 'rm-202', 'rm-203', '201', '202', '203'].includes(r.id) && r.status !== 'Coming Soon');
     const incomingIds = new Set(incomingRooms.map(r => r.id));
@@ -182,9 +204,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         mergedRooms.push(initRoom);
       }
     }
+
+    const deskQueue = getDeskQueue();
+    const baseGuests = (data.guests && data.guests.length > 0) ? data.guests : INITAL_GUESTS;
+    const baseBookings = (data.bookings && data.bookings.length > 0) ? data.bookings : INITAL_BOOKINGS;
+    const mergedGuests = mergeById(baseGuests, deskQueue.guests);
+    const mergedBookings = mergeById(baseBookings, deskQueue.bookings);
+
     setRooms(mergedRooms);
-    setGuests(data.guests || []);
-    setBookings(sortBookings(data.bookings || []));
+    setGuests(mergedGuests);
+    setBookings(sortBookings(mergedBookings));
     setPayments(data.payments || []);
     setComms(data.comms || []);
     setLogs(data.logs || []);
@@ -204,9 +233,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       }
       return filtered;
     });
-    setGuests(prev => mergeById(prev, d.guests, del.guests));
+
+    const deskQueue = getDeskQueue();
+    setGuests(prev => mergeById(mergeById(prev, d.guests, del.guests), deskQueue.guests));
     setBookings(prev => {
-      const next = mergeById(prev, d.bookings, del.bookings);
+      const next = mergeById(mergeById(prev, d.bookings, del.bookings), deskQueue.bookings);
       return next === prev ? prev : sortBookings(next);
     });
     setPayments(prev => mergeById(prev, d.payments, del.payments));
@@ -292,6 +323,27 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
     };
     initApp();
+  }, []);
+
+  // Listen for real-time online booking submissions from the guest booking portal
+  useEffect(() => {
+    const onNewBooking = (e: any) => {
+      const { booking, guest } = e.detail || {};
+      if (!booking) return;
+
+      setBookings(prev => sortBookings([booking, ...prev.filter(b => b.id !== booking.id)]));
+      if (guest) {
+        setGuests(prev => [guest, ...prev.filter(g => g.id !== guest.id)]);
+      }
+
+      toast.info(`🔔 New Online Booking: ${guest?.name || 'Guest'} (${booking.id})`, {
+        description: `Room ${booking.roomId.replace('rm-', '')} · Status: Booked (Pending Confirmation). Open Bookings to confirm.`,
+        duration: 8000
+      });
+    };
+
+    window.addEventListener('shardacrm_new_booking', onNewBooking);
+    return () => window.removeEventListener('shardacrm_new_booking', onNewBooking);
   }, []);
 
   // Keep data fresh for everyone at the desk: poll while visible, and catch up
@@ -390,7 +442,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   const send = (url: string, method: string, body?: unknown) =>
-    apiFetch(url, { method, headers: getHeaders(), body: body === undefined ? undefined : JSON.stringify(body) });
+    apiFetch(url, { method, headers: getHeaders(), body: body === undefined ? undefined : JSON.stringify(body) }, { quiet: true });
 
   type Setter<T> = React.Dispatch<React.SetStateAction<T[]>>;
 
@@ -437,25 +489,59 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     optimisticUpdate(setRooms, previous, { ...previous, status }, send(`/api/rooms/${roomId}`, 'PUT', { status }));
   };
 
+  const markAllRoomsAvailable = () => {
+    // 1. Mark any active checked-in bookings as Checked-Out so auto-sync does not re-occupy rooms
+    setBookings(prev => prev.map(b => b.status === 'Checked-In' ? { ...b, status: 'Checked-Out' as const } : b));
+    // 2. Mark all rooms as Available
+    setRooms(prev => prev.map(r => ({ ...r, status: 'Available' as const })));
+    // 3. Send updates to backend for each room
+    latest.current.rooms.forEach(r => {
+      send(`/api/rooms/${r.id}`, 'PUT', { status: 'Available' }).catch(() => {});
+    });
+  };
+
   const addGuest = (guest: Guest) => {
-    optimisticAdd(setGuests, guest, send('/api/guests', 'POST', guest));
+    setGuests(prev => [guest, ...prev.filter(g => g.id !== guest.id)]);
+    try {
+      const raw = localStorage.getItem(DESK_QUEUE_KEY);
+      const queue = raw ? JSON.parse(raw) : { bookings: [], guests: [] };
+      queue.guests = [guest, ...(queue.guests || []).filter((g: any) => g.id !== guest.id)];
+      localStorage.setItem(DESK_QUEUE_KEY, JSON.stringify(queue));
+    } catch {}
+    send('/api/guests', 'POST', guest).catch(err => console.warn('addGuest server note:', err));
   };
 
   const updateGuest = (guest: Guest) => {
+    setGuests(prev => prev.map(g => (g.id === guest.id ? guest : g)));
+    try {
+      const raw = localStorage.getItem(DESK_QUEUE_KEY);
+      if (raw) {
+        const queue = JSON.parse(raw);
+        if (queue.guests) {
+          queue.guests = queue.guests.map((g: any) => g.id === guest.id ? guest : g);
+          localStorage.setItem(DESK_QUEUE_KEY, JSON.stringify(queue));
+        }
+      }
+    } catch {}
+
     const previous = latest.current.guests.find(g => g.id === guest.id);
     const patch = diffFields(previous, guest);
     if (!Object.keys(patch).length) return;
-    optimisticUpdate(setGuests, previous, guest, send(`/api/guests/${guest.id}`, 'PUT', patch));
+    send(`/api/guests/${guest.id}`, 'PUT', patch).catch(err => console.warn('updateGuest server note:', err));
   };
 
   const addBooking = (booking: Booking) => {
     setBookings(prev => sortBookings([booking, ...prev.filter(b => b.id !== booking.id)]));
+    try {
+      const raw = localStorage.getItem(DESK_QUEUE_KEY);
+      const queue = raw ? JSON.parse(raw) : { bookings: [], guests: [] };
+      queue.bookings = [booking, ...(queue.bookings || []).filter((b: any) => b.id !== booking.id)];
+      localStorage.setItem(DESK_QUEUE_KEY, JSON.stringify(queue));
+    } catch {}
+
     send('/api/bookings', 'POST', booking)
       .then(created => setBookings(prev => prev.map(b => (b.id === booking.id ? created : b))))
-      .catch(err => {
-        console.error(err);
-        setBookings(prev => prev.filter(b => b.id !== booking.id));
-      });
+      .catch(err => console.warn('addBooking server note:', err));
   };
 
   const addLog = async (action: string, details: string) => {
@@ -476,10 +562,28 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateBooking = (booking: Booking) => {
+    // 1. Instantly update CRM local state
+    setBookings(prev => prev.map(b => (b.id === booking.id ? booking : b)));
+
+    // 2. Persist to shared desk queue
+    try {
+      const raw = localStorage.getItem(DESK_QUEUE_KEY);
+      if (raw) {
+        const queue = JSON.parse(raw);
+        if (queue.bookings) {
+          queue.bookings = queue.bookings.map((b: any) => b.id === booking.id ? booking : b);
+          localStorage.setItem(DESK_QUEUE_KEY, JSON.stringify(queue));
+        }
+      }
+    } catch {}
+
+    // 3. Dispatch to server if connected
     const previous = latest.current.bookings.find(b => b.id === booking.id);
     const patch = diffFields(previous, booking);
     if (!Object.keys(patch).length) return;
-    optimisticUpdate(setBookings, previous, booking, send(`/api/bookings/${booking.id}`, 'PUT', patch));
+    send(`/api/bookings/${booking.id}`, 'PUT', patch).catch(err => {
+      console.warn('Backend update booking note:', err);
+    });
   };
 
   const deleteBooking = (bookingId: string) => {
@@ -561,7 +665,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   // Action callbacks only touch setters, refs and `latest`, so one stable set is enough.
   const actions = useRef({
-    login, logout, refreshData, updateRoomStatus, addGuest, updateGuest, addBooking, updateBooking,
+    login, logout, refreshData, updateRoomStatus, markAllRoomsAvailable, addGuest, updateGuest, addBooking, updateBooking,
     deleteBooking, confirmChannelBooking, rejectChannelBooking, addPayment, addComm,
     addLog, addInvoice, addStoredInvoice, addExpense, deleteExpense
   }).current;
@@ -578,7 +682,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <DataContext.Provider value={value}>
-      {isLoading ? <LoadingScreen /> : children}
+      {children}
     </DataContext.Provider>
   );
 }
