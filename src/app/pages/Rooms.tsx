@@ -25,10 +25,10 @@ export function Rooms() {
   };
 
   const statusColors = {
-    'Available': 'bg-green-100 text-green-800 border-green-200',
-    'Occupied': 'bg-blue-100 text-blue-800 border-blue-200',
-    'Cleaning': 'bg-amber-100 text-amber-800 border-amber-200',
-    'Maintenance': 'bg-red-100 text-red-800 border-red-200',
+    'Available': 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25',
+    'Occupied': 'bg-secondary text-foreground border-border',
+    'Cleaning': 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25',
+    'Maintenance': 'bg-primary/10 text-primary border-primary/25',
   };
 
   const statusIcons = {
@@ -86,8 +86,8 @@ export function Rooms() {
             <button
               key={c}
               onClick={() => setCategoryFilter(c)}
-              className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
-                categoryFilter === c ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted/50 text-foreground border-border hover:bg-muted'
+              className={`px-3 py-1 text-xs font-mono font-medium rounded-full border transition-colors cursor-pointer ${
+                categoryFilter === c ? 'bg-foreground text-background border-transparent font-semibold' : 'bg-secondary text-foreground border-border hover:bg-muted'
               }`}
             >
               {c}
@@ -102,9 +102,9 @@ export function Rooms() {
         
         return (
           <div key={cat} className="space-y-4">
-            <h2 className="text-lg font-bold text-primary flex items-center gap-2 border-b border-border pb-2">
-              <BedDouble className="w-5 h-5" /> 
-              {cat} ({groupedRooms[cat].length})
+            <h2 className="text-base font-bold text-foreground tracking-tight flex items-center gap-2 border-b border-border pb-2">
+              <BedDouble className="w-4 h-4 text-primary" /> 
+              {cat} <span className="font-mono text-xs text-muted-foreground font-normal">({groupedRooms[cat].length})</span>
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {groupedRooms[cat].map(room => {
@@ -112,15 +112,15 @@ export function Rooms() {
                 const booking = isOccupied ? activeBookings.find(b => b.roomId === room.id && (b.status === 'Checked-In' || b.status === 'Confirmed')) : null;
 
                 return (
-                  <div key={room.id} className="bg-card rounded-lg border border-border shadow-sm overflow-hidden flex flex-col hover:border-primary transition-colors group">
-                    <div className="p-3 border-b border-border/50 flex justify-between items-center bg-secondary">
-                      <span className="text-xl font-bold text-foreground">{room.number}</span>
-                      <span className="text-xs text-muted-foreground font-medium">Floor {room.floor}</span>
+                  <div key={room.id} className="bg-card rounded-lg border border-border shadow-none overflow-hidden flex flex-col hover:border-primary/60 transition-colors group">
+                    <div className="p-3 border-b border-border/50 flex justify-between items-center bg-secondary/50">
+                      <span className="text-lg font-mono font-bold text-foreground">{room.number}</span>
+                      <span className="text-xs font-mono text-muted-foreground font-medium">F{room.floor}</span>
                     </div>
                     
                     <div className="p-3 flex-1 flex flex-col">
                       <div className="flex justify-between items-start mb-2">
-                         <span className="text-sm font-semibold text-foreground">{formatCurrency(room.tariff)}/nt</span>
+                         <span className="text-sm font-mono font-semibold text-foreground">{formatCurrency(room.tariff)}/nt</span>
                       </div>
 
                       <div className="mt-auto">

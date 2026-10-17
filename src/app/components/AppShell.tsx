@@ -15,18 +15,21 @@ const NavItem = ({ to, icon: Icon, label, badge, collapsed }: any) => (
   <NavLink
     to={to}
     className={({ isActive }) => cn(
-      "flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 transition-colors text-sm font-medium",
+      "flex items-center gap-3 px-3 py-2 rounded-lg mb-0.5 transition-colors text-sm font-medium",
       isActive
-        ? "bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground"
-        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+        ? "bg-primary text-primary-foreground font-semibold shadow-none"
+        : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
     )}
   >
-    <Icon className="w-5 h-5 shrink-0" />
+    <Icon className="w-4 h-4 shrink-0" />
     {!collapsed && (
       <div className="flex-1 flex items-center justify-between">
-        <span>{label}</span>
+        <span className="tracking-tight">{label}</span>
         {badge > 0 && (
-          <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-bold", "bg-destructive text-destructive-foreground")}>
+          <span className={cn(
+            "px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold tracking-tight border",
+            "bg-primary/15 text-primary border-primary/30 dark:bg-primary/20 dark:text-primary-foreground dark:border-primary/40"
+          )}>
             {badge}
           </span>
         )}
@@ -315,7 +318,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden print:h-auto print:overflow-visible print:block">
         {/* We can add a top bar here if needed, but per requirements most screens manage their own header area in Main */}
-        <div className="flex-1 overflow-auto p-4 md:p-6 bg-background print:p-0 print:overflow-visible print:block text-black">
+        <div className="flex-1 overflow-auto p-4 md:p-6 bg-background print:p-0 print:overflow-visible print:block text-foreground">
           {children}
         </div>
       </main>

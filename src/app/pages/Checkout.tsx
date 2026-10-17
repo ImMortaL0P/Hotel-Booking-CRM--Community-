@@ -158,20 +158,20 @@ export function Checkout() {
   return (
     <div className="max-w-5xl mx-auto flex flex-col h-full print:m-0 print:p-0 print:w-full print:max-w-none">
       <div className="mb-8 print:hidden">
-        <h1 className="text-3xl font-bold text-foreground font-display flex items-center gap-3">
-          <Receipt className="text-[#D4AF37] w-8 h-8" />
+        <h1 className="text-2xl font-bold text-foreground font-display tracking-tight flex items-center gap-3">
+          <Receipt className="text-primary w-7 h-7" />
           Checkout & Bill Operations
         </h1>
-        <p className="text-foreground/80 mt-2">Generate final invoices and checkout guests</p>
+        <p className="text-muted-foreground text-sm mt-1">Generate final invoices and checkout guests</p>
       </div>
 
       {!isGenerated ? (
-        <div className="bg-card p-6 rounded-lg shadow-sm border border-border mb-8 print:hidden">
-          <h2 className="text-lg font-bold mb-4">Select Room to Checkout</h2>
-          <div className="flex gap-4 max-w-xl">
+        <div className="bg-card p-6 rounded-xl shadow-none border border-border mb-8 print:hidden">
+          <h2 className="text-base font-bold text-foreground tracking-tight mb-4">Select Room to Checkout</h2>
+          <div className="flex gap-3 max-w-xl">
              <div className="relative flex-1">
                <select
-                 className="w-full h-12 pl-4 pr-10 rounded-lg border border-border focus:border-primary focus:ring-1 focus:ring-primary appearance-none"
+                 className="w-full h-11 pl-4 pr-10 rounded-full border border-border bg-background text-foreground focus:border-primary focus:ring-1 focus:ring-primary appearance-none text-sm font-mono cursor-pointer"
                  value={selectedRoomId}
                  onChange={e => setSelectedRoomId(e.target.value)}
                >
@@ -182,29 +182,29 @@ export function Checkout() {
                  {activeRooms.length === 0 && !isLoading && <option disabled>No occupied rooms</option>}
                </select>
              </div>
-             <button disabled={!activeBooking} onClick={handleCheckout} className="h-12 px-6 bg-primary text-primary-foreground rounded-lg font-bold hover:bg-[#60171a] disabled:opacity-50 disabled:cursor-not-allowed">
+             <button disabled={!activeBooking} onClick={handleCheckout} className="h-11 px-6 bg-primary text-primary-foreground rounded-full font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm">
                Checkout & Save
              </button>
           </div>
         </div>
       ) : (
-        <div className="bg-green-100/50 p-6 rounded-lg shadow-sm border border-green-200 mb-8 print:hidden flex flex-col sm:flex-row gap-4 items-center justify-between">
-           <div className="flex items-center gap-3 text-green-800">
-             <CheckCircle className="w-8 h-8" />
+        <div className="bg-emerald-500/10 p-6 rounded-xl border border-emerald-500/20 mb-8 print:hidden flex flex-col sm:flex-row gap-4 items-center justify-between">
+           <div className="flex items-center gap-3 text-emerald-800 dark:text-emerald-300">
+             <CheckCircle className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
              <div>
-                <h3 className="font-bold text-lg">Checkout Completed</h3>
-                <p>Room is set to cleaning. You can now download or print the invoice.</p>
+                <h3 className="font-bold text-base">Checkout Completed</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Room is set to cleaning. You can now download or print the invoice.</p>
              </div>
            </div>
-           <div className="flex gap-4 flex-wrap">
-              <button onClick={() => { setIsGenerated(false); setSelectedRoomId(''); setFinalInvoiceData(null); }} className="px-5 py-2.5 border border-border text-foreground font-bold rounded-lg hover:bg-muted/50 transition-colors">
+           <div className="flex gap-3 flex-wrap">
+              <button onClick={() => { setIsGenerated(false); setSelectedRoomId(''); setFinalInvoiceData(null); }} className="px-4 py-2 border border-border text-foreground font-semibold text-xs rounded-full hover:bg-muted transition-colors cursor-pointer">
                 New Checkout
               </button>
-              <button onClick={downloadPDF} className="px-5 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 flex gap-2 items-center">
-                <Download className="w-4 h-4" /> Save as PDF
+              <button onClick={downloadPDF} className="px-4 py-2 bg-foreground text-background font-semibold text-xs rounded-full hover:opacity-90 flex gap-2 items-center cursor-pointer">
+                <Download className="w-3.5 h-3.5" /> Save as PDF
               </button>
-              <button onClick={printInvoice} className="px-5 py-2.5 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-[#60171a] flex gap-2 items-center">
-                <Printer className="w-4 h-4" /> Print
+              <button onClick={printInvoice} className="px-4 py-2 bg-primary text-primary-foreground font-semibold text-xs rounded-full hover:opacity-90 flex gap-2 items-center cursor-pointer">
+                <Printer className="w-3.5 h-3.5" /> Print
               </button>
            </div>
         </div>

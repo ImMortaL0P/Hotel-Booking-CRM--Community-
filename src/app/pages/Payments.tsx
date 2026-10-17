@@ -37,20 +37,20 @@ export function Payments() {
 
   const getModeColor = (mode: string) => {
     switch(mode) {
-      case 'UPI': return 'bg-purple-100 text-purple-700 border-purple-200';
-      case 'Cash': return 'bg-green-100 text-green-700 border-green-200';
-      case 'Card': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'Bank Transfer': return 'bg-amber-100 text-amber-700 border-amber-200';
-      default: return 'bg-muted text-foreground';
+      case 'UPI': return 'bg-primary/10 text-primary border border-primary/20 font-mono';
+      case 'Cash': return 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 font-mono';
+      case 'Card': return 'bg-secondary text-foreground border border-border font-mono';
+      case 'Bank Transfer': return 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-mono';
+      default: return 'bg-muted text-foreground border border-border font-mono';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch(status) {
-      case 'Success': return 'text-green-600 bg-green-50';
-      case 'Failed': return 'text-red-600 bg-red-50';
-      case 'Refunded': return 'text-foreground/80 bg-muted';
-      default: return 'text-foreground/80';
+      case 'Success': return 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20';
+      case 'Failed': return 'text-destructive bg-destructive/10 border border-destructive/20';
+      case 'Refunded': return 'text-muted-foreground bg-secondary border border-border';
+      default: return 'text-foreground bg-secondary border border-border';
     }
   };
 

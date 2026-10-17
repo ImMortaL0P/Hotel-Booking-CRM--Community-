@@ -91,11 +91,11 @@ export function Bookings() {
 
   const getStatusColor = (s: string) => {
     switch (s) {
-      case 'Checked-In': return 'bg-green-100 text-green-700';
-      case 'Confirmed': return 'bg-blue-100 text-blue-700';
-      case 'Booked': return 'bg-amber-100 text-amber-700';
-      case 'Checked-Out': return 'bg-muted text-foreground/80';
-      default: return 'bg-muted text-foreground/80';
+      case 'Checked-In': return 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25';
+      case 'Confirmed': return 'bg-secondary text-foreground border border-border';
+      case 'Booked': return 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/25';
+      case 'Checked-Out': return 'bg-muted text-muted-foreground border border-border';
+      default: return 'bg-muted text-muted-foreground border border-border';
     }
   };
 
@@ -234,13 +234,13 @@ export function Bookings() {
               exportToCsv('bookings_export', exportData);
               addLog('File Download', 'Exported Bookings list to CSV');
             }}
-            className="flex items-center justify-center gap-2 bg-secondary text-secondary-foreground border border-border px-4 py-2.5 rounded-lg font-medium hover:bg-muted transition-colors text-sm"
+            className="flex items-center justify-center gap-2 bg-secondary text-secondary-foreground border border-border px-4 py-2 rounded-full font-medium hover:bg-muted transition-colors text-sm cursor-pointer"
           >
             <Download className="w-4 h-4" /> Export CSV
           </button>
           <button
             onClick={() => setIsNewBookingOpen(true)}
-            className="flex items-center justify-center gap-2 bg-primary text-primary-foreground px-4 py-2.5 rounded-lg font-medium hover:opacity-90 transition-opacity text-sm"
+            className="flex items-center justify-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-full font-semibold hover:opacity-90 transition-opacity text-sm cursor-pointer"
           >
             <Plus className="w-4 h-4" /> New Booking
           </button>
@@ -248,23 +248,25 @@ export function Bookings() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 p-1 bg-card border border-border rounded-lg overflow-x-auto">
+      <div className="flex gap-1.5 p-1 bg-card border border-border rounded-lg overflow-x-auto">
         {tabs.map(tab => {
           const count = tab === 'All' ? bookings.length : (statusCounts[tab] || 0);
           return (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors ${
-                activeTab === tab ? 'bg-secondary text-primary' : 'text-foreground hover:text-foreground hover:bg-muted/50'
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
+                activeTab === tab ? 'bg-foreground text-background font-semibold shadow-none' : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
               }`}
             >
-              {tab}
-              <span className={`px-2 py-0.5 rounded-full text-xs ${activeTab === tab ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+              <span>{tab}</span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold border ${
+                activeTab === tab ? 'bg-background/20 text-background border-transparent' : 'bg-secondary text-muted-foreground border-border'
+              }`}>
                 {count}
               </span>
             </button>
-          )
+          );
         })}
       </div>
 

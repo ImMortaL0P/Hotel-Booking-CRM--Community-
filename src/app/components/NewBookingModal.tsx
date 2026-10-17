@@ -191,46 +191,46 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-card rounded-lg shadow-sm w-full max-w-2xl overflow-hidden my-8">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto font-sans">
+      <div className="bg-card rounded-2xl border border-border shadow-2xl w-full max-w-2xl overflow-hidden my-8">
         {/* Header */}
-        <div className="p-6 bg-background border-b border-border flex items-center justify-between">
+        <div className="p-6 bg-card border-b border-border flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-foreground">New Booking</h2>
-            <p className="text-xs text-muted-foreground">Create a new guest booking at Sharda Palace</p>
+            <h2 className="text-xl font-bold text-foreground tracking-tight">New Booking</h2>
+            <p className="text-xs text-muted-foreground font-mono mt-0.5">Register walk-in or phone reservation at Sharda Palace</p>
           </div>
-          <button onClick={onClose} className="text-muted-foreground/80 hover:text-muted-foreground">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className="p-1.5 rounded-full bg-secondary hover:bg-muted text-foreground transition-colors cursor-pointer">
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
           {/* 1. Guest Information */}
           <div>
-            <h3 className="text-sm font-semibold text-primary flex items-center gap-2 mb-3">
-              <User className="w-4 h-4" /> 1. Guest Information
+            <h3 className="font-mono text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2 mb-3">
+              <User className="w-3.5 h-3.5 text-primary" /> 1. Guest Information
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-foreground/80 mb-1">Guest Full Name *</label>
+                <label className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1">Guest Full Name *</label>
                 <input 
                   type="text" 
                   required
                   value={guestName}
                   onChange={e => setGuestName(e.target.value)}
                   placeholder="e.g. Amit Singh"
-                  className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary"
+                  className="w-full text-sm px-3 py-2 bg-background border border-border rounded-lg focus:border-primary focus:outline-none text-foreground"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-foreground/80 mb-1">Phone Number *</label>
+                <label className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1">Phone Number *</label>
                 <input 
                   type="text" 
                   required
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
                   placeholder="+91 98765 43210"
-                  className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary"
+                  className="w-full text-sm font-mono px-3 py-2 bg-background border border-border rounded-lg focus:border-primary focus:outline-none text-foreground"
                 />
               </div>
               <div>
@@ -381,48 +381,48 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
 
           {/* 3. Payment & Live Pricing Summary */}
           <div>
-            <h3 className="text-sm font-semibold text-primary flex items-center gap-2 mb-3">
-              <CreditCard className="w-4 h-4" /> 3. Payment Details
+            <h3 className="font-mono text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2 mb-3">
+              <CreditCard className="w-3.5 h-3.5 text-primary" /> 3. Payment Details
             </h3>
             
             {/* Live Pricing Summary Box */}
-            <div className="bg-background p-4 rounded-lg border border-border mb-4 space-y-1.5 text-xs">
+            <div className="bg-background/80 p-4 rounded-xl border border-border mb-4 space-y-2 text-xs font-mono">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Nights:</span>
-                <span className="font-semibold text-foreground/90">{nights} night(s)</span>
+                <span className="text-muted-foreground">Stay Duration:</span>
+                <span className="font-medium text-foreground">{nights} night(s)</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Room Subtotal:</span>
-                <span className="font-semibold text-foreground/90">{formatCurrency(subtotal)}</span>
+                <span className="font-medium text-foreground">{formatCurrency(subtotal)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">GST (12%):</span>
-                <span className="font-semibold text-foreground/90">{formatCurrency(gst)}</span>
+                <span className="font-medium text-foreground">{formatCurrency(gst)}</span>
               </div>
               <div className="flex justify-between text-sm font-bold pt-2 border-t border-border">
-                <span className="text-primary">Total Amount:</span>
+                <span className="text-primary">Total Folio:</span>
                 <span className="text-primary">{formatCurrency(total)}</span>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-foreground/80 mb-1">Advance Payment (₹)</label>
+                <label className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1">Advance Payment (₹)</label>
                 <input 
                   type="number" 
                   min="0"
                   max={total}
                   value={advancePaid}
                   onChange={e => setAdvancePaid(parseFloat(e.target.value) || 0)}
-                  className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary"
+                  className="w-full text-sm font-mono px-3 py-2 bg-background border border-border rounded-lg focus:border-primary focus:outline-none text-foreground"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-foreground/80 mb-1">Payment Mode</label>
+                <label className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1">Payment Mode</label>
                 <select 
                   value={paymentMode}
                   onChange={e => setPaymentMode(e.target.value as PaymentMode)}
-                  className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary"
+                  className="w-full text-sm px-3 py-2 bg-background border border-border rounded-lg focus:border-primary focus:outline-none text-foreground"
                 >
                   <option value="UPI">UPI / GPay / PhonePe</option>
                   <option value="Cash">Cash</option>
@@ -431,30 +431,30 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
                 </select>
               </div>
               <div className="md:col-span-2">
-                <label className="block text-xs font-medium text-foreground/80 mb-1">Special Requests / Notes</label>
+                <label className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1">Special Requests / Notes</label>
                 <textarea 
                   rows={2}
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
                   placeholder="e.g. Late check-in, extra bedding"
-                  className="w-full text-sm px-3 py-2 border border-border rounded-md focus:ring-1 focus:ring-primary"
+                  className="w-full text-sm px-3 py-2 bg-background border border-border rounded-lg focus:border-primary focus:outline-none text-foreground"
                 />
               </div>
             </div>
           </div>
 
           {/* Footer Actions */}
-          <div className="pt-4 border-t border-border flex justify-end gap-3">
+          <div className="pt-4 border-t border-border flex justify-end items-center gap-3">
             <button 
               type="button" 
               onClick={onClose}
-              className="px-4 py-2 text-sm border border-border rounded-md text-foreground/80 hover:bg-muted/50"
+              className="chip py-2 px-4 cursor-pointer"
             >
               Cancel
             </button>
             <button 
               type="submit"
-              className="px-6 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:opacity-90 font-medium"
+              className="pill-vermilion text-xs cursor-pointer py-2.5 px-6"
             >
               Confirm Booking
             </button>

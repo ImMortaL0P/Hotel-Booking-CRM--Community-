@@ -179,52 +179,53 @@ export function GuestProfiles() {
 
       {/* 4 Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-card p-5 rounded-lg border border-border border-l-4 border-l-blue-600 flex items-center justify-between">
+        <div className="bg-card p-5 rounded-lg border border-border flex items-center justify-between">
           <div>
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Guests</span>
-            <div className="text-3xl font-bold text-foreground mt-1">{guests.length}</div>
+            <span className="text-[11px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">Total Guests</span>
+            <div className="text-3xl font-mono font-bold tracking-tight text-foreground mt-1">{guests.length}</div>
           </div>
-          <div className="w-12 h-12 text-blue-600 flex items-center justify-center">
-            <Users className="w-6 h-6" />
+          <div className="w-10 h-10 rounded-full bg-secondary text-foreground border border-border flex items-center justify-center">
+            <Users className="w-5 h-5 text-muted-foreground" />
           </div>
         </div>
-        <div className="bg-card p-5 rounded-lg border border-border border-l-4 border-l-yellow-600 flex items-center justify-between">
+        <div className="bg-card p-5 rounded-lg border border-border flex items-center justify-between relative overflow-hidden">
+          <div className="absolute top-0 left-0 bottom-0 w-1 bg-primary"></div>
           <div>
-            <span className="text-xs font-semibold text-yellow-800 uppercase tracking-wider">VIP Guests</span>
-            <div className="text-3xl font-bold text-yellow-900 mt-1">{vipGuests.length}</div>
+            <span className="text-[11px] font-mono font-semibold text-primary uppercase tracking-wider">VIP Guests</span>
+            <div className="text-3xl font-mono font-bold tracking-tight text-primary mt-1">{vipGuests.length}</div>
           </div>
-          <div className="w-12 h-12 text-yellow-600 flex items-center justify-center">
-            <Crown className="w-6 h-6" />
+          <div className="w-10 h-10 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center">
+            <Crown className="w-5 h-5" />
           </div>
         </div>
-        <div className="bg-card p-5 rounded-lg border border-border border-l-4 border-l-green-600 flex items-center justify-between">
+        <div className="bg-card p-5 rounded-lg border border-border flex items-center justify-between">
           <div>
-            <span className="text-xs font-semibold text-green-800 uppercase tracking-wider">Repeat Visitors</span>
-            <div className="text-3xl font-bold text-green-900 mt-1">{repeatGuests.length}</div>
+            <span className="text-[11px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">Repeat Visitors</span>
+            <div className="text-3xl font-mono font-bold tracking-tight text-foreground mt-1">{repeatGuests.length}</div>
           </div>
-          <div className="w-12 h-12 text-green-600 flex items-center justify-center">
-            <RotateCcw className="w-6 h-6" />
+          <div className="w-10 h-10 rounded-full bg-secondary text-foreground border border-border flex items-center justify-center">
+            <RotateCcw className="w-5 h-5 text-muted-foreground" />
           </div>
         </div>
-        <div className="bg-card p-5 rounded-lg border border-border border-l-4 border-l-purple-600 flex items-center justify-between">
+        <div className="bg-card p-5 rounded-lg border border-border flex items-center justify-between">
           <div>
-            <span className="text-xs font-semibold text-purple-800 uppercase tracking-wider">Avg Stays/Guest</span>
-            <div className="text-3xl font-bold text-purple-900 mt-1">{avgStays}</div>
+            <span className="text-[11px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">Avg Stays/Guest</span>
+            <div className="text-3xl font-mono font-bold tracking-tight text-foreground mt-1">{avgStays}</div>
           </div>
-          <div className="w-12 h-12 text-purple-600 flex items-center justify-center">
-            <TrendingUp className="w-6 h-6" />
+          <div className="w-10 h-10 rounded-full bg-secondary text-foreground border border-border flex items-center justify-center">
+            <TrendingUp className="w-5 h-5 text-muted-foreground" />
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 p-1 bg-card border border-border rounded-lg overflow-x-auto">
+      <div className="flex gap-1.5 p-1 bg-card border border-border rounded-lg overflow-x-auto">
         {(['All', 'VIP', 'Repeat', 'New'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors ${
-              activeTab === tab ? 'bg-secondary text-primary' : 'text-foreground hover:text-foreground hover:bg-muted/50'
+            className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
+              activeTab === tab ? 'bg-foreground text-background font-semibold shadow-none' : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
             }`}
           >
             {tab}

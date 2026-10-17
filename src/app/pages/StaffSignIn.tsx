@@ -51,93 +51,94 @@ export function StaffSignIn() {
       {/* Left Panel: Brand / Hotel Info */}
       <div className="hidden lg:flex w-1/2 bg-primary text-primary-foreground flex-col justify-between p-12 relative overflow-hidden">
         {/* Logo Background with reduced opacity */}
-        <div className="absolute inset-0 opacity-15 pointer-events-none flex items-center justify-center p-8">
-          <img src={logoUrl} alt="" className="w-full h-full object-contain" />
+        <div className="absolute inset-0 opacity-10 pointer-events-none flex items-center justify-center p-8">
+          <img src={logoUrl} alt="" className="w-full h-full object-contain invert brightness-0" />
         </div>
 
         <div className="relative z-10 mt-8">
-          <div className="inline-block px-3 py-1 bg-card/10 rounded-full text-sm font-medium mb-6 backdrop-blur-sm">
-            Hospitality Management System
+          <div className="inline-flex items-center gap-2 px-3 py-1 border border-primary-foreground/25 rounded-full text-xs font-mono font-medium mb-6 backdrop-blur-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary-foreground animate-pulse"></span>
+            Hospitality Operations Engine
           </div>
-          <h1 className="text-5xl font-bold mb-4 drop-shadow-md">ShardaCRM</h1>
-          <p className="text-primary-foreground/80 text-xl mb-12 max-w-md drop-shadow-sm">
-            Complete hotel management for bookings, guests, rooms, and communications — all in one place.
+          <h1 className="text-5xl font-bold tracking-tight mb-4">ShardaCRM</h1>
+          <p className="text-primary-foreground/85 text-lg mb-12 max-w-md leading-relaxed">
+            Engineered hotel management for reservations, guest profiles, room allocations, and finances.
           </p>
 
-          <div className="space-y-6 text-primary-foreground/80">
+          <div className="space-y-5 text-primary-foreground/80 font-sans text-sm">
             <div className="flex items-start gap-4">
-              <MapPin className="w-6 h-6 shrink-0 mt-0.5" />
+              <MapPin className="w-5 h-5 shrink-0 mt-0.5" />
               <div>
                 <p className="font-semibold text-primary-foreground">Sharda Palace</p>
-                <p>Main Shivganga Road, Bam Bam Baba Path,<br/>near Matri Mandir, Deoghar 814112, Jharkhand</p>
+                <p className="text-xs opacity-90">Main Shivganga Road, Bam Bam Baba Path, near Matri Mandir, Deoghar 814112, Jharkhand</p>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
-              <Phone className="w-6 h-6 shrink-0" />
-              <p>+91 79707 35251</p>
+              <Phone className="w-5 h-5 shrink-0" />
+              <p className="font-mono text-xs">+91 79707 35251</p>
             </div>
 
             <div className="flex items-center gap-4">
-              <Clock className="w-6 h-6 shrink-0" />
-              <p>12 min from Baba Baidyanath Mandir</p>
+              <Clock className="w-5 h-5 shrink-0" />
+              <p className="text-xs">12 min from Baba Baidyanath Mandir</p>
             </div>
 
             <div className="flex items-center gap-4">
-              <Bed className="w-6 h-6 shrink-0" />
-              <p>3 rooms · 2 room categories</p>
+              <Bed className="w-5 h-5 shrink-0" />
+              <p className="font-mono text-xs">3 rooms · 2 categories</p>
             </div>
           </div>
         </div>
 
-        <div className="relative z-10 text-primary-foreground/80 text-sm font-medium">
+        <div className="relative z-10 text-primary-foreground/80 font-mono text-xs uppercase tracking-wider">
           जय बाबा बैद्यनाथ · Jai Baba Baidyanath
         </div>
       </div>
 
       {/* Right Panel: Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gradient-to-br from-background to-muted">
-        <div className="w-full max-w-md bg-card p-10 rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-border/50">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background">
+        <div className="w-full max-w-md bg-card p-8 md:p-10 rounded-xl border border-border shadow-none">
           <div className="mb-8 text-center">
-            <h2 className="text-3xl font-bold text-foreground mb-2">Staff Sign In</h2>
-            <p className="text-muted-foreground">Sign in to manage hotel operations</p>
+            <h2 className="text-2xl font-bold text-foreground tracking-tight mb-1.5">Staff Sign In</h2>
+            <p className="text-sm text-muted-foreground">Sign in to access property management</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
 
             {error && (
-              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg">
+              <div className="p-3 text-xs font-mono text-destructive bg-destructive/10 border border-destructive/20 rounded-lg">
                 {error}
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">User ID</label>
+              <label className="block text-xs font-mono font-medium text-foreground mb-1.5 uppercase tracking-wider">User ID</label>
               <input
                 type="text"
                 required
                 value={userId}
                 onChange={e => setUserId(e.target.value)}
-                className="w-full px-4 py-2 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-3.5 py-2.5 bg-background border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm font-mono placeholder:text-muted-foreground/60 transition-colors"
                 placeholder="Enter your User ID"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Password</label>
+              <label className="block text-xs font-mono font-medium text-foreground mb-1.5 uppercase tracking-wider">Password</label>
               <div className="relative">
                 <input
                   type={showPwd ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="w-full px-4 py-2 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent pr-10"
+                  className="w-full px-3.5 py-2.5 bg-background border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary pr-10 text-sm font-mono placeholder:text-muted-foreground/60 transition-colors"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPwd(!showPwd)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/80 hover:text-muted-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -145,14 +146,14 @@ export function StaffSignIn() {
             </div>
 
             <div className="flex items-center">
-              <input type="checkbox" id="keep" className="w-4 h-4 rounded border-border text-primary focus:ring-primary" />
-              <label htmlFor="keep" className="ml-2 text-sm text-foreground">Keep me signed in</label>
+              <input type="checkbox" id="keep" className="w-4 h-4 rounded border-border text-primary focus:ring-primary accent-primary" />
+              <label htmlFor="keep" className="ml-2 text-xs text-muted-foreground cursor-pointer">Keep me signed in</label>
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-medium hover:opacity-90 transition-colors mt-2 disabled:opacity-50"
+              className="w-full bg-primary text-primary-foreground py-2.5 rounded-full font-semibold hover:opacity-90 transition-opacity text-sm mt-2 disabled:opacity-50 cursor-pointer shadow-none"
             >
               {isLoading ? 'Signing In...' : 'Sign Into Dashboard'}
             </button>

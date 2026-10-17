@@ -92,36 +92,39 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex justify-end">
-      <div className="absolute inset-0 bg-black/30" onClick={onClose}></div>
-      <div className="relative w-full max-w-lg bg-background h-full shadow-sm flex flex-col animate-in slide-in-from-right duration-300">
+    <div className="fixed inset-0 z-[100] flex justify-end font-sans">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-xs" onClick={onClose}></div>
+      <div className="relative w-full max-w-lg bg-background h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300 border-l border-border">
         <div className="p-4 border-b border-border bg-card flex items-center justify-between shrink-0">
-          <h2 className="text-xl font-bold text-primary">{booking.id}</h2>
-          <button onClick={onClose} className="p-2 bg-muted hover:bg-muted/80 rounded-full">
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Folio</span>
+            <h2 className="text-lg font-bold font-mono text-primary">{booking.id}</h2>
+          </div>
+          <button onClick={onClose} className="p-1.5 bg-secondary hover:bg-muted text-foreground rounded-full transition-colors cursor-pointer">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          <div className="flex items-center gap-4 p-4 bg-card rounded-lg shadow-sm border border-border">
-            <div className="w-12 h-12 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center text-xl font-bold">
+          <div className="flex items-center gap-4 p-4 bg-card rounded-xl shadow-sm border border-border">
+            <div className="w-11 h-11 bg-foreground text-background rounded-full flex items-center justify-center text-lg font-bold font-mono">
               {guest?.avatarInitial || 'G'}
             </div>
             <div>
-              <h3 className="text-lg font-bold text-foreground">{guest?.name}</h3>
-              <p className="text-sm text-muted-foreground">{guest?.phone} · {guest?.city}</p>
+              <h3 className="text-base font-bold text-foreground">{guest?.name}</h3>
+              <p className="text-xs text-muted-foreground font-mono mt-0.5">{guest?.phone} · {guest?.city}</p>
             </div>
           </div>
 
-          <div className="p-4 bg-card rounded-lg shadow-sm border border-border">
-            <div className="flex justify-between items-center border-b border-border/50 pb-3 mb-3">
-              <h4 className="font-semibold flex items-center gap-2">
-                <FileText className="w-4 h-4" /> Stay Summary
+          <div className="p-4 bg-card rounded-xl shadow-sm border border-border">
+            <div className="flex justify-between items-center border-b border-border pb-3 mb-3">
+              <h4 className="font-mono text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <FileText className="w-3.5 h-3.5 text-primary" /> Stay Summary
               </h4>
               <select
                 value={booking.status}
                 onChange={(e) => handleStatusChange(e.target.value as Booking['status'])}
-                className="text-sm border border-border rounded-md px-2 py-1 bg-card focus:outline-none focus:border-primary font-semibold"
+                className="text-xs font-mono border border-border rounded-full px-3 py-1 bg-background text-foreground focus:outline-none focus:border-primary font-medium"
               >
                 <option value="Booked">Booked (Pending)</option>
                 <option value="Confirmed">Confirmed</option>
@@ -132,72 +135,72 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
               </select>
             </div>
 
-            <div className="grid grid-cols-2 gap-y-3 text-sm">
+            <div className="grid grid-cols-2 gap-y-3 text-xs font-mono">
               <div className="text-muted-foreground">Room</div>
-              <div className="text-right font-medium">Room {room?.number} ({room?.category})</div>
+              <div className="text-right font-medium text-foreground">Room {room?.number} ({room?.category})</div>
 
               <div className="text-muted-foreground">Check-in</div>
-              <div className="text-right font-medium">
+              <div className="text-right font-medium text-foreground">
                 {formatStayDateTime(booking.checkIn, 12)}
               </div>
 
               <div className="text-muted-foreground">Check-out</div>
-              <div className="text-right font-medium">
+              <div className="text-right font-medium text-foreground">
                 {formatStayDateTime(booking.checkOut, 11)}
               </div>
 
               <div className="text-muted-foreground">Occupancy</div>
-              <div className="text-right font-medium">{booking.adults} Adults, {booking.children} Children</div>
+              <div className="text-right font-medium text-foreground">{booking.adults} Adults, {booking.children} Children</div>
             </div>
           </div>
 
           {(booking.source && booking.source !== 'Direct') && (
-            <div className="p-4 bg-card rounded-lg shadow-sm border border-border">
-              <h4 className="font-semibold mb-3 flex items-center gap-2 border-b border-border/50 pb-2">
-                <Globe className="w-4 h-4" /> Channel Details: {booking.source}
+            <div className="p-4 bg-card rounded-xl shadow-sm border border-border">
+              <h4 className="font-mono text-xs uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2 border-b border-border pb-2">
+                <Globe className="w-3.5 h-3.5 text-primary" /> Channel Details · {booking.source}
               </h4>
-              <div className="grid grid-cols-2 gap-y-3 text-sm">
+              <div className="grid grid-cols-2 gap-y-3 text-xs font-mono">
                 <div className="text-muted-foreground">Booking ID</div>
-                <div className="text-right font-medium">{booking.channelBookingId || '-'}</div>
+                <div className="text-right font-medium text-foreground">{booking.channelBookingId || '—'}</div>
 
                 <div className="text-muted-foreground">Channel Status</div>
-                <div className="text-right font-medium capitalize">{booking.channelStatus?.replace(/_/g, ' ') || '-'}</div>
+                <div className="text-right font-medium capitalize text-foreground">{booking.channelStatus?.replace(/_/g, ' ') || '—'}</div>
 
                 <div className="text-muted-foreground">Booked By</div>
-                <div className="text-right font-medium">{booking.bookedBy || '-'}</div>
+                <div className="text-right font-medium text-foreground">{booking.bookedBy || '—'}</div>
 
                 <div className="text-muted-foreground">Country</div>
-                <div className="text-right font-medium uppercase">{booking.bookerCountry || '-'}</div>
+                <div className="text-right font-medium uppercase text-foreground">{booking.bookerCountry || '—'}</div>
 
                 <div className="text-muted-foreground">Device</div>
-                <div className="text-right font-medium">{booking.device || '-'}</div>
+                <div className="text-right font-medium text-foreground">{booking.device || '—'}</div>
 
                 <div className="text-muted-foreground">Unit Type</div>
-                <div className="text-right font-medium">{booking.unitType || '-'}</div>
+                <div className="text-right font-medium text-foreground">{booking.unitType || '—'}</div>
 
                 <div className="text-muted-foreground">Commission</div>
-                <div className="text-right font-medium">{formatCurrency(booking.commission || 0)}</div>
+                <div className="text-right font-medium text-foreground">{formatCurrency(booking.commission || 0)}</div>
               </div>
             </div>
           )}
 
-          <div className="p-4 bg-card rounded-lg shadow-sm border border-border">
-            <h4 className="font-semibold mb-3 flex items-center gap-2 border-b border-border/50 pb-2">
-              <CreditCard className="w-4 h-4" /> Folio
+          <div className="p-4 bg-card rounded-xl shadow-sm border border-border">
+            <h4 className="font-mono text-xs uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2 border-b border-border pb-2">
+              <CreditCard className="w-3.5 h-3.5 text-primary" /> Guest Folio
             </h4>
-            <div className="space-y-2 text-sm">
+            <div className="space-y-2 text-xs font-mono">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Room Tariff ({booking.nights} nights)</span>
-                <span className="font-medium">{formatCurrency(booking.subtotal)}</span>
+                <span className="font-medium text-foreground">{formatCurrency(booking.subtotal)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">GST (12%)</span>
-                <span className="font-medium">{formatCurrency(booking.gst)}</span>
+                <span className="font-medium text-foreground">{formatCurrency(booking.gst)}</span>
               </div>
 
               {booking.extraCharges && booking.extraCharges.length > 0 && (
-                <div className="pt-2 border-t border-border/20">
-                  <div className="text-sm font-semibold mb-1">Extra Charges</div>
+                <div className="pt-2 border-t border-border/40">
+                  <div className="text-xs font-mono uppercase text-muted-foreground mb-1">Extra Charges</div>
                   {booking.extraCharges.map((charge, i) => (
                     <div key={i} className="flex justify-between text-muted-foreground">
                       <span>{charge.reason}</span>
@@ -207,36 +210,36 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
                 </div>
               )}
 
-              <div className="flex justify-between border-t border-border/50 pt-2 font-bold pb-2">
+              <div className="flex justify-between border-t border-border pt-2 font-bold text-sm">
                 <span>Total</span>
                 <span>{formatCurrency(booking.total)}</span>
               </div>
-              <div className="flex justify-between text-green-700">
+              <div className="flex justify-between text-muted-foreground">
                 <span>Paid</span>
                 <span>- {formatCurrency(booking.paid)}</span>
               </div>
-              <div className={`flex justify-between border-t border-border/50 mt-2 pt-2 font-bold ${booking.balance > 0 ? 'text-red-600' : 'text-foreground'}`}>
+              <div className={`flex justify-between border-t border-border mt-2 pt-2 font-bold text-sm ${booking.balance > 0 ? 'text-primary' : 'text-foreground'}`}>
                 <span>Balance Due</span>
                 <span>{formatCurrency(booking.balance)}</span>
               </div>
             </div>
 
             {showChargeForm ? (
-              <form onSubmit={handleAddCharge} className="mt-4 p-3 bg-muted rounded-md space-y-3">
-                <h5 className="font-semibold text-sm">Add Extra Charge</h5>
+              <form onSubmit={handleAddCharge} className="mt-4 p-3 bg-secondary/50 border border-border rounded-lg space-y-3">
+                <h5 className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Add Extra Charge</h5>
                 <div>
-                  <label className="text-xs text-muted-foreground block mb-1">Reason</label>
+                  <label className="text-xs text-muted-foreground block mb-1 font-mono">Reason</label>
                   <input
                     type="text"
                     value={chargeReason}
                     onChange={e => setChargeReason(e.target.value)}
                     placeholder="e.g. Room Service, Damages"
-                    className="w-full bg-background border border-border rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
+                    className="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs focus:outline-none focus:border-primary text-foreground"
                     required
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground block mb-1">Amount</label>
+                  <label className="text-xs text-muted-foreground block mb-1 font-mono">Amount</label>
                   <input
                     type="number"
                     value={chargeAmount}
@@ -244,15 +247,15 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
                     placeholder="0.00"
                     min="1"
                     step="0.01"
-                    className="w-full bg-background border border-border rounded px-2 py-1 text-sm focus:outline-none focus:border-primary"
+                    className="w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-primary text-foreground"
                     required
                   />
                 </div>
                 <div className="flex gap-2">
-                  <button type="submit" className="flex-1 bg-primary text-primary-foreground py-1.5 rounded text-sm font-medium">
+                  <button type="submit" className="pill-vermilion flex-1 justify-center text-xs py-2">
                     Add Charge
                   </button>
-                  <button type="button" onClick={() => setShowChargeForm(false)} className="flex-1 bg-background border border-border text-foreground py-1.5 rounded text-sm font-medium">
+                  <button type="button" onClick={() => setShowChargeForm(false)} className="chip flex-1 justify-center py-2">
                     Cancel
                   </button>
                 </div>
@@ -260,7 +263,7 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
             ) : (
               <button
                 onClick={() => setShowChargeForm(true)}
-                className="mt-4 w-full bg-secondary text-secondary-foreground border border-border py-2 rounded font-medium transition hover:bg-secondary/80 text-sm"
+                className="mt-4 w-full chip justify-center py-2 hover:border-foreground transition-all cursor-pointer text-xs"
               >
                 + Add Extra Charge
               </button>
@@ -269,7 +272,7 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
             {booking.balance > 0 && (
               <button
                 onClick={handleRecordPayment}
-                className="mt-4 w-full bg-primary hover:opacity-90 text-primary-foreground py-2 rounded font-medium transition"
+                className="pill-vermilion mt-3 w-full justify-center h-10 text-xs cursor-pointer"
               >
                 Record Payment
               </button>

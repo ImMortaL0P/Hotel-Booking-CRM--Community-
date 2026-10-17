@@ -293,27 +293,25 @@ export function Expenses() {
           <p className="text-sm text-muted-foreground mt-1">Manage incomes, track expenses, and view balance sheets.</p>
         </div>
 
-        <div className="flex gap-2 w-full md:w-auto">
+        <div className="flex gap-2 w-full md:w-auto items-center">
           <button
             onClick={() => setIsExportMode(true)}
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg border border-border hover:bg-secondary/80 font-medium text-sm transition-colors"
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-full border border-border hover:bg-muted font-medium text-xs transition-colors cursor-pointer"
           >
-            <Download className="w-4 h-4" /> Export Report
+            <Download className="w-3.5 h-3.5" /> Export Report
           </button>
-          <div className="flex flex-col gap-2 flex-1 md:flex-none">
-            <button
-              onClick={() => setIsAddMode(true)}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 font-medium text-sm transition-colors shadow-sm"
-            >
-              <Plus className="w-4 h-4" /> Add Expense
-            </button>
-            <button
-              onClick={() => setIsIncomeMode(true)}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-sm transition-colors shadow-sm"
-            >
-              <Plus className="w-4 h-4" /> Add Income
-            </button>
-          </div>
+          <button
+            onClick={() => setIsIncomeMode(true)}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-foreground text-background rounded-full hover:opacity-90 font-semibold text-xs transition-opacity shadow-none cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" /> Add Income
+          </button>
+          <button
+            onClick={() => setIsAddMode(true)}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-full hover:opacity-90 font-semibold text-xs transition-opacity shadow-none cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" /> Add Expense
+          </button>
         </div>
       </div>
 
@@ -321,26 +319,27 @@ export function Expenses() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-card border border-border rounded-lg p-5 flex flex-col justify-center">
           <div className="flex items-center gap-2 text-muted-foreground mb-2">
-            <ArrowUpRight className="w-4 h-4 text-green-500" />
-            <span className="text-sm font-medium">Total Income</span>
+            <ArrowUpRight className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span className="text-xs font-mono font-semibold uppercase tracking-wider">Total Income</span>
           </div>
-          <div className="text-2xl font-bold text-foreground">{formatCurrency(totalIncome)}</div>
+          <div className="text-2xl font-mono font-bold tracking-tight text-foreground">{formatCurrency(totalIncome)}</div>
         </div>
 
         <div className="bg-card border border-border rounded-lg p-5 flex flex-col justify-center">
           <div className="flex items-center gap-2 text-muted-foreground mb-2">
-            <ArrowDownRight className="w-4 h-4 text-red-500" />
-            <span className="text-sm font-medium">Total Expenses</span>
+            <ArrowDownRight className="w-4 h-4 text-destructive" />
+            <span className="text-xs font-mono font-semibold uppercase tracking-wider">Total Expenses</span>
           </div>
-          <div className="text-2xl font-bold text-foreground">{formatCurrency(totalExpense)}</div>
+          <div className="text-2xl font-mono font-bold tracking-tight text-foreground">{formatCurrency(totalExpense)}</div>
         </div>
 
-        <div className={`bg-card border rounded-lg p-5 flex flex-col justify-center ${netBalance >= 0 ? 'border-green-200 bg-green-50/10' : 'border-red-200 bg-red-50/10'}`}>
+        <div className="bg-card border border-border rounded-lg p-5 flex flex-col justify-center relative overflow-hidden">
+          <div className={`absolute top-0 left-0 bottom-0 w-1 ${netBalance >= 0 ? 'bg-emerald-600 dark:bg-emerald-400' : 'bg-primary'}`}></div>
           <div className="flex items-center gap-2 text-muted-foreground mb-2">
-            <IndianRupee className={`w-4 h-4 ${netBalance >= 0 ? 'text-green-600' : 'text-red-600'}`} />
-            <span className="text-sm font-medium">Net Profit / Loss</span>
+            <IndianRupee className={`w-4 h-4 ${netBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary'}`} />
+            <span className="text-xs font-mono font-semibold uppercase tracking-wider">Net Profit / Loss</span>
           </div>
-          <div className={`text-2xl font-bold ${netBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          <div className={`text-2xl font-mono font-bold tracking-tight ${netBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary'}`}>
             {formatCurrency(netBalance)}
           </div>
         </div>

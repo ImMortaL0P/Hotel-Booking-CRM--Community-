@@ -79,13 +79,13 @@ export function Calendar() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-card rounded-lg border border-border overflow-hidden shadow-sm">
+    <div className="flex flex-col h-full bg-card rounded-xl border border-border overflow-hidden shadow-sm font-sans">
       {/* Header */}
-      <div className="p-4 border-b border-border flex items-center justify-between shrink-0 bg-secondary">
+      <div className="p-4 border-b border-border flex items-center justify-between shrink-0 bg-card">
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold text-foreground w-64">{titleDate}</h1>
-          <div className="flex bg-card rounded border border-border overflow-hidden shadow-sm items-center">
-            <button onClick={prevDay} className="px-3 py-1.5 hover:bg-muted/50 border-r border-border text-foreground"><ChevronLeft className="w-5 h-5"/></button>
+          <h1 className="text-xl font-bold text-foreground w-64 tracking-tight">{titleDate}</h1>
+          <div className="flex bg-background rounded-full border border-border overflow-hidden shadow-sm items-center p-0.5">
+            <button onClick={prevDay} className="px-2.5 py-1 hover:bg-muted border-r border-border text-foreground transition-colors"><ChevronLeft className="w-4 h-4"/></button>
             <input
               type="date"
               value={`${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`}
@@ -95,17 +95,17 @@ export function Calendar() {
                   setCurrentDate(new Date(Number(y), Number(m) - 1, Number(d)));
                 }
               }}
-              className="px-2 py-1.5 text-sm bg-transparent border-r border-border focus:outline-none text-foreground cursor-pointer"
+              className="px-2.5 py-1 text-xs font-mono bg-transparent border-r border-border focus:outline-none text-foreground cursor-pointer"
             />
-            <button onClick={goToToday} className="px-5 py-1.5 text-sm font-semibold hover:bg-muted/50 text-foreground border-r border-border">Today</button>
-            <button onClick={nextDay} className="px-3 py-1.5 hover:bg-muted/50 text-foreground"><ChevronRight className="w-5 h-5"/></button>
+            <button onClick={goToToday} className="px-3.5 py-1 text-xs font-mono font-medium hover:bg-muted text-foreground border-r border-border transition-colors">Today</button>
+            <button onClick={nextDay} className="px-2.5 py-1 hover:bg-muted text-foreground transition-colors"><ChevronRight className="w-4 h-4"/></button>
           </div>
         </div>
-        <div className="flex items-center gap-4 text-xs font-semibold text-foreground bg-card px-4 py-2 rounded-lg border border-border">
-          <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-green-500 rounded-sm"></div> Checked-In</div>
-          <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-blue-500 rounded-sm"></div> Confirmed</div>
-          <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-amber-500 rounded-sm"></div> Booked (Pending)</div>
-          <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 bg-muted rounded-sm"></div> Checked-Out</div>
+        <div className="flex items-center gap-2 text-xs font-mono">
+          <div className="chip gap-1.5"><div className="w-2 h-2 bg-green-500 rounded-full"></div> Checked-In</div>
+          <div className="chip gap-1.5"><div className="w-2 h-2 bg-blue-500 rounded-full"></div> Confirmed</div>
+          <div className="chip gap-1.5"><div className="w-2 h-2 bg-amber-500 rounded-full"></div> Booked</div>
+          <div className="chip gap-1.5"><div className="w-2 h-2 bg-muted-foreground rounded-full"></div> Checked-Out</div>
         </div>
       </div>
 
@@ -174,7 +174,7 @@ export function Calendar() {
               return (
                 <div key={category}>
                   {/* Category separator */}
-                  <div className="bg-muted text-sm font-bold text-foreground px-4 py-2 flex sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                  <div className="bg-secondary/70 text-xs font-mono uppercase tracking-wider text-muted-foreground px-4 py-2 flex sticky left-0 z-20 border-b border-border shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
                     {category}
                   </div>
 
@@ -183,16 +183,16 @@ export function Calendar() {
                     const roomBookings = bookingsByRoom[room.id] || [];
 
                     return (
-                      <div key={room.id} className="flex relative hover:bg-orange-50/30 group transition-colors">
+                      <div key={room.id} className="flex relative hover:bg-muted/30 group transition-colors">
                         {/* Room label sticky left */}
-                        <div className="w-[200px] shrink-0 p-4 border-r border-border bg-card sticky left-0 z-20 flex flex-col justify-center group-hover:bg-orange-50/30 transition-colors shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] h-[100px]">
+                        <div className="w-[200px] shrink-0 p-4 border-r border-border bg-card sticky left-0 z-20 flex flex-col justify-center group-hover:bg-muted/30 transition-colors shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] h-[100px]">
                           <div className="flex items-center justify-between mb-1 gap-2">
-                            <span className="font-bold text-lg text-primary truncate">Room {room.number}</span>
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded shrink-0 ${room.status === 'Available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                            <span className="font-bold text-base text-foreground font-mono truncate">Room {room.number}</span>
+                            <span className={`chip text-[10px] py-0.5 px-2 ${room.status === 'Available' ? 'text-green-600 border-green-600/30' : 'text-primary border-primary/30'}`}>
                               {room.status}
                             </span>
                           </div>
-                          <span className="text-xs text-muted-foreground font-medium break-words w-full">Floor {room.floor} • ₹{room.tariff}/night</span>
+                          <span className="text-xs text-muted-foreground font-mono break-words w-full">Floor {room.floor} · ₹{room.tariff}/night</span>
                         </div>
 
                         {/* Day & Hour cells */}
@@ -204,8 +204,8 @@ export function Calendar() {
                                   key={h}
                                   style={{ width: hourWidth }}
                                   onClick={() => handleCellClick(room.id, day.dateString, h)}
-                                  className={`h-full shrink-0 border-r border-border/50 cursor-pointer hover:bg-muted transition-colors
-                                            ${day.isWeekend ? 'bg-muted/50/50' : 'bg-transparent'}`}
+                                  className={`h-full shrink-0 border-r border-border/40 cursor-pointer hover:bg-muted/60 transition-colors
+                                            ${day.isWeekend ? 'bg-muted/20' : 'bg-transparent'}`}
                                 ></div>
                               ))}
                             </div>

@@ -137,7 +137,7 @@ export function Dashboard() {
     value: channelStatsBySource[src].count
   }));
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DFF', '#FF6B6B', '#4AD9D9'];
+  const COLORS = ['#C2412D', '#6B7A85', '#D9822B', '#2D6A4F', '#17171A', '#8B5CF6', '#0284C7'];
 
   // Upcoming Arrivals
   const upcomingArrivals = useMemo(() => bookings
@@ -166,7 +166,7 @@ export function Dashboard() {
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2.5 rounded-lg font-medium hover:opacity-90 transition-colors shadow-sm self-start md:self-auto"
+          className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-full font-semibold hover:opacity-90 transition-opacity shadow-none text-sm self-start md:self-auto cursor-pointer"
         >
           <Plus className="w-4 h-4" /> New Booking
         </button>
@@ -177,11 +177,11 @@ export function Dashboard() {
         {/* Card 1 */}
         <div className="bg-card p-5 rounded-lg border border-border flex flex-col justify-between">
           <div>
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Today's Check-ins</span>
-            <div className="text-3xl font-bold text-card-foreground mt-2">{todayCheckIns.length}</div>
+            <span className="text-[11px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">Today's Check-ins</span>
+            <div className="text-3xl font-mono font-bold tracking-tight text-card-foreground mt-2">{todayCheckIns.length}</div>
           </div>
-          <div className="text-xs text-muted-foreground mt-3 flex items-center gap-1">
-            <CheckCircle className="w-3.5 h-3.5 text-green-600" />
+          <div className="text-xs text-muted-foreground mt-3 flex items-center gap-1.5 font-mono">
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             <span>{checkedInCount} already checked in</span>
           </div>
         </div>
@@ -189,10 +189,10 @@ export function Dashboard() {
         {/* Card 2 */}
         <div className="bg-card p-5 rounded-lg border border-border flex flex-col justify-between">
           <div>
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Today's Check-outs</span>
-            <div className="text-3xl font-bold text-card-foreground mt-2">{todayCheckOuts.length}</div>
+            <span className="text-[11px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">Today's Check-outs</span>
+            <div className="text-3xl font-mono font-bold tracking-tight text-card-foreground mt-2">{todayCheckOuts.length}</div>
           </div>
-          <div className="text-xs text-muted-foreground mt-3 flex items-center gap-1">
+          <div className="text-xs text-muted-foreground mt-3 flex items-center gap-1.5 font-mono">
             <Clock className="w-3.5 h-3.5 text-muted-foreground" />
             <span>Check-out by 11:00 AM</span>
           </div>
@@ -202,27 +202,28 @@ export function Dashboard() {
         <div className="bg-card p-5 rounded-lg border border-border flex flex-col justify-between">
           <div className="flex justify-between items-start">
             <div>
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Occupied Rooms</span>
-              <div className="text-3xl font-bold text-card-foreground mt-2">{occupiedRooms}/{rooms.length}</div>
+              <span className="text-[11px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">Occupied Rooms</span>
+              <div className="text-3xl font-mono font-bold tracking-tight text-card-foreground mt-2">{occupiedRooms}/{rooms.length}</div>
             </div>
-            <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-md">
+            <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-full border border-border bg-secondary text-foreground">
               {occupancyPercent}%
             </span>
           </div>
-          <div className="text-xs text-muted-foreground mt-3">
+          <div className="text-xs text-muted-foreground mt-3 font-mono">
             {availableRooms} rooms available
           </div>
         </div>
 
         {/* Card 4 - Tinted Primary */}
-        <div className="bg-card p-5 rounded-lg border-l-4 border-l-primary border-y border-r border-border flex flex-col justify-between">
+        <div className="bg-card p-5 rounded-lg border border-border flex flex-col justify-between relative overflow-hidden">
+          <div className="absolute top-0 left-0 bottom-0 w-1 bg-primary"></div>
           <div>
-            <span className="text-xs font-semibold text-primary uppercase tracking-wider">Total Collection</span>
-            <div className="text-3xl font-bold text-primary mt-2">{formatCurrency(totalCollections)}</div>
+            <span className="text-[11px] font-mono font-semibold text-primary uppercase tracking-wider">Total Collection</span>
+            <div className="text-3xl font-mono font-bold tracking-tight text-primary mt-2">{formatCurrency(totalCollections)}</div>
           </div>
-          <div className="text-xs text-muted-foreground mt-3 flex justify-between">
+          <div className="text-xs text-muted-foreground mt-3 flex justify-between font-mono">
             <span>{checkedOutBookings.length} guests checked out</span>
-            <span className="font-semibold text-red-600">Com: {formatCurrency(totalCommission)}</span>
+            <span className="font-semibold text-primary">Com: {formatCurrency(totalCommission)}</span>
           </div>
         </div>
       </div>
@@ -233,9 +234,9 @@ export function Dashboard() {
         <div className="lg:col-span-2 bg-card p-6 rounded-lg border border-border">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-card-foreground">Room Occupancy by Type</h2>
-              <span className="flex items-center gap-1 text-[10px] font-semibold bg-red-100 text-destructive px-2 py-0.5 rounded-full">
-                <span className="w-1.5 h-1.5 bg-red-600 rounded-full animate-pulse"></span> LIVE
+              <h2 className="text-base font-bold text-card-foreground tracking-tight">Room Occupancy by Type</h2>
+              <span className="flex items-center gap-1.5 text-[10px] font-mono font-semibold tracking-wider bg-primary/10 text-primary border border-primary/25 px-2.5 py-0.5 rounded-full">
+                <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></span> LIVE
               </span>
             </div>
           </div>
@@ -264,17 +265,19 @@ export function Dashboard() {
               return (
                 <div key={b.id} className="flex items-center justify-between pb-3 border-b border-border/50 last:border-0 last:pb-0">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-blue-100 text-blue-700 font-bold rounded-full flex items-center justify-center text-sm">
+                    <div className="w-8 h-8 bg-secondary text-foreground font-mono font-semibold rounded-full flex items-center justify-center text-xs border border-border">
                       {guest?.avatarInitial || 'G'}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-card-foreground">{guest?.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Room {room?.number} · {b.nights} nights ({b.adults}A {b.children}C)
+                      <p className="text-sm font-semibold text-card-foreground tracking-tight">{guest?.name}</p>
+                      <p className="text-xs text-muted-foreground font-mono">
+                        Room {room?.number} · {b.nights}n ({b.adults}A {b.children}C)
                       </p>
                     </div>
                   </div>
-                  <span className={`text-xs px-2 py-0.5 rounded font-medium ${b.status === 'Confirmed' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>
+                  <span className={`text-[11px] font-mono px-2.5 py-0.5 rounded-full border font-medium ${
+                    b.status === 'Confirmed' ? 'bg-secondary text-foreground border-border' : 'bg-primary/10 text-primary border-primary/20'
+                  }`}>
                     {b.status}
                   </span>
                 </div>
@@ -407,13 +410,13 @@ export function Dashboard() {
                       </td>
                       <td className="py-3 text-foreground">Room {room?.number}</td>
                       <td className="py-3 text-foreground">{formatDate(b.checkIn)}</td>
-                      <td className="py-3 font-semibold text-card-foreground">{formatCurrency(b.total)}</td>
+                      <td className="py-3 font-semibold font-mono text-card-foreground">{formatCurrency(b.total)}</td>
                       <td className="py-3">
-                        <span className={`text-xs px-2 py-0.5 rounded font-medium ${
-                          b.status === 'Checked-In' ? 'bg-green-100 text-green-700' :
-                          b.status === 'Confirmed' ? 'bg-blue-100 text-blue-700' :
-                          b.status === 'Booked' ? 'bg-amber-100 text-amber-700' :
-                          'bg-muted text-muted-foreground'
+                        <span className={`text-[11px] font-mono px-2.5 py-0.5 rounded-full border font-medium ${
+                          b.status === 'Checked-In' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25' :
+                          b.status === 'Confirmed' ? 'bg-secondary text-foreground border-border' :
+                          b.status === 'Booked' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25' :
+                          'bg-muted text-muted-foreground border-border'
                         }`}>
                           {b.status}
                         </span>

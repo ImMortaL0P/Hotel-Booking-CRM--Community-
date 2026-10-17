@@ -1,95 +1,115 @@
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark *, [data-theme="dark"] *));
 
-:root {
+:root, [data-theme="light"] {
   --font-size: 16px;
   
-  /* Light Mode - Crisp, High Contrast */
-  --background: #FAFAFA; /* Zinc-50 */
-  --foreground: #09090B; /* Zinc-950 */
-  --card: #FFFFFF;
-  --card-foreground: #09090B;
-  --popover: #FFFFFF;
-  --popover-foreground: #09090B;
+  /* Kraft Studios — Tactile Paper & Ink Design System */
+  --paper: #F4F1EA;
+  --surface: #EBE7DE;
+  --ink: #17171A;
+  --reg: #C2412D; /* Kraft Vermilion */
+  --line: rgba(23, 23, 26, 0.13);
   
-  --primary: #7B1E22; /* Sharda Maroon preserved */
-  --primary-foreground: #FFFFFF;
+  --background: #F4F1EA;
+  --foreground: #17171A;
+  --card: #EBE7DE;
+  --card-foreground: #17171A;
+  --popover: #EBE7DE;
+  --popover-foreground: #17171A;
   
-  --secondary: #F4F4F5; /* Zinc-100 */
-  --secondary-foreground: #18181B; /* Zinc-900 */
+  --primary: #C2412D;
+  --primary-foreground: #F4F1EA;
   
-  --muted: #F4F4F5;
-  --muted-foreground: #71717A; /* Zinc-500 */
+  --secondary: #E4DFD5;
+  --secondary-foreground: #17171A;
   
-  --accent: #F4F4F5;
-  --accent-foreground: #18181B;
+  --muted: #E4DFD5;
+  --muted-foreground: #6B7A85;
   
-  --destructive: #EF4444; /* Red-500 */
-  --destructive-foreground: #FFFFFF;
+  --accent: #DDD7CB;
+  --accent-foreground: #17171A;
   
-  --border: #E4E4E7; /* Zinc-200 */
-  --input: #E4E4E7;
-  --input-background: #FFFFFF;
-  --switch-background: #D4D4D8; /* Zinc-300 */
-  --ring: #7B1E22;
+  --destructive: #C2412D;
+  --destructive-foreground: #F4F1EA;
+  
+  --border: rgba(23, 23, 26, 0.13);
+  --input: rgba(23, 23, 26, 0.13);
+  --input-background: #F4F1EA;
+  --switch-background: #DDD7CB;
+  --ring: #C2412D;
   
   --font-weight-medium: 500;
   --font-weight-normal: 400;
   
-  --radius: 0.5rem; /* Smoother, tighter radius for CRM */
+  --radius: 0.5rem;
   
-  --sidebar: #FFFFFF;
-  --sidebar-foreground: #09090B;
-  --sidebar-primary: #7B1E22;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #F4F4F5;
-  --sidebar-accent-foreground: #18181B;
-  --sidebar-border: #E4E4E7;
-  --sidebar-ring: #7B1E22;
+  --sidebar: #EBE7DE;
+  --sidebar-foreground: #17171A;
+  --sidebar-primary: #C2412D;
+  --sidebar-primary-foreground: #F4F1EA;
+  --sidebar-accent: #E4DFD5;
+  --sidebar-accent-foreground: #17171A;
+  --sidebar-border: rgba(23, 23, 26, 0.10);
+  --sidebar-ring: #C2412D;
 }
 
-.dark {
-  /* Dark Mode - Serious, Deep Contrast */
-  --background: #09090B; /* Zinc-950 */
-  --foreground: #FAFAFA; /* Zinc-50 */
-  --card: #09090B;
-  --card-foreground: #FAFAFA;
-  --popover: #09090B;
-  --popover-foreground: #FAFAFA;
+.dark, [data-theme="dark"] {
+  /* Kraft Studios Dark — Obsidian Matte & Bone */
+  --paper: #0B0B0D;
+  --surface: #131316;
+  --ink: #F0EEEA;
+  --reg: #E04B33; /* Kraft Electric Vermilion */
+  --line: rgba(240, 238, 234, 0.11);
   
-  --primary: #7B1E22; 
-  --primary-foreground: #FFFFFF;
+  --background: #0B0B0D;
+  --foreground: #F0EEEA;
+  --card: #131316;
+  --card-foreground: #F0EEEA;
+  --popover: #131316;
+  --popover-foreground: #F0EEEA;
   
-  --secondary: #27272A; /* Zinc-800 */
-  --secondary-foreground: #FAFAFA;
+  --primary: #E04B33;
+  --primary-foreground: #0B0B0D;
   
-  --muted: #27272A;
-  --muted-foreground: #A1A1AA; /* Zinc-400 */
+  --secondary: #18181D;
+  --secondary-foreground: #F0EEEA;
   
-  --accent: #27272A;
-  --accent-foreground: #FAFAFA;
+  --muted: #18181D;
+  --muted-foreground: #9A9893;
   
-  --destructive: #7F1D1D; /* Deep Red */
-  --destructive-foreground: #FAFAFA;
+  --accent: #202026;
+  --accent-foreground: #F0EEEA;
   
-  --border: #27272A;
-  --input: #27272A;
-  --input-background: #09090B;
-  --switch-background: #3F3F46; /* Zinc-700 */
-  --ring: #7B1E22;
+  --destructive: #E04B33;
+  --destructive-foreground: #FFFFFF;
+  
+  --border: rgba(240, 238, 234, 0.11);
+  --input: rgba(240, 238, 234, 0.11);
+  --input-background: #0B0B0D;
+  --switch-background: #232329;
+  --ring: #E04B33;
 
-  --sidebar: #09090B;
-  --sidebar-foreground: #FAFAFA;
-  --sidebar-primary: #7B1E22;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #27272A;
-  --sidebar-accent-foreground: #FAFAFA;
-  --sidebar-border: #27272A;
-  --sidebar-ring: #7B1E22;
+  --sidebar: #0F0F12;
+  --sidebar-foreground: #F0EEEA;
+  --sidebar-primary: #E04B33;
+  --sidebar-primary-foreground: #0B0B0D;
+  --sidebar-accent: #18181D;
+  --sidebar-accent-foreground: #F0EEEA;
+  --sidebar-border: rgba(240, 238, 234, 0.08);
+  --sidebar-ring: #E04B33;
 }
 
 @theme inline {
-  /* Keep Poppins as brand font */
-  --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+  --font-serif: 'Instrument Serif', "Iowan Old Style", Georgia, serif;
+  --font-display: 'IBM Plex Sans', "Helvetica Neue", Arial, sans-serif;
+
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-reg: var(--reg);
+  --color-line: var(--line);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -133,38 +153,117 @@
     @apply border-border outline-ring/50;
   }
 
+  html {
+    font-size: var(--font-size);
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    letter-spacing: -0.011em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 }
 
+/* Kraft Studios Custom Components & Helpers */
+.chip {
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  border-radius: 9999px;
+  align-items: center;
+  padding: 0.25rem 0.65rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.2;
+  display: inline-flex;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.pill-solid {
+  background: var(--foreground);
+  color: var(--background);
+  border-radius: 9999px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: opacity 0.2s;
+}
+.pill-solid:hover {
+  opacity: 0.88;
+}
+
+.pill-vermilion {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: 9999px;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: opacity 0.2s;
+}
+.pill-vermilion:hover {
+  opacity: 0.9;
+}
+
+/* Hairline scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
 /**
- * Base typography.
+ * Base typography matching Kraft Studios engineering aesthetic.
  */
 @layer base {
   :where(:not(:has([class*=' text-']), :not(:has([class^='text-'])))) {
     h1 {
       font-size: var(--text-2xl);
-      font-weight: var(--font-weight-medium);
-      line-height: 1.5;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.25;
     }
 
     h2 {
       font-size: var(--text-xl);
-      font-weight: var(--font-weight-medium);
-      line-height: 1.5;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.3;
     }
 
     h3 {
       font-size: var(--text-lg);
-      font-weight: var(--font-weight-medium);
-      line-height: 1.5;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      line-height: 1.35;
     }
 
     h4 {
       font-size: var(--text-base);
-      font-weight: var(--font-weight-medium);
-      line-height: 1.5;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      line-height: 1.4;
     }
 
     p {
@@ -174,25 +273,21 @@
     }
 
     label {
-      font-size: var(--text-base);
+      font-size: var(--text-sm);
       font-weight: var(--font-weight-medium);
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
     button {
-      font-size: var(--text-base);
+      font-size: var(--text-sm);
       font-weight: var(--font-weight-medium);
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
     input {
-      font-size: var(--text-base);
+      font-size: var(--text-sm);
       font-weight: var(--font-weight-normal);
-      line-height: 1.5;
+      line-height: 1.4;
     }
   }
-}
-
-html {
-  font-size: var(--font-size);
 }

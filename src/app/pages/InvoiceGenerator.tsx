@@ -118,7 +118,7 @@ export function InvoiceGenerator() {
     import('sonner').then(({ toast }) => toast.info("Please select 'Save as PDF' from the destination in the print dialog."));
     window.print();
     if (selectedArchiveData) {
-      addLog('File Download', `Downloaded PDF archive invoice for ${selectedArchiveData.guest.name}`);
+      addLog('File Download', `Downloaded PDF archive invoice for ${selectedArchiveData.billedTo?.name || 'customer'}`);
     }
   };
 
@@ -126,24 +126,24 @@ export function InvoiceGenerator() {
     <div className="max-w-5xl mx-auto flex flex-col h-full print:m-0 print:p-0 print:w-full print:max-w-none">
       <div className="mb-8 print:hidden flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-foreground font-display flex items-center gap-3">
-            <FileText className="text-[#D4AF37] w-8 h-8" />
+          <h1 className="text-3xl font-bold text-foreground font-sans tracking-tight flex items-center gap-3">
+            <FileText className="text-primary w-8 h-8" />
             Standalone Invoice Generator
           </h1>
-          <p className="text-foreground/80 mt-2">Generate custom bills manually or browse the archive</p>
+          <p className="text-muted-foreground mt-1 text-sm">Generate custom folios and invoices manually or browse the archive</p>
         </div>
-        <div className="flex bg-secondary p-1 rounded-lg border border-border">
+        <div className="flex bg-secondary p-1 rounded-full border border-border">
           <button
             onClick={() => { setViewMode('generate'); setSelectedArchiveData(null); }}
-            className={`px-4 py-2 text-sm font-bold rounded-md transition-colors ${viewMode === 'generate' ? 'bg-background shadow-sm text-primary border border-border/50' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`px-4 py-1.5 text-xs font-mono font-medium rounded-full transition-all ${viewMode === 'generate' ? 'bg-foreground text-background shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
           >
             Generate New
           </button>
           <button
             onClick={() => setViewMode('archive')}
-            className={`px-4 py-2 flex items-center gap-2 text-sm font-bold rounded-md transition-colors ${viewMode === 'archive' ? 'bg-background shadow-sm text-primary border border-border/50' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`px-4 py-1.5 flex items-center gap-1.5 text-xs font-mono font-medium rounded-full transition-all ${viewMode === 'archive' ? 'bg-foreground text-background shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
           >
-            <Archive className="w-4 h-4" /> Invoice Archive
+            <Archive className="w-3.5 h-3.5" /> Archive
           </button>
         </div>
       </div>
@@ -151,12 +151,12 @@ export function InvoiceGenerator() {
       {viewMode === 'archive' ? (
         <div className="print:block">
           {!selectedArchiveData ? (
-            <div className="bg-card p-6 rounded-lg shadow-sm border border-border print:hidden">
-              <h2 className="text-lg font-bold mb-4">Past Invoices & Checkouts</h2>
+            <div className="bg-card p-6 rounded-xl shadow-sm border border-border print:hidden">
+              <h2 className="text-base font-bold mb-4 font-mono uppercase tracking-wider text-muted-foreground text-xs">Past Invoices & Checkouts</h2>
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
+                <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="border-b border-border text-xs font-semibold text-muted-foreground uppercase">
+                    <tr className="border-b border-border font-mono text-[11px] text-muted-foreground uppercase tracking-wider">
                       <th className="pb-3">Invoice ID</th>
                       <th className="pb-3">Date</th>
                       <th className="pb-3">Billed To</th>
@@ -164,24 +164,24 @@ export function InvoiceGenerator() {
                       <th className="pb-3">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border/50">
+                  <tbody className="divide-y divide-border/50 font-mono">
                     {storedInvoices.length === 0 && (
-                      <tr><td colSpan={5} className="py-4 text-center text-muted-foreground">No invoices stored yet.</td></tr>
+                      <tr><td colSpan={5} className="py-6 text-center text-muted-foreground">No invoices stored yet.</td></tr>
                     )}
                     {storedInvoices.map((inv, idx) => (
-                      <tr key={inv.invoiceId || idx} className="hover:bg-muted/50">
-                        <td className="py-3 font-medium text-primary">{inv.invoiceId}</td>
-                        <td className="py-3 text-foreground">{inv.date}</td>
-                        <td className="py-3">
-                          <p className="font-medium text-card-foreground">{inv.billedTo?.name}</p>
+                      <tr key={inv.invoiceId || idx} className="hover:bg-muted/40 transition-colors">
+                        <td className="py-3 font-semibold text-primary">{inv.invoiceId}</td>
+                        <td className="py-3 text-muted-foreground">{inv.date}</td>
+                        <td className="py-3 font-sans font-medium text-foreground">
+                          {inv.billedTo?.name}
                         </td>
-                        <td className="py-3 font-semibold text-card-foreground">₹{inv.total?.toFixed(2)}</td>
-                        <td className="py-3">
+                        <td className="py-3 font-semibold text-foreground">₹{inv.total?.toFixed(2)}</td>
+                        <td className="py-3 font-sans">
                           <button
                             onClick={() => setSelectedArchiveData(inv as InvoiceDataProps)}
-                            className="bg-secondary text-primary px-3 py-1.5 rounded-md text-xs font-bold hover:bg-secondary/80 flex items-center gap-1 border border-border"
+                            className="chip hover:border-foreground transition-all cursor-pointer"
                           >
-                            <Eye className="w-3 h-3" /> View / Download
+                            <Eye className="w-3 h-3 mr-1" /> View / Download
                           </button>
                         </td>
                       </tr>
@@ -192,16 +192,16 @@ export function InvoiceGenerator() {
             </div>
           ) : (
             <div className="flex-1 flex flex-col">
-              <div className="bg-card p-6 rounded-lg shadow-sm border border-border mb-8 print:hidden flex items-center justify-between">
-                 <button onClick={() => setSelectedArchiveData(null)} className="flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground">
-                   <ArrowLeft className="w-4 h-4" /> Back to Archive
+              <div className="bg-card p-4 rounded-xl shadow-sm border border-border mb-6 print:hidden flex items-center justify-between">
+                 <button onClick={() => setSelectedArchiveData(null)} className="chip hover:border-foreground cursor-pointer">
+                   <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Back to Archive
                  </button>
-                 <div className="flex gap-4">
-                    <button onClick={downloadPDFArchive} className="px-5 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 flex gap-2 items-center">
-                      <Download className="w-4 h-4" /> Save as PDF
+                 <div className="flex gap-2">
+                    <button onClick={downloadPDFArchive} className="pill-solid text-xs">
+                      <Download className="w-3.5 h-3.5" /> Save as PDF
                     </button>
-                    <button onClick={printInvoice} className="px-5 py-2.5 bg-primary text-primary-foreground font-bold rounded-lg hover:opacity-90 flex gap-2 items-center">
-                      <Printer className="w-4 h-4" /> Print
+                    <button onClick={printInvoice} className="pill-vermilion text-xs">
+                      <Printer className="w-3.5 h-3.5" /> Print
                     </button>
                  </div>
               </div>
@@ -214,43 +214,43 @@ export function InvoiceGenerator() {
       ) : !isGenerated ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 print:block">
            <div className="print:hidden space-y-6">
-              <div className="bg-card p-6 rounded-lg shadow-sm border border-border">
-                 <h2 className="text-lg font-bold mb-4 border-b pb-2">Customer Details</h2>
+              <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
+                 <h2 className="text-xs font-mono uppercase tracking-widest text-muted-foreground mb-4 border-b border-border pb-2">Customer Details</h2>
                  <div className="space-y-4">
                     <div>
-                       <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Customer Name</label>
-                       <input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)} className="w-full h-10 px-3 border border-border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none" />
+                       <label className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1">Customer Name</label>
+                       <input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)} className="w-full h-10 px-3 bg-background border border-border rounded-lg focus:border-primary focus:outline-none text-sm text-foreground" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                        <div>
-                         <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Phone</label>
-                         <input type="text" value={phone} onChange={e => setPhone(e.target.value)} className="w-full h-10 px-3 border border-border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none" />
+                         <label className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1">Phone</label>
+                         <input type="text" value={phone} onChange={e => setPhone(e.target.value)} className="w-full h-10 px-3 bg-background border border-border rounded-lg focus:border-primary focus:outline-none text-sm font-mono text-foreground" />
                        </div>
                        <div>
-                         <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Date</label>
-                         <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full h-10 px-3 border border-border rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none" />
+                         <label className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1">Date</label>
+                         <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full h-10 px-3 bg-background border border-border rounded-lg focus:border-primary focus:outline-none text-sm font-mono text-foreground" />
                        </div>
                     </div>
                  </div>
               </div>
 
-              <div className="bg-card p-6 rounded-lg shadow-sm border border-border">
-                 <div className="flex justify-between items-center border-b pb-2 mb-4">
-                    <h2 className="text-lg font-bold">Billing Items</h2>
-                    <button onClick={addItem} className="text-primary hover:bg-secondary p-1.5 rounded-md flex items-center gap-1 text-sm font-bold">
-                       <Plus className="w-4 h-4"/> Add Item
+              <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
+                 <div className="flex justify-between items-center border-b border-border pb-2 mb-4">
+                    <h2 className="text-xs font-mono uppercase tracking-widest text-muted-foreground">Billing Items</h2>
+                    <button onClick={addItem} className="chip hover:border-foreground cursor-pointer">
+                       <Plus className="w-3 h-3 mr-1"/> Add Item
                     </button>
                  </div>
                  
                  <div className="space-y-4">
                     {items.map((item, i) => (
                        <div key={i} className="flex gap-2 items-start relative pb-4 border-b border-border/50 last:border-0 last:pb-0">
-                          <div className="flex-1 space-y-3">
-                             <input type="text" placeholder="Description" value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} className="w-full h-9 px-3 text-sm border border-border rounded focus:border-primary outline-none" />
+                          <div className="flex-1 space-y-2">
+                             <input type="text" placeholder="Description" value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} className="w-full h-9 px-3 text-sm bg-background border border-border rounded-md focus:border-primary outline-none" />
                              <div className="flex gap-2">
-                                <input type="number" placeholder="Unit Price" value={item.unitPrice || ''} onChange={e => updateItem(i, 'unitPrice', Number(e.target.value))} className="w-1/3 h-9 px-3 text-sm border border-border rounded focus:border-primary outline-none" />
-                                <input type="number" placeholder="Qty" value={item.qty || ''} onChange={e => updateItem(i, 'qty', Number(e.target.value))} className="w-1/4 h-9 px-3 text-sm border border-border rounded focus:border-primary outline-none" />
-                                <select value={item.gstPct} onChange={e => updateItem(i, 'gstPct', Number(e.target.value))} className="w-auto flex-1 h-9 px-2 text-sm border border-border rounded focus:border-primary outline-none">
+                                <input type="number" placeholder="Unit Price" value={item.unitPrice || ''} onChange={e => updateItem(i, 'unitPrice', Number(e.target.value))} className="w-1/3 h-9 px-3 text-sm font-mono bg-background border border-border rounded-md focus:border-primary outline-none" />
+                                <input type="number" placeholder="Qty" value={item.qty || ''} onChange={e => updateItem(i, 'qty', Number(e.target.value))} className="w-1/4 h-9 px-3 text-sm font-mono bg-background border border-border rounded-md focus:border-primary outline-none" />
+                                <select value={item.gstPct} onChange={e => updateItem(i, 'gstPct', Number(e.target.value))} className="w-auto flex-1 h-9 px-2 text-xs font-mono bg-background border border-border rounded-md focus:border-primary outline-none">
                                    <option value={0}>0% GST</option>
                                    <option value={5}>5% GST</option>
                                    <option value={12}>12% GST</option>
@@ -258,14 +258,14 @@ export function InvoiceGenerator() {
                                 </select>
                              </div>
                           </div>
-                          <button onClick={() => removeItem(i)} className="p-2 text-muted-foreground hover:text-red-500 rounded"><Trash className="w-4 h-4"/></button>
+                          <button onClick={() => removeItem(i)} className="p-2 text-muted-foreground hover:text-primary transition-colors"><Trash className="w-4 h-4"/></button>
                        </div>
                     ))}
                  </div>
               </div>
 
-              <button onClick={handleSave} className="w-full h-12 bg-primary text-primary-foreground rounded-lg font-bold hover:opacity-90 flex gap-2 items-center justify-center">
-                 <FileText className="w-5 h-5"/> Generate & Save Record
+              <button onClick={handleSave} className="pill-vermilion w-full justify-center h-11 text-sm cursor-pointer">
+                 <FileText className="w-4 h-4 mr-1"/> Generate & Save Record
               </button>
            </div>
            
@@ -275,23 +275,25 @@ export function InvoiceGenerator() {
         </div>
       ) : (
          <div className="flex-1 flex flex-col">
-          <div className="bg-green-100/50 p-6 rounded-lg shadow-sm border border-green-200 mb-8 print:hidden flex flex-col sm:flex-row gap-4 items-center justify-between">
-             <div className="flex items-center gap-3 text-green-800">
-               <CheckCircle className="w-8 h-8" />
+          <div className="bg-card p-6 rounded-xl shadow-sm border border-border mb-8 print:hidden flex flex-col sm:flex-row gap-4 items-center justify-between">
+             <div className="flex items-center gap-3">
+               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                 <CheckCircle className="w-5 h-5" />
+               </div>
                <div>
-                  <h3 className="font-bold text-lg">Invoice Saved Successfully</h3>
-                  <p>Archived in local database. You can now download or print the bill.</p>
+                  <h3 className="font-bold text-base text-foreground">Invoice Saved Successfully</h3>
+                  <p className="text-xs text-muted-foreground font-mono mt-0.5">Archived to system records. Folio ready for print or PDF export.</p>
                </div>
              </div>
-             <div className="flex gap-4 flex-wrap">
-                <button onClick={() => { setIsGenerated(false); setItems([{ description: '', unitPrice: 0, qty: 1, discount: 0, gstPct: 12 }]); setCustomerName(''); setPhone(''); }} className="px-5 py-2.5 border border-border text-foreground font-bold rounded-lg hover:bg-muted/50 transition-colors">
+             <div className="flex gap-2 flex-wrap">
+                <button onClick={() => { setIsGenerated(false); setItems([{ description: '', unitPrice: 0, qty: 1, discount: 0, gstPct: 12 }]); setCustomerName(''); setPhone(''); }} className="chip hover:border-foreground cursor-pointer">
                   New Invoice
                 </button>
-                <button onClick={downloadPDF} className="px-5 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 flex gap-2 items-center">
-                  <Download className="w-4 h-4" /> Save as PDF
+                <button onClick={downloadPDF} className="pill-solid text-xs">
+                  <Download className="w-3.5 h-3.5" /> Save as PDF
                 </button>
-                <button onClick={printInvoice} className="px-5 py-2.5 bg-primary text-primary-foreground font-bold rounded-lg hover:opacity-90 flex gap-2 items-center">
-                  <Printer className="w-4 h-4" /> Print
+                <button onClick={printInvoice} className="pill-vermilion text-xs">
+                  <Printer className="w-3.5 h-3.5" /> Print
                 </button>
              </div>
           </div>
