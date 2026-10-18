@@ -195,6 +195,11 @@ function getCachedInitialData(): Partial<Dataset> | null {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && Array.isArray(parsed.rooms) && parsed.rooms.length > 0) {
+        // Discard legacy mock caches containing fewer guests than our real production dataset
+        if (Array.isArray(parsed.guests) && parsed.guests.length < 50) {
+          localStorage.removeItem(LOCAL_STORAGE_CACHE_KEY);
+          return null;
+        }
         return parsed;
       }
     }
@@ -219,11 +224,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return cachedInit?.rooms?.length ? cachedInit.rooms : INITAL_ROOMS;
   });
   const [guests, setGuests] = useState<Guest[]>(() => {
-    const base = cachedInit?.guests?.length ? cachedInit.guests : INITAL_GUESTS;
+    const base = cachedInit?.guests?.length && cachedInit.guests.length >= 50 ? cachedInit.guests : INITAL_GUESTS;
     return mergeById(base, initialDeskQueue.guests);
   });
   const [bookings, setBookings] = useState<Booking[]>(() => {
-    const base = cachedInit?.bookings?.length ? cachedInit.bookings : INITAL_BOOKINGS;
+    const base = cachedInit?.bookings?.length && cachedInit.bookings.length >= 50 ? cachedInit.bookings : INITAL_BOOKINGS;
     return sortBookings(mergeById(base, initialDeskQueue.bookings));
   });
   const [payments, setPayments] = useState<PaymentTransaction[]>(() => {
@@ -435,22 +440,27 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       // Render the last-known data immediately, then revalidate in the background
       const snap = await readSnapshot<Dataset, User>();
       if (snap?.user && snap.data) {
-        applyFull(snap.data);
-        setUser(snap.user);
-        cursor.current = snap.serverTime;
-        setIsLoading(false);
-        apiFetch('/api/auth/verify', {}, { quiet: true, timeoutMs: 5000 })
-          .then(res => { 
-            if (res && res.user) {
-              setUser(res.user);
-              localStorage.setItem('user', JSON.stringify(res.user));
-            }
-          })
-          .catch(() => {
-            // Keep session alive even if network drops or cold server
-          });
-        syncNow(true);
-        return;
+        if (Array.isArray(snap.data.guests) && snap.data.guests.length < 50) {
+          await clearSnapshot().catch(() => {});
+          try { localStorage.removeItem(LOCAL_STORAGE_CACHE_KEY); } catch {}
+        } else {
+          applyFull(snap.data);
+          setUser(snap.user);
+          cursor.current = snap.serverTime;
+          setIsLoading(false);
+          apiFetch('/api/auth/verify', {}, { quiet: true, timeoutMs: 5000 })
+            .then(res => { 
+              if (res && res.user) {
+                setUser(res.user);
+                localStorage.setItem('user', JSON.stringify(res.user));
+              }
+            })
+            .catch(() => {
+              // Keep session alive even if network drops or cold server
+            });
+          syncNow(true);
+          return;
+        }
       }
 
       // No cache: verify the token and fetch the dataset in parallel

@@ -95,7 +95,7 @@ export default defineConfig({
     host: true, // Listen on all local IP addresses
     proxy: {
       '/api': {
-        target: process.env.VITE_PROXY_TARGET || 'https://sharda-crm.onrender.com',
+        target: process.env.VITE_PROXY_TARGET || 'http://localhost:5001',
         changeOrigin: true,
         secure: false
       }

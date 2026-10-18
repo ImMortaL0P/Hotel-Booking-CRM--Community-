@@ -1,11 +1,9 @@
 import { toast } from 'sonner';
 import { clearSnapshot } from './dataCache';
 
-// In development, use relative '' so requests route through Vite's proxy to the cloud backend (https://sharda-crm.onrender.com)
-// In production, connect directly to VITE_API_BASE_URL or production Render
-export const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL ?? (
-  import.meta.env?.DEV ? '' : 'https://sharda-crm.onrender.com'
-);
+// Canonical API Base URL: connects directly to production Render backend or custom VITE_API_BASE_URL
+export const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://sharda-crm.onrender.com';
+
 
 export class ApiError extends Error {
   constructor(message: string, readonly status: number) {
