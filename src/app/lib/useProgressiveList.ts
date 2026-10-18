@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from 'react';
  * `resetKey` (e.g. the active filters) scrolls the window back to the start;
  * background data refreshes don't, so the list never jumps while scrolling.
  */
-export function useProgressiveList<T>(items: T[], resetKey: unknown, initial = 60, step = 150) {
+export function useProgressiveList<T>(items: T[], resetKey: unknown, initial = 500, step = 500) {
   const [limit, setLimit] = useState(initial);
   const sentinelRef = useRef<HTMLTableRowElement | null>(null);
 

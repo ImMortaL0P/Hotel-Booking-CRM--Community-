@@ -134,6 +134,7 @@ export function Checkout() {
           })
         }).then(res => {
             console.log("Invoice archived to drive successfully!");
+            window.dispatchEvent(new CustomEvent('shardacrm_document_saved', { detail: res }));
         }).catch(err => console.error("Could not save invoice file", err));
     }
 

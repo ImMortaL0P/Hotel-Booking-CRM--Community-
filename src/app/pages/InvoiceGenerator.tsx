@@ -99,8 +99,10 @@ export function InvoiceGenerator() {
              filename: invoiceData.invoiceId,
              type: 'Invoice'
           })
-        }).then(() => console.log("Standalone Invoice Archived"))
-          .catch(err => console.error("Could not save invoice file", err));
+        }).then(res => {
+            console.log("Standalone Invoice Archived");
+            window.dispatchEvent(new CustomEvent('shardacrm_document_saved', { detail: res }));
+        }).catch(err => console.error("Could not save invoice file", err));
     }
 
     setIsGenerated(true);
