@@ -49,5 +49,6 @@ const storedInvoiceSchema = new mongoose.Schema({
 
 // Incremental sync (/api/sync) reads rows changed since a timestamp
 storedInvoiceSchema.index({ updatedAt: 1 });
+storedInvoiceSchema.index({ createdAt: -1 });
 
 export const StoredInvoice = mongoose.model('StoredInvoice', storedInvoiceSchema);

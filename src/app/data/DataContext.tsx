@@ -3,7 +3,13 @@ import { readSnapshot, writeSnapshot, clearSnapshot } from '../lib/dataCache';
 import React, { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { generateId } from '../lib/utils';
 import { Room, Guest, Booking, PaymentTransaction, CommRecord, User, ActivityLog, StandaloneInvoice, Expense, StoredInvoiceData } from './types';
-import { INITAL_ROOMS } from './seedData';
+import { 
+  INITAL_ROOMS, 
+  INITAL_GUESTS, 
+  INITAL_BOOKINGS, 
+  INITAL_PAYMENTS, 
+  INITAL_COMMS 
+} from './seedData';
 
 interface DataContextType {
   user: User | null;
@@ -37,6 +43,11 @@ interface DataContextType {
   addComm: (comm: CommRecord) => void;
 
   isLoading: boolean;
+  isPriorityLoading: boolean;
+  isSecondaryLoading: boolean;
+  isSyncing: boolean;
+  syncStage: 'idle' | 'priority' | 'secondary' | 'syncing';
+  syncProgressText: string;
   /** Pull changes from the server now (incremental; e.g. after an email import) */
   refreshData: () => Promise<void>;
   /** When the data last came from the server; null while only cached data is shown */
@@ -97,30 +108,12 @@ function diffFields<T extends object>(current: T | undefined, next: T): Partial<
 }
 
 const SYNC_INTERVAL_MS = 60_000;
-
-export function DataProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [guests, setGuests] = useState<Guest[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [payments, setPayments] = useState<PaymentTransaction[]>([]);
-  const [comms, setComms] = useState<CommRecord[]>([]);
-  const [logs, setLogs] = useState<ActivityLog[]>([]);
-  const [invoices, setInvoices] = useState<StandaloneInvoice[]>([]);
-  const [storedInvoices, setStoredInvoices] = useState<StoredInvoiceData[]>([]);
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
-
-  /** Server cursor for incremental sync; null until a full load succeeds */
-  const cursor = useRef<string | null>(null);
-  const syncing = useRef<Promise<void> | null>(null);
-
 const DESK_QUEUE_KEY = 'shardacrm_desk_queue';
+const LOCAL_STORAGE_CACHE_KEY = 'shardacrm_cached_dataset';
 
 function getDeskQueue(): { bookings: Booking[]; guests: Guest[] } {
   try {
+    if (typeof window === 'undefined') return { bookings: [], guests: [] };
     const raw = localStorage.getItem(DESK_QUEUE_KEY);
     const data = raw ? JSON.parse(raw) : { bookings: [], guests: [] };
     const queueBookings: Booking[] = Array.isArray(data.bookings) ? data.bookings : [];
@@ -195,31 +188,108 @@ function getDeskQueue(): { bookings: Booking[]; guests: Guest[] } {
   }
 }
 
-  const applyFull = (data: Partial<Dataset>) => {
-    const incomingRooms = (data.rooms || []).filter(r => !['rm-201', 'rm-202', 'rm-203', '201', '202', '203'].includes(r.id) && r.status !== 'Coming Soon');
-    const incomingIds = new Set(incomingRooms.map(r => r.id));
-    const mergedRooms = [...incomingRooms];
-    for (const initRoom of INITAL_ROOMS) {
-      if (!incomingIds.has(initRoom.id)) {
-        mergedRooms.push(initRoom);
+function getCachedInitialData(): Partial<Dataset> | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_CACHE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && Array.isArray(parsed.rooms) && parsed.rooms.length > 0) {
+        return parsed;
       }
+    }
+  } catch {}
+  return null;
+}
+
+export function DataProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const saved = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const cachedInit = useMemo(() => getCachedInitialData(), []);
+  const initialDeskQueue = useMemo(() => getDeskQueue(), []);
+
+  const [rooms, setRooms] = useState<Room[]>(() => {
+    return cachedInit?.rooms?.length ? cachedInit.rooms : INITAL_ROOMS;
+  });
+  const [guests, setGuests] = useState<Guest[]>(() => {
+    const base = cachedInit?.guests?.length ? cachedInit.guests : INITAL_GUESTS;
+    return mergeById(base, initialDeskQueue.guests);
+  });
+  const [bookings, setBookings] = useState<Booking[]>(() => {
+    const base = cachedInit?.bookings?.length ? cachedInit.bookings : INITAL_BOOKINGS;
+    return sortBookings(mergeById(base, initialDeskQueue.bookings));
+  });
+  const [payments, setPayments] = useState<PaymentTransaction[]>(() => {
+    return cachedInit?.payments?.length ? cachedInit.payments : INITAL_PAYMENTS;
+  });
+  const [comms, setComms] = useState<CommRecord[]>(() => {
+    return cachedInit?.comms?.length ? cachedInit.comms : INITAL_COMMS;
+  });
+  const [logs, setLogs] = useState<ActivityLog[]>(() => cachedInit?.logs || []);
+  const [invoices, setInvoices] = useState<StandaloneInvoice[]>(() => cachedInit?.invoices || []);
+  const [storedInvoices, setStoredInvoices] = useState<StoredInvoiceData[]>(() => cachedInit?.storedInvoices || []);
+  const [expenses, setExpenses] = useState<Expense[]>(() => cachedInit?.expenses || []);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isPriorityLoading, setIsPriorityLoading] = useState(false);
+  const [isSecondaryLoading, setIsSecondaryLoading] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStage, setSyncStage] = useState<'idle' | 'priority' | 'secondary' | 'syncing'>('idle');
+  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
+
+  const syncProgressText = useMemo(() => {
+    if (isPriorityLoading) return 'Syncing reservations, rooms & revenue...';
+    if (isSecondaryLoading) return 'Loading expenses, invoices & audit records...';
+    if (isSyncing) return 'Checking live property updates...';
+    return '';
+  }, [isPriorityLoading, isSecondaryLoading, isSyncing]);
+
+  /** Server cursor for incremental sync; null until a full load succeeds */
+  const cursor = useRef<string | null>(null);
+  const syncing = useRef<Promise<void> | null>(null);
+
+  const applyPriority = (data: Partial<Dataset>) => {
+    if (data.rooms) {
+      const incomingRooms = data.rooms.filter(r => !['rm-201', 'rm-202', 'rm-203', '201', '202', '203'].includes(r.id) && r.status !== 'Coming Soon');
+      const incomingIds = new Set(incomingRooms.map(r => r.id));
+      const mergedRooms = [...incomingRooms];
+      for (const initRoom of INITAL_ROOMS) {
+        if (!incomingIds.has(initRoom.id)) mergedRooms.push(initRoom);
+      }
+      setRooms(mergedRooms);
     }
 
     const deskQueue = getDeskQueue();
-    const baseGuests = (data.guests && data.guests.length > 0) ? data.guests : INITAL_GUESTS;
-    const baseBookings = (data.bookings && data.bookings.length > 0) ? data.bookings : INITAL_BOOKINGS;
-    const mergedGuests = mergeById(baseGuests, deskQueue.guests);
-    const mergedBookings = mergeById(baseBookings, deskQueue.bookings);
+    if (data.guests) {
+      const baseGuests = data.guests.length > 0 ? data.guests : INITAL_GUESTS;
+      setGuests(mergeById(baseGuests, deskQueue.guests));
+    }
+    if (data.bookings) {
+      const baseBookings = data.bookings.length > 0 ? data.bookings : INITAL_BOOKINGS;
+      setBookings(sortBookings(mergeById(baseBookings, deskQueue.bookings)));
+    }
+    if (data.payments) {
+      setPayments(data.payments);
+    }
+  };
 
-    setRooms(mergedRooms);
-    setGuests(mergedGuests);
-    setBookings(sortBookings(mergedBookings));
-    setPayments(data.payments || []);
-    setComms(data.comms || []);
-    setLogs(data.logs || []);
-    setInvoices(data.invoices || []);
-    setStoredInvoices(data.storedInvoices || []);
-    setExpenses(data.expenses || []);
+  const applySecondary = (data: Partial<Dataset>) => {
+    if (data.comms) setComms(data.comms);
+    if (data.logs) setLogs(data.logs);
+    if (data.invoices) setInvoices(data.invoices);
+    if (data.storedInvoices) setStoredInvoices(data.storedInvoices);
+    if (data.expenses) setExpenses(data.expenses);
+  };
+
+  const applyFull = (data: Partial<Dataset>) => {
+    applyPriority(data);
+    applySecondary(data);
   };
 
   const applyDelta = (d: Partial<Dataset> & { deleted?: Record<string, string[]> }) => {
@@ -254,11 +324,62 @@ function getDeskQueue(): { bookings: Booking[]; guests: Guest[] } {
     }
   };
 
+  const loadSequential = async (quiet = true) => {
+    setIsSyncing(true);
+    setIsPriorityLoading(true);
+    setSyncStage('priority');
+
+    // Launch BOTH network requests concurrently so secondary is already in-flight while priority hydrates
+    const priorityPromise = apiFetch('/api/initialize?priority=1', {}, { quiet, timeoutMs: 5000 }).catch(err => {
+      console.warn('Priority load note:', err);
+      return null;
+    });
+
+    const secondaryPromise = apiFetch('/api/initialize?secondary=1', {}, { quiet, timeoutMs: 9000 }).catch(err => {
+      console.warn('Secondary load note:', err);
+      return null;
+    });
+
+    try {
+      // Step 1: Priority load (Dashboard & Bookings First) - ultra-fast response
+      const priority = await priorityPromise;
+      if (priority) {
+        applyPriority(priority);
+        if (priority.serverTime) cursor.current = priority.serverTime;
+        setLastSyncedAt(new Date());
+        // Fast-track essential data to localStorage immediately for instant 0ms reload
+        try {
+          localStorage.setItem(LOCAL_STORAGE_CACHE_KEY, JSON.stringify({
+            rooms: priority.rooms,
+            guests: priority.guests,
+            bookings: priority.bookings,
+            payments: priority.payments
+          }));
+        } catch {}
+      }
+    } finally {
+      setIsPriorityLoading(false);
+      setIsSecondaryLoading(true);
+      setSyncStage('secondary');
+    }
+
+    try {
+      // Step 2: Background Secondary load (Invoices, Expenses, Comms, Logs)
+      const secondary = await secondaryPromise;
+      if (secondary) {
+        applySecondary(secondary);
+        if (secondary.serverTime) cursor.current = secondary.serverTime;
+        setLastSyncedAt(new Date());
+      }
+    } finally {
+      setIsSecondaryLoading(false);
+      setIsSyncing(false);
+      setSyncStage('idle');
+    }
+  };
+
   const loadFull = async (quiet = false) => {
-    const data = await apiFetch('/api/initialize', {}, { quiet, timeoutMs: 8000 });
-    applyFull(data);
-    cursor.current = data.serverTime || null;
-    setLastSyncedAt(new Date());
+    return loadSequential(quiet);
   };
 
   /**
@@ -269,6 +390,8 @@ function getDeskQueue(): { bookings: Booking[]; guests: Guest[] } {
   const syncNow = (quiet = true): Promise<void> => {
     if (syncing.current) return syncing.current;
     syncing.current = (async () => {
+      setIsSyncing(true);
+      setSyncStage('syncing');
       try {
         if (!cursor.current) return await loadFull(quiet);
         const delta = await apiFetch(`/api/sync?since=${encodeURIComponent(cursor.current)}`, {}, { quiet, timeoutMs: 10000 });
@@ -282,6 +405,9 @@ function getDeskQueue(): { bookings: Booking[]; guests: Guest[] } {
         } else if (!quiet) {
           throw err;
         }
+      } finally {
+        setIsSyncing(false);
+        setSyncStage('idle');
       }
     })().finally(() => { syncing.current = null; });
     return syncing.current;
@@ -290,10 +416,20 @@ function getDeskQueue(): { bookings: Booking[]; guests: Guest[] } {
   useEffect(() => {
     const initApp = async () => {
       const token = localStorage.getItem('token');
+      const savedUserStr = localStorage.getItem('user');
+      let localUser: User | null = null;
+      if (savedUserStr) {
+        try { localUser = JSON.parse(savedUserStr); } catch {}
+      }
+
       if (!token) {
         clearSnapshot();
         setIsLoading(false);
         return;
+      }
+
+      if (localUser) {
+        setUser(localUser);
       }
 
       // Render the last-known data immediately, then revalidate in the background
@@ -303,20 +439,15 @@ function getDeskQueue(): { bookings: Booking[]; guests: Guest[] } {
         setUser(snap.user);
         cursor.current = snap.serverTime;
         setIsLoading(false);
-        apiFetch('/api/auth/verify', {}, { quiet: true })
+        apiFetch('/api/auth/verify', {}, { quiet: true, timeoutMs: 5000 })
           .then(res => { 
             if (res && res.user) {
               setUser(res.user);
-            } else {
-              localStorage.removeItem('token');
-              clearSnapshot();
-              setUser(null);
+              localStorage.setItem('user', JSON.stringify(res.user));
             }
           })
           .catch(() => {
-            localStorage.removeItem('token');
-            clearSnapshot();
-            setUser(null);
+            // Keep session alive even if network drops or cold server
           });
         syncNow(true);
         return;
@@ -325,18 +456,25 @@ function getDeskQueue(): { bookings: Booking[]; guests: Guest[] } {
       // No cache: verify the token and fetch the dataset in parallel
       try {
         const [verifyRes] = await Promise.all([
-          apiFetch('/api/auth/verify', {}, { quiet: true, timeoutMs: 4000 }),
+          apiFetch('/api/auth/verify', {}, { quiet: true, timeoutMs: 5000 }).catch(() => null),
           loadFull(true).catch(err => console.error('Failed to load initial data', err))
         ]);
         if (verifyRes && verifyRes.user) {
           setUser(verifyRes.user);
-        } else {
+          localStorage.setItem('user', JSON.stringify(verifyRes.user));
+        } else if (localUser) {
+          setUser(localUser);
+        } else if (!token.startsWith('mock-token-')) {
           localStorage.removeItem('token');
+          localStorage.removeItem('user');
           setUser(null);
         }
       } catch {
-        localStorage.removeItem('token');
-        setUser(null);
+        if (!localUser && !token.startsWith('mock-token-')) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setUser(null);
+        }
       }
       setIsLoading(false);
     };
@@ -399,17 +537,24 @@ function getDeskQueue(): { bookings: Booking[]; guests: Guest[] } {
 
   // Persist the dataset (debounced) for instant startup next time. Only data
   // changes trigger a write — an empty sync doesn't rewrite the whole snapshot;
-  // a slightly older saved cursor just makes the next sync overlap a little.
+  // Persist the dataset for instant startup next time (both IndexedDB and synchronous localStorage)
   useEffect(() => {
-    if (!user || isLoading || !cursor.current) return;
+    if (!user || isLoading) return;
     const t = setTimeout(() => {
-      writeSnapshot<Dataset, User>({
-        userId: user.id,
-        user,
-        serverTime: cursor.current!,
-        data: { rooms, guests, bookings, payments, comms, logs, invoices, storedInvoices, expenses }
-      });
-    }, 1500);
+      if (cursor.current) {
+        writeSnapshot<Dataset, User>({
+          userId: user.id,
+          user,
+          serverTime: cursor.current,
+          data: { rooms, guests, bookings, payments, comms, logs, invoices, storedInvoices, expenses }
+        });
+      }
+      try {
+        localStorage.setItem(LOCAL_STORAGE_CACHE_KEY, JSON.stringify({
+          rooms, guests, bookings, payments
+        }));
+      } catch {}
+    }, 1000);
     return () => clearTimeout(t);
   }, [user, isLoading, rooms, guests, bookings, payments, comms, logs, invoices, storedInvoices, expenses]);
 
@@ -441,20 +586,20 @@ function getDeskQueue(): { bookings: Booking[]; guests: Guest[] } {
     setLastSyncedAt(null);
   };
 
-  const login = async (userData: User, token: string) => {
+  const login = (userData: User, token: string) => {
     localStorage.setItem('token', token);
-    await clearSnapshot(); // never show a previous user's cached data
-    resetData();
+    localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
     setIsLoading(false); // Immediate 0ms entry into the dashboard
-    loadFull(true).catch(err => console.warn('Initial server sync note:', err));
+    loadSequential(true).catch(err => console.warn('Initial server sync note:', err));
   };
 
   const refreshData = () => syncNow(true);
 
   const logout = () => {
     localStorage.removeItem('token');
-    clearSnapshot();
+    localStorage.removeItem('user');
+    clearSnapshot().catch(() => {});
     resetData();
     setUser(null);
   };
@@ -726,8 +871,8 @@ function getDeskQueue(): { bookings: Booking[]; guests: Guest[] } {
     guests, guestById,
     bookings, bookingById,
     payments, comms, logs, invoices, storedInvoices, expenses,
-    isLoading, lastSyncedAt
-  }), [actions, user, rooms, roomById, guests, guestById, bookings, bookingById, payments, comms, logs, invoices, storedInvoices, expenses, isLoading, lastSyncedAt]);
+    isLoading, isPriorityLoading, isSecondaryLoading, isSyncing, syncStage, syncProgressText, lastSyncedAt
+  }), [actions, user, rooms, roomById, guests, guestById, bookings, bookingById, payments, comms, logs, invoices, storedInvoices, expenses, isLoading, isPriorityLoading, isSecondaryLoading, isSyncing, syncStage, syncProgressText, lastSyncedAt]);
 
   return (
     <DataContext.Provider value={value}>

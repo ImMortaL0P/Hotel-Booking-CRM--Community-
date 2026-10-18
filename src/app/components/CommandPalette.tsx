@@ -96,7 +96,10 @@ export function CommandPalette({ open, setOpen }: { open: boolean, setOpen: (o: 
 
             <Command.Group heading="Quick Actions" className="text-xs font-semibold text-muted-foreground px-2 py-1.5 mt-2">
               <Command.Item
-                onSelect={() => runCommand(() => logout())}
+                onSelect={() => runCommand(() => {
+                  logout();
+                  navigate("/login", { replace: true });
+                })}
                 className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none hover:bg-destructive/10 aria-selected:bg-destructive/10 aria-selected:text-destructive text-destructive mb-1"
               >
                 <LogOut className="mr-2 h-4 w-4" />

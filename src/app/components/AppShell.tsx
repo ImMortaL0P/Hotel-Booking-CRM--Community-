@@ -1,10 +1,10 @@
 import { ReactNode, useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { NavLink, useLocation } from 'react-router';
+import { NavLink, useLocation, useNavigate } from 'react-router';
 import { 
   LayoutDashboard, BookOpenText, Users, BedDouble, CalendarDays, 
   MessageSquare, CreditCard, LogOut, ChevronLeft, ChevronRight, 
   Building, FileText, Receipt, History, Moon, Sun, Bell, Search, 
-  WalletCards, Mail, ExternalLink, Menu, X
+  WalletCards, Mail, ExternalLink, Menu, X, Globe, RefreshCw
 } from 'lucide-react';
 import { useData } from '../data/DataContext';
 import { useTheme } from './ThemeProvider';
@@ -80,13 +80,19 @@ const NavItem = ({ to, icon: Icon, label, badge, collapsed, inactive, onClick }:
 };
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { user, logout, bookings, payments, rooms } = useData();
+  const { user, logout, bookings, payments, rooms, isSyncing, syncProgressText } = useData();
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const location = useLocation();
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+
+  const handleLogout = useCallback(() => {
+    logout();
+    navigate('/login', { replace: true });
+  }, [logout, navigate]);
 
   // GPU-accelerated scroll container reference
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -124,8 +130,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { todaysCheckins, pendingPayments, cleaningRooms } = useMemo(() => {
     let todaysCheckins = 0, pendingBookings = 0;
     for (const b of bookings) {
-      if (b.checkIn.startsWith(today)) todaysCheckins++;
-      if (b.balance > 0) pendingBookings++;
+      if (b.checkIn && b.checkIn.startsWith(today)) todaysCheckins++;
+      if ((b.balance || 0) > 0) pendingBookings++;
     }
     return {
       todaysCheckins,
@@ -143,6 +149,23 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row text-foreground print:block print:bg-white selection:bg-primary/20 selection:text-primary">
       
+      {/* =========================================================================
+          AMBIENT TOP SYNC LOADER BAR (Active whenever priority or background sync is running)
+          ========================================================================= */}
+      <AnimatePresence>
+        {isSyncing && (
+          <motion.div
+            initial={{ opacity: 0, scaleX: 0 }}
+            animate={{ opacity: 1, scaleX: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed top-0 left-0 right-0 z-50 h-[2.5px] bg-gradient-to-r from-primary via-amber-500 to-emerald-500 origin-left shadow-sm pointer-events-none"
+          >
+            <div className="w-full h-full bg-white/40 animate-pulse" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* =========================================================================
           MOBILE TOP HEADER BAR (Strictly < md screens)
           ========================================================================= */}
@@ -162,7 +185,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
+          {isSyncing && (
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 shrink-0 animate-pulse">
+              <RefreshCw className="w-2.5 h-2.5 animate-spin text-amber-500" />
+              <span className="hidden xs:inline">Syncing</span>
+            </div>
+          )}
           <button
             onClick={() => setShowCommandPalette(true)}
             className="p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-lg cursor-pointer"
@@ -288,12 +317,12 @@ export function AppShell({ children }: { children: ReactNode }) {
                       {user?.avatar}
                     </div>
                     <div className="overflow-hidden">
-                      <p className="text-xs font-semibold text-foreground truncate">{user?.name}</p>
-                      <p className="text-[10px] font-mono text-muted-foreground capitalize truncate">{user?.role.replace('-', ' ')}</p>
+                      <p className="text-xs font-semibold text-foreground truncate">{user?.name || 'Staff'}</p>
+                      <p className="text-[10px] font-mono text-muted-foreground capitalize truncate">{user?.role ? user.role.replace('-', ' ') : 'Staff'}</p>
                     </div>
                   </div>
                   <button
-                    onClick={logout}
+                    onClick={handleLogout}
                     className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
                     title="Logout"
                   >
@@ -475,12 +504,12 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
             {!collapsed && (
               <div className="flex-1 overflow-hidden">
-                <p className="text-sm font-semibold text-foreground truncate tracking-tight">{user?.name}</p>
-                <p className="text-[11px] font-mono text-muted-foreground capitalize truncate">{user?.role.replace('-', ' ')}</p>
+                <p className="text-sm font-semibold text-foreground truncate tracking-tight">{user?.name || 'Staff'}</p>
+                <p className="text-[11px] font-mono text-muted-foreground capitalize truncate">{user?.role ? user.role.replace('-', ' ') : 'Staff'}</p>
               </div>
             )}
             <button
-              onClick={logout}
+              onClick={handleLogout}
               className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all tactile-btn cursor-pointer"
               title="Logout"
             >
@@ -499,6 +528,25 @@ export function AppShell({ children }: { children: ReactNode }) {
           className="smooth-scroll-container flex-1 overflow-y-auto p-3.5 pb-24 md:p-6 md:pb-6 bg-background print:p-0 print:overflow-visible print:block text-foreground"
         >
           <div className="max-w-7xl mx-auto">
+            {/* Real-time Progressive Hydration Indicator Banner */}
+            <AnimatePresence>
+              {isSyncing && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0, y: -6 }}
+                  animate={{ opacity: 1, height: 'auto', y: 0 }}
+                  exit={{ opacity: 0, height: 0, y: -6 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden mb-3.5 print:hidden"
+                >
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono font-medium bg-amber-500/10 border border-amber-500/25 text-amber-700 dark:text-amber-400 shadow-2xs backdrop-blur-sm">
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin shrink-0 text-amber-500" />
+                    <span>{syncProgressText || 'Syncing property records...'}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping ml-1" />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <motion.div
               key={location.pathname}
               initial={{ opacity: 0, transform: 'translate3d(0, 5px, 0)' }}

@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router';
 import { useData } from '../data/DataContext';
 import { formatCurrency, formatDate, generateId } from '../lib/utils';
 import { BookingStatus, Booking } from '../data/types';
-import { Search, Plus, MoreHorizontal, FileText, CheckCircle2, ChevronRight, X, CreditCard, Download, Share2, SlidersHorizontal } from 'lucide-react';
+import { Search, Plus, MoreHorizontal, FileText, CheckCircle2, ChevronRight, X, CreditCard, Download, Share2, SlidersHorizontal, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { NewBookingModal } from '../components/NewBookingModal';
 import { BookingDetailDrawer } from '../components/BookingDetailDrawer';
@@ -14,7 +14,7 @@ import { exportToCsv } from '../lib/exportCsv';
 import { useProgressiveList } from '../lib/useProgressiveList';
 
 export function Bookings() {
-  const { bookings, guestById, roomById, updateBooking, addPayment, confirmChannelBooking, rejectChannelBooking, addLog, user } = useData();
+  const { bookings, guestById, roomById, updateBooking, addPayment, confirmChannelBooking, rejectChannelBooking, addLog, user, isSyncing } = useData();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = (searchParams.get('status') as BookingStatus | 'All') || 'All';
   const urlSearch = searchParams.get('search') || '';
@@ -210,7 +210,15 @@ export function Bookings() {
     <div className="space-y-6 h-full flex flex-col relative">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Bookings</h1>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-2xl font-bold text-foreground">Bookings</h1>
+            {isSyncing && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-mono bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 animate-pulse">
+                <RefreshCw className="w-3 h-3 animate-spin text-amber-500" />
+                <span>Syncing live...</span>
+              </span>
+            )}
+          </div>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
             {bookings.length} total bookings · Last updated: {new Date().toLocaleTimeString()}
           </p>

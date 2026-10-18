@@ -1,13 +1,13 @@
 import { useState, useMemo } from 'react';
 import { useData } from '../data/DataContext';
 import { apiFetch } from '../lib/api';
-import { FileText, Plus, Printer, CheckCircle, Trash, Download, Archive, ArrowLeft, Eye } from 'lucide-react';
+import { FileText, Plus, Printer, CheckCircle, Trash, Download, Archive, ArrowLeft, Eye, RefreshCw } from 'lucide-react';
 import { InvoiceTemplate, InvoiceDataProps, InvoiceItem } from '../components/InvoiceTemplate';
 import { buildPrintableHtml } from '../lib/printableHtml';
 import { generateId } from '../lib/utils';
 // @ts-ignore
 export function InvoiceGenerator() {
-  const { storedInvoices, addInvoice, addStoredInvoice, addLog } = useData();
+  const { storedInvoices, addInvoice, addStoredInvoice, addLog, isSecondaryLoading, isSyncing } = useData();
   const [viewMode, setViewMode] = useState<'generate' | 'archive'>('generate');
   const [selectedArchiveData, setSelectedArchiveData] = useState<InvoiceDataProps | null>(null);
 
@@ -126,10 +126,18 @@ export function InvoiceGenerator() {
     <div className="max-w-5xl mx-auto flex flex-col h-full print:m-0 print:p-0 print:w-full print:max-w-none">
       <div className="mb-6 sm:mb-8 print:hidden flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground font-sans tracking-tight flex items-center gap-3">
-            <FileText className="text-primary w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
-            Standalone Invoice Generator
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground font-sans tracking-tight flex items-center gap-3">
+              <FileText className="text-primary w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
+              Standalone Invoice Generator
+            </h1>
+            {(isSecondaryLoading || isSyncing) && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 animate-pulse">
+                <RefreshCw className="w-3 h-3 animate-spin text-amber-500" />
+                Syncing archives...
+              </span>
+            )}
+          </div>
           <p className="text-muted-foreground mt-1 text-xs sm:text-sm">Generate custom folios and invoices manually or browse the archive</p>
         </div>
         <div className="flex bg-secondary p-1 rounded-full border border-border shrink-0 self-start sm:self-auto">
@@ -166,7 +174,18 @@ export function InvoiceGenerator() {
                   </thead>
                   <tbody className="divide-y divide-border/50 font-mono">
                     {storedInvoices.length === 0 && (
-                      <tr><td colSpan={5} className="py-6 text-center text-muted-foreground">No invoices stored yet.</td></tr>
+                      <tr>
+                        <td colSpan={5} className="py-8 text-center text-muted-foreground">
+                          {isSecondaryLoading ? (
+                            <div className="flex flex-col items-center justify-center gap-2">
+                              <RefreshCw className="w-6 h-6 animate-spin text-primary opacity-60" />
+                              <span className="text-xs font-sans font-medium text-foreground">Loading invoice archives...</span>
+                            </div>
+                          ) : (
+                            "No invoices stored yet."
+                          )}
+                        </td>
+                      </tr>
                     )}
                     {storedInvoices.map((inv, idx) => (
                       <tr key={inv.invoiceId || idx} className="hover:bg-muted/40 transition-colors">

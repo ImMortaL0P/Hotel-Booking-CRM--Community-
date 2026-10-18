@@ -36,10 +36,20 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Determine if it's local network dev dynamically
-    const isDevNetwork = process.env.NODE_ENV !== 'production' && origin?.startsWith('http://192.168');
+    // In development or local testing, permit all local / LAN origins
+    const isDev = process.env.NODE_ENV !== 'production';
+    const isLocal = !origin || 
+      origin.includes('localhost') || 
+      origin.includes('127.0.0.1') || 
+      origin.startsWith('http://192.168') || 
+      origin.startsWith('http://172.') || 
+      origin.startsWith('http://10.');
 
-    if (!origin || allowedOrigins.includes(origin) || isDevNetwork) {
+    if (isDev && isLocal) {
+      return callback(null, true);
+    }
+
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('CORS Policy: Access Blocked'));

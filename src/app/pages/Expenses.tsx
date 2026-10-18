@@ -3,12 +3,12 @@ import { useData } from '../data/DataContext';
 import { apiFetch } from '../lib/api';
 import { ExpenseCategory, Expense, PaymentTransaction, PaymentMode } from '../data/types';
 import { formatCurrency, generateId, formatDate } from '../lib/utils';
-import { WalletCards, Plus, Filter, Download, ArrowUpRight, ArrowDownRight, IndianRupee, FileText } from 'lucide-react';
+import { WalletCards, Plus, Filter, Download, ArrowUpRight, ArrowDownRight, IndianRupee, FileText, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { buildProfitLossReportHtml } from '../lib/profitLossReport';
 // @ts-ignore
 export function Expenses() {
-  const { user, rooms, expenses, addExpense, deleteExpense, payments, bookings, addPayment, guests, addLog } = useData();
+  const { user, rooms, expenses, addExpense, deleteExpense, payments, bookings, addPayment, guests, addLog, isSecondaryLoading, isSyncing } = useData();
 
   const [isAddMode, setIsAddMode] = useState(false);
   const [isIncomeMode, setIsIncomeMode] = useState(false);
@@ -286,10 +286,18 @@ export function Expenses() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
-            <WalletCards className="w-6 h-6 text-primary shrink-0" />
-            Expenses & Ledger
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+              <WalletCards className="w-6 h-6 text-primary shrink-0" />
+              Expenses & Ledger
+            </h1>
+            {(isSecondaryLoading || isSyncing) && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 animate-pulse">
+                <RefreshCw className="w-3 h-3 animate-spin text-amber-500" />
+                Syncing ledger...
+              </span>
+            )}
+          </div>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">Manage incomes, track expenses, and view balance sheets.</p>
         </div>
 
@@ -388,8 +396,18 @@ export function Expenses() {
               {ledgerEntries.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
-                    <WalletCards className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                    <p>No transactions found for the selected period.</p>
+                    {isSecondaryLoading ? (
+                      <div className="flex flex-col items-center justify-center gap-3">
+                        <RefreshCw className="w-8 h-8 animate-spin text-primary opacity-60" />
+                        <p className="font-medium text-foreground">Loading expenses & ledger...</p>
+                        <p className="text-xs text-muted-foreground">Hydrating transactions and balance records</p>
+                      </div>
+                    ) : (
+                      <>
+                        <WalletCards className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                        <p>No transactions found for the selected period.</p>
+                      </>
+                    )}
                   </td>
                 </tr>
               ) : (

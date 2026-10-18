@@ -47,6 +47,10 @@ const bookingSchema = new mongoose.Schema({
 // Compound index for timeline collision queries
 bookingSchema.index({ roomId: 1, checkIn: 1, checkOut: 1 });
 
+// High-speed index for sorting recent bookings in initializeData
+bookingSchema.index({ checkIn: -1, createdAt: -1 });
+bookingSchema.index({ status: 1, checkIn: 1 });
+
 // Incremental sync (/api/sync) reads rows changed since a timestamp
 bookingSchema.index({ updatedAt: 1 });
 // Email import / OTA lookups by channel reference

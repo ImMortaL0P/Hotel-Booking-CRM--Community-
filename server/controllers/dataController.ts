@@ -66,11 +66,47 @@ const logAction = async (req: AuthRequest, action: string, details: string) => {
   }
 };
 
+// High-speed in-memory cache with short TTL (invalidated on writes)
+let priorityCache: { time: number; data: any } | null = null;
+let secondaryCache: { time: number; data: any } | null = null;
+let fullCache: { time: number; data: any } | null = null;
+const CACHE_TTL_MS = 20_000;
+
+export const invalidateDataCache = () => {
+  priorityCache = null;
+  secondaryCache = null;
+  fullCache = null;
+};
+
 // GET /api/initialize
-// Fetch all initial data
+// Fetch initial data with support for sequential priority stages (priority=1, secondary=1)
 export const initializeData = async (req: Request, res: Response) => {
   try {
+    const isPriorityOnly = req.query.priority === '1' || req.query.priority === 'true';
+    const isSecondaryOnly = req.query.secondary === '1' || req.query.secondary === 'true';
+
     if (mongoose.connection.readyState !== 1) {
+      if (isPriorityOnly) {
+        return res.json({
+          serverTime: new Date().toISOString(),
+          isPriority: true,
+          rooms: INITAL_ROOMS,
+          guests: INITAL_GUESTS,
+          bookings: INITAL_BOOKINGS,
+          payments: INITAL_PAYMENTS
+        });
+      }
+      if (isSecondaryOnly) {
+        return res.json({
+          serverTime: new Date().toISOString(),
+          isSecondary: true,
+          comms: INITAL_COMMS,
+          logs: [],
+          invoices: [],
+          storedInvoices: [],
+          expenses: []
+        });
+      }
       return res.json({
         serverTime: new Date().toISOString(),
         rooms: INITAL_ROOMS,
@@ -85,12 +121,83 @@ export const initializeData = async (req: Request, res: Response) => {
       });
     }
 
-    // Taken before the reads, so a later /api/sync?since=serverTime can't miss a
-    // write that landed while these queries ran (re-sent rows are idempotent).
-    const serverTime = new Date(Date.now() - 2000).toISOString();
-    // Independent collections — fetch concurrently instead of 9 serial round trips
-    // Plain (lean) reads: this endpoint returns the whole database, and
-    // hydrating every row as a Mongoose document was most of its cost.
+    const now = Date.now();
+
+    // 1. Stage 1: Priority Data (Dashboard & Bookings First)
+    if (isPriorityOnly) {
+      if (priorityCache && (now - priorityCache.time < CACHE_TTL_MS)) {
+        return res.json(priorityCache.data);
+      }
+
+      const serverTime = new Date(now - 2000).toISOString();
+      const [rooms, guests, bookings, payments] = await Promise.all([
+        Room.find().lean(),
+        Guest.find().lean(),
+        Booking.find().sort({ checkIn: -1, createdAt: -1 }).lean(),
+        Payment.find().lean()
+      ]);
+
+      const spendByGuest = new Map<string, number>();
+      for (const p of payments) {
+        if (p.status === 'Completed' && p.guestId && p.guestId !== '-') {
+          spendByGuest.set(p.guestId, (spendByGuest.get(p.guestId) || 0) + p.amount);
+        }
+      }
+      for (const g of guests as any[]) {
+        const computed = spendByGuest.get(g._id) || 0;
+        if (g.totalSpent !== computed) {
+          g.totalSpent = computed;
+        }
+      }
+
+      const priorityResult = {
+        serverTime,
+        isPriority: true,
+        rooms: serializeLean(Room, rooms),
+        guests: serializeLean(Guest, guests),
+        bookings: serializeLean(Booking, bookings),
+        payments: serializeLean(Payment, payments)
+      };
+
+      priorityCache = { time: now, data: priorityResult };
+      return res.json(priorityResult);
+    }
+
+    // 2. Stage 2: Secondary Data (Comms, Logs, Invoices, Expenses)
+    if (isSecondaryOnly) {
+      if (secondaryCache && (now - secondaryCache.time < CACHE_TTL_MS)) {
+        return res.json(secondaryCache.data);
+      }
+
+      const serverTime = new Date(now - 2000).toISOString();
+      const [comms, logs, invoices, storedInvoices, expenses] = await Promise.all([
+        CommRecord.find().lean(),
+        Log.find().sort({ timestamp: -1 }).limit(100).lean(),
+        StandaloneInvoice.find().sort({ createdAt: -1 }).lean(),
+        StoredInvoice.find().sort({ createdAt: -1 }).lean(),
+        Expense.find().sort({ date: -1 }).lean()
+      ]);
+
+      const secondaryResult = {
+        serverTime,
+        isSecondary: true,
+        comms: serializeLean(CommRecord, comms, commAliases),
+        logs: serializeLean(Log, logs),
+        invoices: serializeLean(StandaloneInvoice, invoices),
+        storedInvoices: serializeLean(StoredInvoice, storedInvoices),
+        expenses: serializeLean(Expense, expenses)
+      };
+
+      secondaryCache = { time: now, data: secondaryResult };
+      return res.json(secondaryResult);
+    }
+
+    // 3. Full Initialization
+    if (fullCache && (now - fullCache.time < CACHE_TTL_MS)) {
+      return res.json(fullCache.data);
+    }
+
+    const serverTime = new Date(now - 2000).toISOString();
     const [rooms, guests, bookings, payments, comms, logs, invoices, storedInvoices, expenses] = await Promise.all([
       Room.find().lean(),
       Guest.find().lean(),
@@ -103,9 +210,6 @@ export const initializeData = async (req: Request, res: Response) => {
       Expense.find().sort({ date: -1 }).lean()
     ]);
 
-    // Recompute each guest's lifetime value (LTV) as the sum of Completed
-    // payments actually received from them — keeps totalSpent in sync with
-    // the payments ledger (income) every time data is initialized.
     const spendByGuest = new Map<string, number>();
     for (const p of payments) {
       if (p.status === 'Completed' && p.guestId && p.guestId !== '-') {
@@ -116,14 +220,16 @@ export const initializeData = async (req: Request, res: Response) => {
     for (const g of guests as any[]) {
       const computed = spendByGuest.get(g._id) || 0;
       if (g.totalSpent !== computed) {
-        g.totalSpent = computed; // reflected in this response
+        g.totalSpent = computed;
         guestUpdates.push({ updateOne: { filter: { _id: g._id }, update: { $set: { totalSpent: computed } } } });
       }
     }
-    // One bulk write instead of a save() round trip per drifted guest
-    if (guestUpdates.length) await Guest.bulkWrite(guestUpdates, { ordered: false });
+    // Fire background bulk write without blocking the response
+    if (guestUpdates.length) {
+      Guest.bulkWrite(guestUpdates, { ordered: false }).catch(err => console.error('Guest spend bulk write error:', err));
+    }
 
-    res.json({
+    const fullResult = {
       serverTime,
       rooms: serializeLean(Room, rooms),
       guests: serializeLean(Guest, guests),
@@ -134,7 +240,10 @@ export const initializeData = async (req: Request, res: Response) => {
       invoices: serializeLean(StandaloneInvoice, invoices),
       storedInvoices: serializeLean(StoredInvoice, storedInvoices),
       expenses: serializeLean(Expense, expenses)
-    });
+    };
+
+    fullCache = { time: now, data: fullResult };
+    return res.json(fullResult);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -209,6 +318,7 @@ export const updateRoom = async (req: AuthRequest, res: Response) => {
     const updated = await Room.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!updated) return res.status(404).json({ error: 'Not found' });
     void logAction(req, 'Room Update', `Room ${updated.number} status changed to ${updated.status}`);
+    invalidateDataCache();
     res.json(updated.toJSON());
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -228,6 +338,7 @@ export const addGuest = async (req: AuthRequest, res: Response) => {
     const guest = new Guest({ ...guestData, _id: req.body.id });
     await guest.save();
     void logAction(req, 'Add Guest', `Added new guest: ${guest.name}`);
+    invalidateDataCache();
     res.json(guest.toJSON());
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -246,6 +357,7 @@ export const updateGuest = async (req: AuthRequest, res: Response) => {
     const updated = await Guest.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
     if (!updated) return res.status(404).json({ error: 'Not found' });
     void logAction(req, 'Update Guest', `Updated guest info: ${updated.name}`);
+    invalidateDataCache();
     res.json(updated.toJSON());
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -269,6 +381,7 @@ export const addBooking = async (req: AuthRequest, res: Response) => {
     // Trigger outbound sync in background (fire and forget)
     pushAvailability(booking.checkIn, booking.checkOut).catch(console.error);
 
+    invalidateDataCache();
     res.json(booking.toJSON());
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -297,6 +410,7 @@ export const updateBooking = async (req: AuthRequest, res: Response) => {
       pushAvailability(minStart, maxEnd).catch(console.error);
     }
 
+    invalidateDataCache();
     res.json(updated.toJSON());
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -318,6 +432,7 @@ export const deleteBooking = async (req: AuthRequest, res: Response) => {
       pushAvailability(booking.checkIn, booking.checkOut).catch(console.error);
     }
 
+    invalidateDataCache();
     res.json({ success: true });
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -338,6 +453,7 @@ export const confirmChannelBooking = async (req: AuthRequest, res: Response) => 
     // Notify channel manager
     confirmChannelReservation(booking.channelBookingId, booking._id).catch(console.error);
 
+    invalidateDataCache();
     res.json(booking.toJSON());
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -361,6 +477,7 @@ export const rejectChannelBooking = async (req: AuthRequest, res: Response) => {
     // Release inventory
     pushAvailability(booking.checkIn, booking.checkOut).catch(console.error);
 
+    invalidateDataCache();
     res.json(booking.toJSON());
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -394,6 +511,7 @@ export const addPayment = async (req: AuthRequest, res: Response) => {
     ]);
 
     void logAction(req, 'Add Payment', `Added payment ${payment._id} of amount ${payment.amount} for booking ${payment.bookingId}`);
+    invalidateDataCache();
     res.json({ ...payment.toJSON(), booking: booking ? booking.toJSON() : null, guest: guest ? guest.toJSON() : null });
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -420,6 +538,7 @@ export const addComm = async (req: AuthRequest, res: Response) => {
     const comm = new CommRecord(commData);
     await comm.save();
     void logAction(req, 'Send Comm', `Sent ${comm.channel} to guest ${comm.guestId} - Template: ${comm.template}`);
+    invalidateDataCache();
     res.json(comm.toJSON());
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -438,6 +557,7 @@ export const addInvoice = async (req: AuthRequest, res: Response) => {
     const invoice = new StandaloneInvoice({ ...invoiceData, _id: req.body.id });
     await invoice.save();
     void logAction(req, 'Generate Invoice', `Generated standalone invoice ${invoice._id} for ${invoice.customerName}`);
+    invalidateDataCache();
     res.json(invoice.toJSON());
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -460,6 +580,7 @@ export const addStoredInvoice = async (req: AuthRequest, res: Response) => {
     const invoice = new StoredInvoice(invoiceData);
     await invoice.save();
     void logAction(req, 'Store Invoice Data', `Saved full invoice data ${invoice._id}`);
+    invalidateDataCache();
     res.json(invoice.toJSON());
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -479,6 +600,7 @@ export const addExpense = async (req: AuthRequest, res: Response) => {
     const expense = new Expense({ ...expenseData, _id: req.body.id });
     await expense.save();
     void logAction(req, 'Add Expense', `Added expense ${expense.id} of amount ₹${expense.amount} under ${expense.category}`);
+    invalidateDataCache();
     res.json(expense.toJSON());
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });
@@ -494,6 +616,7 @@ export const deleteExpense = async (req: AuthRequest, res: Response) => {
     await Expense.findByIdAndDelete(req.params.id);
     await recordDeletion('expenses', String(req.params.id));
     void logAction(req, 'Delete Expense', `Deleted expense ${req.params.id}`);
+    invalidateDataCache();
     res.json({ success: true });
   } catch (error: any) {
     console.error(error); res.status(400).json({ error: error.message });

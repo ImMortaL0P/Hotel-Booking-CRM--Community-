@@ -23,7 +23,8 @@ import {
   Search,
   Trash2,
   Sparkles,
-  ArrowUpRight
+  ArrowUpRight,
+  RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
@@ -34,7 +35,7 @@ import logoUrl from '../../assets/logo.png';
 import { motion } from 'motion/react';
 
 export function Dashboard() {
-  const { user, bookings, rooms, guestById, roomById, comms } = useData();
+  const { user, bookings, rooms, guestById, roomById, comms, isSyncing, syncStage } = useData();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -98,14 +99,14 @@ export function Dashboard() {
   const today = format(getISTDate(), 'yyyy-MM-dd');
 
   // Stats calculation
-  const todayCheckIns = bookings.filter(b => b.checkIn.split('T')[0] === today);
+  const todayCheckIns = bookings.filter(b => b.checkIn && b.checkIn.split('T')[0] === today);
   const checkedInCount = todayCheckIns.filter(b => b.status === 'Checked-In').length;
 
-  const todayCheckOuts = bookings.filter(b => b.checkOut.split('T')[0] === today);
+  const todayCheckOuts = bookings.filter(b => b.checkOut && b.checkOut.split('T')[0] === today);
 
   const occupiedRooms = rooms.filter(r => r.status === 'Occupied').length;
   const availableRooms = rooms.filter(r => r.status === 'Available').length;
-  const occupancyPercent = Math.round((occupiedRooms / rooms.length) * 100);
+  const occupancyPercent = rooms.length > 0 ? Math.round((occupiedRooms / rooms.length) * 100) : 0;
 
   const checkedOutBookings = bookings.filter(b => b.status === 'Checked-Out');
   const totalCollections = checkedOutBookings.reduce((sum, b) => sum + (b.total || 0), 0);
@@ -203,11 +204,18 @@ export function Dashboard() {
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-card-foreground truncate">
-                {getGreeting()}, {user?.name.split(' ')[0]} 🙏
+                {getGreeting()}, {user?.name ? user.name.split(' ')[0] : 'Staff'} 🙏
               </h1>
-              <span className="hidden sm:inline-flex items-center gap-1 text-[10.5px] font-mono uppercase tracking-wider bg-primary/10 text-primary border border-primary/25 px-2 py-0.5 rounded-full font-semibold">
-                <Sparkles className="w-3 h-3" /> Live Desk
-              </span>
+              {isSyncing ? (
+                <span className="inline-flex items-center gap-1.5 text-[10.5px] font-mono uppercase tracking-wider bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 px-2.5 py-0.5 rounded-full font-semibold animate-pulse">
+                  <RefreshCw className="w-3 h-3 animate-spin text-amber-500" />
+                  <span>{syncStage === 'priority' ? 'Syncing...' : 'Updating Records...'}</span>
+                </span>
+              ) : (
+                <span className="hidden sm:inline-flex items-center gap-1 text-[10.5px] font-mono uppercase tracking-wider bg-primary/10 text-primary border border-primary/25 px-2 py-0.5 rounded-full font-semibold">
+                  <Sparkles className="w-3 h-3" /> Live Desk
+                </span>
+              )}
             </div>
             <p className="text-xs font-mono text-muted-foreground mt-0.5 truncate">
               {format(getISTDate(), "EEEE, dd MMM yyyy")} · Hotel Sharda Palace

@@ -1,11 +1,11 @@
 import { Suspense, lazy, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router';
 import { useData } from './data/DataContext';
 import { StaffSignIn } from './pages/StaffSignIn';
 import { AppShell } from './components/AppShell';
 import { Toaster } from 'sonner';
 import { ContentAwareCursor } from './components/ContentAwareCursor';
-import logoUrl from '../assets/logo.png';
+import { CustomerBookingPage } from './pages/CustomerBookingPage';
 
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
 const Bookings = lazy(() => import('./pages/Bookings').then(m => ({ default: m.Bookings })));
@@ -20,21 +20,6 @@ const Expenses = lazy(() => import('./pages/Expenses').then(m => ({ default: m.E
 const EmailImport = lazy(() => import('./pages/EmailImport').then(m => ({ default: m.EmailImport })));
 const Logs = lazy(() => import('./pages/Logs').then(m => ({ default: m.Logs })));
 const ChannelSettings = lazy(() => import('./components/ChannelSettings').then(m => ({ default: m.ChannelSettings })));
-import { CustomerBookingPage } from './pages/CustomerBookingPage';
-
-const LoadingFallback = () => (
-  <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 bg-transparent selection:bg-primary/20">
-    <div className="relative w-16 h-16 flex items-center justify-center mb-3">
-      <div className="absolute inset-0 rounded-2xl border border-primary/25 border-dashed animate-[spin_10s_linear_infinite]" />
-      <div className="w-11 h-11 rounded-xl bg-card border border-border shadow-xs p-1.5 flex items-center justify-center">
-        <img src={logoUrl} alt="Sharda Palace" className="w-full h-full object-contain" />
-      </div>
-    </div>
-    <div className="text-[11px] font-mono uppercase tracking-[0.22em] text-muted-foreground animate-pulse font-semibold">
-      Connecting to Sanctum...
-    </div>
-  </div>
-);
 
 // Lightweight non-blocking route fallback to prevent layout thrashing
 const CrmTabLoading = () => (
@@ -44,7 +29,7 @@ const CrmTabLoading = () => (
   </div>
 );
 
-function AuthenticatedCrmRoutes() {
+function AuthenticatedLayout() {
   // Background pre-warm all CRM chunks so navigation is instant 0ms
   useEffect(() => {
     const prefetch = () => {
@@ -73,8 +58,33 @@ function AuthenticatedCrmRoutes() {
   return (
     <AppShell>
       <Suspense fallback={<CrmTabLoading />}>
-        <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Outlet />
+      </Suspense>
+    </AppShell>
+  );
+}
+
+export default function App() {
+  const { user } = useData();
+
+  return (
+    <BrowserRouter>
+      {/* Content-Aware Fluid Smooth Cursor */}
+      <ContentAwareCursor />
+      <Toaster />
+
+      <Routes>
+        {/* Public customer booking routes - accessible directly without staff login */}
+        <Route path="/book" element={<CustomerBookingPage />} />
+        <Route path="/reserve" element={<CustomerBookingPage />} />
+        <Route path="/booking-request" element={<CustomerBookingPage />} />
+
+        {/* Public Staff Auth routes */}
+        <Route path="/login" element={!user ? <StaffSignIn /> : <Navigate to="/dashboard" replace />} />
+        <Route path="/" element={!user ? <StaffSignIn /> : <Navigate to="/dashboard" replace />} />
+
+        {/* Authenticated Staff Routes wrapped in persistent AppShell */}
+        <Route element={user ? <AuthenticatedLayout /> : <Navigate to="/login" replace />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/bookings" element={<Bookings />} />
           <Route path="/guests" element={<GuestProfiles />} />
@@ -88,41 +98,11 @@ function AuthenticatedCrmRoutes() {
           <Route path="/channel-settings" element={<ChannelSettings />} />
           <Route path="/email-import" element={<EmailImport />} />
           <Route path="/logs" element={<Logs />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-      </Suspense>
-    </AppShell>
-  );
-}
+        </Route>
 
-export default function App() {
-  const { user, isLoading } = useData();
-  const hasToken = typeof window !== 'undefined' && !!localStorage.getItem('token');
-
-  return (
-    <BrowserRouter>
-      {/* Content-Aware Fluid Smooth Cursor */}
-      <ContentAwareCursor />
-
-      <Toaster />
-      <Suspense fallback={<LoadingFallback />}>
-        <Routes>
-          {/* Public customer booking routes - accessible directly without staff login */}
-          <Route path="/book" element={<CustomerBookingPage />} />
-          <Route path="/reserve" element={<CustomerBookingPage />} />
-          <Route path="/booking-request" element={<CustomerBookingPage />} />
-
-          {/* If verifying an existing session token, keep smooth loader instead of flashing login */}
-          {isLoading && hasToken ? (
-            <Route path="*" element={<LoadingFallback />} />
-          ) : !user ? (
-            <Route path="*" element={<StaffSignIn />} />
-          ) : (
-            /* Staff CRM routes wrapped in AppShell */
-            <Route path="/*" element={<AuthenticatedCrmRoutes />} />
-          )}
-        </Routes>
-      </Suspense>
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
+      </Routes>
     </BrowserRouter>
   );
 }

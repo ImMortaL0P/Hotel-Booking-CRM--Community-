@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useData } from '../data/DataContext';
 import { formatDate } from '../lib/utils';
-import { Send, Phone, MessageSquare, Mail, History, FileText, CheckCircle2, Clock, XCircle, Search } from 'lucide-react';
+import { Send, Phone, MessageSquare, Mail, History, FileText, CheckCircle2, Clock, XCircle, Search, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function Communications() {
-  const { comms, guests, addComm } = useData();
+  const { comms, guests, addComm, isSecondaryLoading, isSyncing } = useData();
   const [activeTab, setActiveTab] = useState<'Compose' | 'Templates' | 'History'>('History');
   
   // Compose State
@@ -76,7 +76,15 @@ export function Communications() {
     <div className="space-y-6 h-full flex flex-col font-sans">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">Communications</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">Communications</h1>
+            {(isSecondaryLoading || isSyncing) && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 animate-pulse">
+                <RefreshCw className="w-3 h-3 animate-spin text-amber-500" />
+                Syncing threads...
+              </span>
+            )}
+          </div>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">Automated & manual guest messaging across WhatsApp, SMS, and Email</p>
         </div>
         <button 
@@ -153,7 +161,18 @@ export function Communications() {
                   )
                 })}
                 {comms.length === 0 && (
-                  <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground font-mono">No communication history found.</td></tr>
+                  <tr>
+                    <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground font-mono">
+                      {isSecondaryLoading ? (
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <RefreshCw className="w-6 h-6 animate-spin text-primary opacity-60" />
+                          <span className="text-xs font-sans font-medium text-foreground">Loading message history...</span>
+                        </div>
+                      ) : (
+                        "No communication history found."
+                      )}
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>

@@ -1,10 +1,10 @@
 import { toast } from 'sonner';
 import { clearSnapshot } from './dataCache';
 
-// Use local vite proxy during development, use production URL when deployed
-export const API_BASE_URL = import.meta.env.DEV
-  ? ''
-  : (import.meta.env.VITE_API_BASE_URL || 'https://sharda-crm.onrender.com');
+// Connect directly to local Express backend on port 5001 in dev, and production Render in prod
+export const API_BASE_URL = import.meta.env?.DEV
+  ? (typeof window !== 'undefined' && window.location.port === '5001' ? '' : 'http://localhost:5001')
+  : (import.meta.env?.VITE_API_BASE_URL || 'https://sharda-crm.onrender.com');
 
 export class ApiError extends Error {
   constructor(message: string, readonly status: number) {
@@ -43,17 +43,11 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}, { qu
 
     if (!response.ok) {
       if (response.status === 401 && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/verify')) {
-        // Do not force-redirect if running on local offline synthetic token
+        // If the token was genuinely rejected by production backend, clean token without hard browser reload
         if (!token?.startsWith('mock-token-')) {
           localStorage.removeItem('token');
           localStorage.removeItem('user');
-          // Don't leave the last user's data cached in the browser
           await clearSnapshot().catch(() => {});
-          // Only redirect if not already on the login or public pages to avoid hard-refresh loop
-          const path = window.location.pathname;
-          if (path !== '/' && path !== '/login' && !path.startsWith('/book') && !path.startsWith('/reserve')) {
-            window.location.href = '/';
-          }
         }
       }
       // Prefer the server's explanation ("Expense validation failed: ...") over the bare status

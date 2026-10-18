@@ -1,0 +1,61 @@
+# Robots.txt for Hotel Sharda Palace Deoghar
+# Production Host: https://hotel-booking-crm-community.vercel.app
+
+User-agent: *
+Allow: /
+Allow: /book
+Allow: /reserve
+Allow: /booking-request
+Allow: /hotel-images/
+Allow: /favicon.png
+Allow: /logo.png
+Allow: /sitemap.xml
+
+# Protect internal CRM staff management API endpoints
+Disallow: /api/auth/
+Disallow: /api/admin/
+Disallow: /api/internal/
+
+# Explicitly Allow Generative AI & LLM Search Crawlers
+User-agent: Google-Extended
+Allow: /
+Allow: /book
+
+User-agent: GPTBot
+Allow: /
+Allow: /book
+
+User-agent: ChatGPT-User
+Allow: /
+Allow: /book
+
+User-agent: PerplexityBot
+Allow: /
+Allow: /book
+
+User-agent: ClaudeBot
+Allow: /
+Allow: /book
+
+User-agent: anthropic-ai
+Allow: /
+Allow: /book
+
+User-agent: Applebot-Extended
+Allow: /
+Allow: /book
+
+User-agent: Bytespider
+Allow: /
+Allow: /book
+
+User-agent: CCBot
+Allow: /
+Allow: /book
+
+User-agent: Cohere-ai
+Allow: /
+Allow: /book
+
+# Search Engine Sitemap Location
+Sitemap: https://hotel-booking-crm-community.vercel.app/sitemap.xml

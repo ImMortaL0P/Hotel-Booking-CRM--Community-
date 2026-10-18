@@ -5,7 +5,7 @@ import { History, Globe, Server, Database, Activity, RefreshCw } from 'lucide-re
 import { API_BASE_URL } from '../lib/api';
 
 export function Logs() {
-  const { logs } = useData();
+  const { logs, isSecondaryLoading, isSyncing } = useData();
 
   // Live Infrastructure Health Status
   const [health, setHealth] = useState({
@@ -57,10 +57,18 @@ export function Logs() {
     <div className="max-w-5xl mx-auto flex flex-col h-full space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground font-display flex items-center gap-3">
-            <History className="text-[#D4AF37] w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
-            System Activity Logs
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground font-display flex items-center gap-3">
+              <History className="text-[#D4AF37] w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
+              System Activity Logs
+            </h1>
+            {(isSecondaryLoading || isSyncing) && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 animate-pulse">
+                <RefreshCw className="w-3 h-3 animate-spin text-amber-500" />
+                Streaming logs...
+              </span>
+            )}
+          </div>
           <p className="text-muted-foreground mt-1 text-xs sm:text-sm">Audit trail of operations in MongoDB Atlas and system runtime</p>
         </div>
         <button
@@ -202,7 +210,15 @@ export function Logs() {
               {logs.length === 0 && (
                 <tr>
                   <td colSpan={4} className="py-12 text-center text-muted-foreground">
-                    No activity logs found.
+                    {isSecondaryLoading ? (
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <RefreshCw className="w-7 h-7 animate-spin text-primary opacity-60" />
+                        <span className="text-sm font-medium text-foreground">Fetching activity logs...</span>
+                        <span className="text-xs text-muted-foreground">Synchronizing immutable audit trail</span>
+                      </div>
+                    ) : (
+                      "No activity logs found."
+                    )}
                   </td>
                 </tr>
               )}

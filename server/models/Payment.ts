@@ -24,5 +24,6 @@ const paymentSchema = new mongoose.Schema({
 // Incremental sync (/api/sync) reads rows changed since a timestamp
 paymentSchema.index({ updatedAt: 1 });
 paymentSchema.index({ bookingId: 1 });
+paymentSchema.index({ guestId: 1, status: 1 });
 
 export const Payment = mongoose.model('PaymentTransaction', paymentSchema);
