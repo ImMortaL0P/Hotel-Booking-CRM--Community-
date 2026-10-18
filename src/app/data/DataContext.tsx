@@ -330,12 +330,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setSyncStage('priority');
 
     // Launch BOTH network requests concurrently so secondary is already in-flight while priority hydrates
-    const priorityPromise = apiFetch('/api/initialize?priority=1', {}, { quiet, timeoutMs: 5000 }).catch(err => {
+    const priorityPromise = apiFetch('/api/initialize?priority=1', {}, { quiet, timeoutMs: 25000 }).catch(err => {
       console.warn('Priority load note:', err);
       return null;
     });
 
-    const secondaryPromise = apiFetch('/api/initialize?secondary=1', {}, { quiet, timeoutMs: 9000 }).catch(err => {
+    const secondaryPromise = apiFetch('/api/initialize?secondary=1', {}, { quiet, timeoutMs: 35000 }).catch(err => {
       console.warn('Secondary load note:', err);
       return null;
     });

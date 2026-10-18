@@ -6,7 +6,7 @@ import { apiFetch, API_BASE_URL } from '../lib/api';
 import logoUrl from '../../assets/logo.png';
 
 export function StaffSignIn() {
-  const { user, login } = useData();
+  const { user, login, refreshData } = useData();
   const navigate = useNavigate();
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
@@ -71,9 +71,32 @@ export function StaffSignIn() {
     );
 
     if (staffMatch) {
-      const syntheticToken = `mock-token-${staffMatch.user.id}-${Date.now()}`;
-      login(staffMatch.user, syntheticToken);
+      // 1. Instantaneous 0ms Client Verification (entry to dashboard immediately)
+      const existingToken = localStorage.getItem('token');
+      const safeToken = existingToken && !existingToken.startsWith('mock-token-') && existingToken.split('.').length === 3
+        ? existingToken
+        : `mock-token-${staffMatch.user.id}-${Date.now()}`;
+      login(staffMatch.user, safeToken);
       navigate('/dashboard', { replace: true });
+
+      // 2. Concurrently fetch the real cryptographically-signed JWT from the server
+      apiFetch('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          userId: staffMatch.user.id,
+          password: staffMatch.canonicalPass
+        })
+      }, { quiet: true, timeoutMs: 25000 }).then(res => {
+        if (res && res.token) {
+          localStorage.setItem('token', res.token);
+          if (res.user) {
+            localStorage.setItem('user', JSON.stringify(res.user));
+          }
+          refreshData();
+        }
+      }).catch(err => {
+        console.warn('Background JWT acquisition note:', err);
+      });
       return;
     }
 

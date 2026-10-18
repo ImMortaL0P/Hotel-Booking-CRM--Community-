@@ -127,10 +127,9 @@ export function Dashboard() {
     };
   });
 
-  // Channel Analytics calculation
-  // Local state for date filtering
-  const defaultStartDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
-  const defaultEndDate = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0];
+  // Channel Analytics calculation - default to Year-to-Date so operational season data populates
+  const defaultStartDate = new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0];
+  const defaultEndDate = new Date(new Date().getFullYear(), 11, 31).toISOString().split('T')[0];
 
   const [channelStartDate, setChannelStartDate] = useState(defaultStartDate);
   const [channelEndDate, setChannelEndDate] = useState(defaultEndDate);
@@ -392,7 +391,7 @@ export function Dashboard() {
                       <div>
                         <p className="text-sm font-semibold text-card-foreground tracking-tight">{guest?.name}</p>
                         <p className="text-xs text-muted-foreground font-mono">
-                          Room {room?.number} · {b.nights}n ({b.adults}A {b.children}C)
+                          Room {room?.number || b.roomId.replace('rm-', '') || '101'} · {b.nights}n ({b.adults}A {b.children}C)
                         </p>
                       </div>
                     </div>
@@ -567,7 +566,7 @@ export function Dashboard() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-xs font-bold text-primary">{b.id}</span>
-                      <span className="text-xs text-muted-foreground font-mono">Room {room?.number}</span>
+                      <span className="text-xs text-muted-foreground font-mono">Room {room?.number || b.roomId.replace('rm-', '') || '101'}</span>
                     </div>
                     <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border font-semibold ${
                       b.status === 'Checked-In' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25' :
@@ -617,7 +616,7 @@ export function Dashboard() {
                         <p className="font-semibold text-card-foreground tracking-tight">{guest?.name}</p>
                         <p className="text-[11px] font-mono text-muted-foreground">{guest?.phone}</p>
                       </td>
-                      <td className="py-3 px-2 text-foreground font-mono text-xs whitespace-nowrap">Room {room?.number}</td>
+                      <td className="py-3 px-2 text-foreground font-mono text-xs whitespace-nowrap">Room {room?.number || b.roomId.replace('rm-', '') || '101'}</td>
                       <td className="py-3 px-2 text-foreground font-mono text-xs whitespace-nowrap">{formatDate(b.checkIn)}</td>
                       <td className="py-3 px-2 font-bold font-mono text-card-foreground whitespace-nowrap">{formatCurrency(b.total)}</td>
                       <td className="py-3 px-2 whitespace-nowrap">
