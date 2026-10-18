@@ -304,8 +304,20 @@ function getDeskQueue(): { bookings: Booking[]; guests: Guest[] } {
         cursor.current = snap.serverTime;
         setIsLoading(false);
         apiFetch('/api/auth/verify', {}, { quiet: true })
-          .then(res => { if (res.user) setUser(res.user); })
-          .catch(() => {}); // a 401 is handled inside apiFetch (logs out)
+          .then(res => { 
+            if (res && res.user) {
+              setUser(res.user);
+            } else {
+              localStorage.removeItem('token');
+              clearSnapshot();
+              setUser(null);
+            }
+          })
+          .catch(() => {
+            localStorage.removeItem('token');
+            clearSnapshot();
+            setUser(null);
+          });
         syncNow(true);
         return;
       }
@@ -313,12 +325,18 @@ function getDeskQueue(): { bookings: Booking[]; guests: Guest[] } {
       // No cache: verify the token and fetch the dataset in parallel
       try {
         const [verifyRes] = await Promise.all([
-          apiFetch('/api/auth/verify'),
-          loadFull().catch(err => console.error('Failed to load initial data', err))
+          apiFetch('/api/auth/verify', {}, { quiet: true, timeoutMs: 4000 }),
+          loadFull(true).catch(err => console.error('Failed to load initial data', err))
         ]);
-        if (verifyRes.user) setUser(verifyRes.user);
+        if (verifyRes && verifyRes.user) {
+          setUser(verifyRes.user);
+        } else {
+          localStorage.removeItem('token');
+          setUser(null);
+        }
       } catch {
         localStorage.removeItem('token');
+        setUser(null);
       }
       setIsLoading(false);
     };

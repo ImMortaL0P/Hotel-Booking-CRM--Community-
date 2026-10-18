@@ -141,10 +141,16 @@ export function StaffSignIn() {
             )}
 
             <div>
-              <label className="block text-xs font-mono font-medium text-foreground mb-1.5 uppercase tracking-wider">User ID</label>
+              <label htmlFor="userId" className="block text-xs font-mono font-medium text-foreground mb-1.5 uppercase tracking-wider">User ID</label>
               <input
+                id="userId"
+                name="username"
                 type="text"
                 required
+                autoComplete="username"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
                 value={userId}
                 onChange={e => setUserId(e.target.value)}
                 className="w-full px-3.5 py-2.5 bg-background border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm font-mono placeholder:text-muted-foreground/60 transition-colors"
@@ -153,11 +159,14 @@ export function StaffSignIn() {
             </div>
 
             <div>
-              <label className="block text-xs font-mono font-medium text-foreground mb-1.5 uppercase tracking-wider">Password</label>
+              <label htmlFor="password" className="block text-xs font-mono font-medium text-foreground mb-1.5 uppercase tracking-wider">Password</label>
               <div className="relative">
                 <input
+                  id="password"
+                  name="password"
                   type={showPwd ? 'text' : 'password'}
                   required
+                  autoComplete="current-password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-background border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary pr-10 text-sm font-mono placeholder:text-muted-foreground/60 transition-colors"

@@ -42,14 +42,18 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}, { qu
     clearTimeout(id);
 
     if (!response.ok) {
-      if (response.status === 401 && !endpoint.includes('/auth/login')) {
+      if (response.status === 401 && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/verify')) {
         // Do not force-redirect if running on local offline synthetic token
         if (!token?.startsWith('mock-token-')) {
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           // Don't leave the last user's data cached in the browser
           await clearSnapshot().catch(() => {});
-          window.location.href = '/';
+          // Only redirect if not already on the login or public pages to avoid hard-refresh loop
+          const path = window.location.pathname;
+          if (path !== '/' && path !== '/login' && !path.startsWith('/book') && !path.startsWith('/reserve')) {
+            window.location.href = '/';
+          }
         }
       }
       // Prefer the server's explanation ("Expense validation failed: ...") over the bare status

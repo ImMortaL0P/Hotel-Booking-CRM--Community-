@@ -13,6 +13,7 @@ import { format, addDays, differenceInCalendarDays } from 'date-fns';
 import { toast } from 'sonner';
 import { API_BASE_URL } from '../lib/api';
 import { useTheme } from '../components/ThemeProvider';
+import { Preloader } from '../components/Preloader';
 import logoUrl from '../../assets/logo.png';
 
 // Local High-Resolution Photographs Scraped Directly from Booking.com with Downloaded Resolutions
@@ -421,6 +422,9 @@ export function CustomerBookingPage() {
 
   return (
     <div className="min-h-screen bg-[var(--paper)] text-[var(--ink)] font-sans antialiased selection:bg-[var(--reg)] selection:text-white transition-colors duration-300">
+      {/* Brand Luxury Editorial Preloader */}
+      <Preloader />
+
       {/* Top Kraft Studios Editorial Announcement Bar */}
       <aside aria-label="Official Status" className="border-b border-[var(--line)] bg-[var(--surface)] py-2 px-4 text-xs font-mono text-muted-foreground transition-colors duration-300">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">

@@ -4,7 +4,6 @@ import { useData } from './data/DataContext';
 import { StaffSignIn } from './pages/StaffSignIn';
 import { AppShell } from './components/AppShell';
 import { Toaster } from 'sonner';
-import { Preloader } from './components/Preloader';
 import { ContentAwareCursor } from './components/ContentAwareCursor';
 import logoUrl from '../assets/logo.png';
 
@@ -97,13 +96,11 @@ function AuthenticatedCrmRoutes() {
 }
 
 export default function App() {
-  const { user } = useData();
+  const { user, isLoading } = useData();
+  const hasToken = typeof window !== 'undefined' && !!localStorage.getItem('token');
 
   return (
     <BrowserRouter>
-      {/* Brand Luxury Editorial Preloader */}
-      <Preloader />
-
       {/* Content-Aware Fluid Smooth Cursor */}
       <ContentAwareCursor />
 
@@ -115,8 +112,10 @@ export default function App() {
           <Route path="/reserve" element={<CustomerBookingPage />} />
           <Route path="/booking-request" element={<CustomerBookingPage />} />
 
-          {/* If not logged in as staff, any other path renders StaffSignIn */}
-          {!user ? (
+          {/* If verifying an existing session token, keep smooth loader instead of flashing login */}
+          {isLoading && hasToken ? (
+            <Route path="*" element={<LoadingFallback />} />
+          ) : !user ? (
             <Route path="*" element={<StaffSignIn />} />
           ) : (
             /* Staff CRM routes wrapped in AppShell */
