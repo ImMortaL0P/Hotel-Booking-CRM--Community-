@@ -335,13 +335,17 @@ export function CustomerBookingPage() {
   const lenisRef = useRef<Lenis | null>(null);
   const touchStartX = useRef<number | null>(null);
 
-  // Smooth scrolling with Lenis on customer booking page
+  // Smooth scrolling with Lenis on customer booking page (optimized for desktop fine pointer)
   useEffect(() => {
+    // Mobile touch devices have native 120Hz compositor momentum scrolling
+    const isTouch = typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    if (isTouch) return;
+
     const lenis = new Lenis({
-      duration: 1.0,
+      duration: 0.9,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      touchMultiplier: 1.2,
+      syncTouch: false,
     });
     lenisRef.current = lenis;
 
@@ -358,6 +362,17 @@ export function CustomerBookingPage() {
       lenisRef.current = null;
     };
   }, []);
+
+  // Pause smooth scroll when lightbox is open to prevent background page scrolling
+  useEffect(() => {
+    if (lenisRef.current) {
+      if (isLightboxOpen) {
+        lenisRef.current.stop();
+      } else {
+        lenisRef.current.start();
+      }
+    }
+  }, [isLightboxOpen]);
 
   // Keyboard navigation & body scroll lock when full-resolution lightbox is active
   useEffect(() => {
@@ -951,6 +966,8 @@ export function CustomerBookingPage() {
                   }
                 }}
                 className="relative rounded-2xl overflow-hidden border border-[var(--line)] bg-[var(--surface)] h-[380px] sm:h-[540px] shadow-sm group cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-[var(--reg)] select-none"
+                data-cursor="view"
+                data-cursor-label="EXPAND"
               >
                 <img 
                   src={HOTEL_IMAGES[activePhotoIdx].url} 
@@ -1231,6 +1248,8 @@ export function CustomerBookingPage() {
                       onClick={() => { setActivePhotoIdx(1); setIsLightboxOpen(true); setIsNativeZoom(false); }}
                       className="relative h-60 sm:h-72 overflow-hidden border-b border-[var(--line)] cursor-zoom-in group/img"
                       title="Click to view room in full downloaded resolution"
+                      data-cursor="view"
+                      data-cursor-label="VIEW"
                     >
                       <img 
                         src="/hotel-images/double-room.jpg" 
@@ -1312,6 +1331,8 @@ export function CustomerBookingPage() {
                       onClick={() => { setActivePhotoIdx(2); setIsLightboxOpen(true); setIsNativeZoom(false); }}
                       className="relative h-60 sm:h-72 overflow-hidden border-b border-[var(--line)] cursor-zoom-in group/img"
                       title="Click to view suite in full downloaded resolution"
+                      data-cursor="view"
+                      data-cursor-label="VIEW"
                     >
                       <img 
                         src="/hotel-images/family-room.jpg" 
