@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://hotel-booking-crm-community.vercel.app/book</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://hotel-booking-crm-community.vercel.app/hotel-images/facade.jpg</image:loc>
+      <image:title>Hotel Sharda Palace Deoghar Frontage near Baba Baidyanath Mandir</image:title>
+      <image:caption>Quiet sanctum on Bambam Baba Path, Main Shivganga Road, Deoghar</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://hotel-booking-crm-community.vercel.app/hotel-images/double-room.jpg</image:loc>
+      <image:title>Double Bed Ground Floor Room at Hotel Sharda Palace Deoghar</image:title>
+      <image:caption>Step-free air-conditioned room with king double bed and 24/7 geyser</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://hotel-booking-crm-community.vercel.app/hotel-images/family-room.jpg</image:loc>
+      <image:title>Family Bed Suite Ground Floor at Hotel Sharda Palace Deoghar</image:title>
+      <image:caption>Two double beds suite ideal for senior devotees and family pilgrimage</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://hotel-booking-crm-community.vercel.app/hotel-images/bathroom.jpg</image:loc>
+      <image:title>Private Ensuite Bathroom with 24/7 Geyser at Hotel Sharda Palace Deoghar</image:title>
+      <image:caption>Sanitized bathroom with instantaneous hot water geyser for early morning temple bath</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://hotel-booking-crm-community.vercel.app/</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>
