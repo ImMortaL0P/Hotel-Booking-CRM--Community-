@@ -74,26 +74,26 @@ export function Communications() {
 
   return (
     <div className="space-y-6 h-full flex flex-col font-sans">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">Communications</h1>
-          <p className="text-sm text-muted-foreground mt-1">Automated & manual guest messaging across WhatsApp, SMS, and Email</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">Communications</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">Automated & manual guest messaging across WhatsApp, SMS, and Email</p>
         </div>
         <button 
           onClick={() => setActiveTab('Compose')}
-          className="pill-vermilion cursor-pointer"
+          className="pill-vermilion cursor-pointer w-full sm:w-auto justify-center"
         >
           <Send className="w-3.5 h-3.5" /> New Message
         </button>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1.5 p-1 bg-secondary border border-border rounded-full shrink-0 overflow-x-auto w-max">
+      <div className="flex gap-1.5 p-1 bg-secondary border border-border rounded-full shrink-0 overflow-x-auto max-w-full">
         {(['History', 'Compose', 'Templates'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-mono font-medium transition-all ${
+            className={`flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-mono font-medium transition-all shrink-0 ${
               activeTab === tab ? 'bg-foreground text-background shadow-sm' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -107,15 +107,15 @@ export function Communications() {
 
       {activeTab === 'History' && (
         <div className="bg-card border text-xs border-border rounded-xl overflow-hidden flex-1 flex flex-col shadow-sm">
-          <div className="p-4 border-b border-border bg-card flex justify-between items-center">
+          <div className="p-3.5 sm:p-4 border-b border-border bg-card flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <h2 className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Message History</h2>
-            <div className="relative w-64">
+            <div className="relative w-full sm:w-64">
               <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input type="text" placeholder="Search logs..." className="w-full pl-9 pr-4 py-1.5 border border-border rounded-full bg-background focus:outline-none focus:border-primary text-xs font-mono" />
             </div>
           </div>
-          <div className="flex-1 overflow-auto">
-            <table className="w-full text-left whitespace-nowrap">
+          <div className="flex-1 overflow-x-auto overflow-y-auto">
+            <table className="w-full text-left whitespace-nowrap min-w-[620px]">
               <thead className="bg-secondary/60 sticky top-0">
                 <tr className="border-b border-border text-[11px] font-mono text-muted-foreground uppercase tracking-wider">
                   <th className="px-4 py-3">Channel</th>
@@ -162,19 +162,19 @@ export function Communications() {
       )}
 
       {activeTab === 'Compose' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 h-0 overflow-y-auto pb-6">
-          <div className="bg-card p-6 rounded-xl border border-border space-y-6 shadow-sm">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-0 overflow-y-auto pb-6">
+          <div className="bg-card p-4 sm:p-6 rounded-xl border border-border space-y-6 shadow-sm">
             <h2 className="font-mono text-xs uppercase tracking-widest text-muted-foreground border-b border-border pb-2">Compose Message</h2>
             
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-2">1. Select Channel</label>
-                <div className="flex gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   {(['WhatsApp', 'SMS', 'Email'] as const).map(ch => (
                     <button
                       key={ch}
                       onClick={() => setChannel(ch)}
-                      className={`flex-1 py-2.5 px-3 rounded-lg flex items-center justify-center gap-2 border text-xs font-medium transition-all
+                      className={`py-2.5 px-2 sm:px-3 rounded-lg flex items-center justify-center gap-1.5 sm:gap-2 border text-xs font-medium transition-all
                         ${channel === ch ? 'bg-foreground text-background border-foreground shadow-sm' : 'bg-background border-border text-muted-foreground hover:text-foreground'}`}
                     >
                       {channelIcon[ch]} {ch}
@@ -185,12 +185,12 @@ export function Communications() {
 
               <div>
                 <label className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-2">2. Recipients Target</label>
-                <div className="grid grid-cols-3 gap-2 mb-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
                   {(['Single', 'All Arriving Tomorrow', 'Balance Due'] as const).map(tgt => (
                     <button
                       key={tgt}
                       onClick={() => setRecipientFilter(tgt)}
-                      className={`py-2 px-2 text-xs rounded-lg border font-mono transition-all ${recipientFilter === tgt ? 'bg-primary text-primary-foreground border-primary' : 'bg-background border-border text-muted-foreground hover:text-foreground'}`}
+                      className={`py-2 px-2 text-xs rounded-lg border font-mono transition-all text-center ${recipientFilter === tgt ? 'bg-primary text-primary-foreground border-primary' : 'bg-background border-border text-muted-foreground hover:text-foreground'}`}
                     >
                       {tgt}
                     </button>

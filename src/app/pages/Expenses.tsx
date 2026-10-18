@@ -284,31 +284,31 @@ export function Expenses() {
     <div className="h-full print:m-0 print:p-0 w-full">
     <div className="flex flex-col h-full space-y-6 print:hidden">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <WalletCards className="w-6 h-6 text-primary" />
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+            <WalletCards className="w-6 h-6 text-primary shrink-0" />
             Expenses & Ledger
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage incomes, track expenses, and view balance sheets.</p>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">Manage incomes, track expenses, and view balance sheets.</p>
         </div>
 
-        <div className="flex gap-2 w-full md:w-auto items-center">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto items-center">
           <button
             onClick={() => setIsExportMode(true)}
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-full border border-border hover:bg-muted font-medium text-xs transition-colors cursor-pointer"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-secondary text-secondary-foreground rounded-full border border-border hover:bg-muted font-medium text-xs transition-colors cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" /> Export Report
           </button>
           <button
             onClick={() => setIsIncomeMode(true)}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-foreground text-background rounded-full hover:opacity-90 font-semibold text-xs transition-opacity shadow-none cursor-pointer"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-foreground text-background rounded-full hover:opacity-90 font-semibold text-xs transition-opacity shadow-none cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" /> Add Income
           </button>
           <button
             onClick={() => setIsAddMode(true)}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-full hover:opacity-90 font-semibold text-xs transition-opacity shadow-none cursor-pointer"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-primary text-primary-foreground rounded-full hover:opacity-90 font-semibold text-xs transition-opacity shadow-none cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" /> Add Expense
           </button>
@@ -316,50 +316,50 @@ export function Expenses() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-card border border-border rounded-lg p-5 flex flex-col justify-center">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-card border border-border rounded-lg p-4 sm:p-5 flex flex-col justify-center">
           <div className="flex items-center gap-2 text-muted-foreground mb-2">
             <ArrowUpRight className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <span className="text-xs font-mono font-semibold uppercase tracking-wider">Total Income</span>
           </div>
-          <div className="text-2xl font-mono font-bold tracking-tight text-foreground">{formatCurrency(totalIncome)}</div>
+          <div className="text-xl sm:text-2xl font-mono font-bold tracking-tight text-foreground">{formatCurrency(totalIncome)}</div>
         </div>
 
-        <div className="bg-card border border-border rounded-lg p-5 flex flex-col justify-center">
+        <div className="bg-card border border-border rounded-lg p-4 sm:p-5 flex flex-col justify-center">
           <div className="flex items-center gap-2 text-muted-foreground mb-2">
             <ArrowDownRight className="w-4 h-4 text-destructive" />
             <span className="text-xs font-mono font-semibold uppercase tracking-wider">Total Expenses</span>
           </div>
-          <div className="text-2xl font-mono font-bold tracking-tight text-foreground">{formatCurrency(totalExpense)}</div>
+          <div className="text-xl sm:text-2xl font-mono font-bold tracking-tight text-foreground">{formatCurrency(totalExpense)}</div>
         </div>
 
-        <div className="bg-card border border-border rounded-lg p-5 flex flex-col justify-center relative overflow-hidden">
+        <div className="bg-card border border-border rounded-lg p-4 sm:p-5 flex flex-col justify-center relative overflow-hidden">
           <div className={`absolute top-0 left-0 bottom-0 w-1 ${netBalance >= 0 ? 'bg-emerald-600 dark:bg-emerald-400' : 'bg-primary'}`}></div>
           <div className="flex items-center gap-2 text-muted-foreground mb-2">
             <IndianRupee className={`w-4 h-4 ${netBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary'}`} />
             <span className="text-xs font-mono font-semibold uppercase tracking-wider">Net Profit / Loss</span>
           </div>
-          <div className={`text-2xl font-mono font-bold tracking-tight ${netBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary'}`}>
+          <div className={`text-xl sm:text-2xl font-mono font-bold tracking-tight ${netBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary'}`}>
             {formatCurrency(netBalance)}
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-card border border-border rounded-lg p-4 flex flex-wrap gap-4 items-end">
-        <div className="flex-1 min-w-[200px]">
+      <div className="bg-card border border-border rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-end">
+        <div className="flex-1 min-w-0 sm:min-w-[180px]">
            <label className="block text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wider">From Date</label>
-           <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="w-full text-sm px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary" />
+           <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="w-full text-xs sm:text-sm px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary" />
         </div>
-        <div className="flex-1 min-w-[200px]">
+        <div className="flex-1 min-w-0 sm:min-w-[180px]">
            <label className="block text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wider">To Date</label>
-           <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="w-full text-sm px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary" />
+           <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="w-full text-xs sm:text-sm px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary" />
         </div>
-        <div className="flex-1 min-w-[200px]">
+        <div className="flex-1 min-w-0 sm:min-w-[180px]">
            <label className="block text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wider">Room Segregation</label>
            <div className="relative">
              <Filter className="w-4 h-4 absolute left-3 top-2.5 text-muted-foreground" />
-             <select value={filterRoom} onChange={e => setFilterRoom(e.target.value)} className="w-full text-sm pl-9 pr-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary">
+             <select value={filterRoom} onChange={e => setFilterRoom(e.target.value)} className="w-full text-xs sm:text-sm pl-9 pr-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary">
                <option value="">All (Include Property Wide)</option>
                {rooms.map(r => (
                  <option key={r.id} value={r.id}>Room {r.number}</option>
@@ -372,16 +372,16 @@ export function Expenses() {
       {/* Ledger Table */}
       <div className="bg-card border border-border rounded-lg flex-1 min-h-[300px] overflow-hidden flex flex-col">
         <div className="overflow-auto flex-1">
-          <table className="w-full text-sm text-left">
+          <table className="w-full text-sm text-left whitespace-nowrap min-w-[760px]">
             <thead className="text-xs text-muted-foreground uppercase bg-secondary/50 sticky top-0 z-10 font-semibold border-b border-border shadow-sm">
               <tr>
-                <th className="px-6 py-3 shrink-0 w-32 whitespace-nowrap">Date</th>
-                <th className="px-6 py-3 truncate max-w-[200px]">Type / Category</th>
-                <th className="px-6 py-3 whitespace-nowrap">Room</th>
-                <th className="px-6 py-3 min-w-[200px]">Description</th>
-                <th className="px-6 py-3 text-right">Income</th>
-                <th className="px-6 py-3 text-right">Expense</th>
-                <th className="px-6 py-3 text-center w-16">Actions</th>
+                <th className="px-4 sm:px-6 py-3 shrink-0 w-32 whitespace-nowrap">Date</th>
+                <th className="px-4 sm:px-6 py-3 truncate max-w-[200px]">Type / Category</th>
+                <th className="px-4 sm:px-6 py-3 whitespace-nowrap">Room</th>
+                <th className="px-4 sm:px-6 py-3 min-w-[200px]">Description</th>
+                <th className="px-4 sm:px-6 py-3 text-right">Income</th>
+                <th className="px-4 sm:px-6 py-3 text-right">Expense</th>
+                <th className="px-4 sm:px-6 py-3 text-center w-16">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">

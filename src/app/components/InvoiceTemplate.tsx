@@ -43,15 +43,15 @@ export interface InvoiceDataProps {
 
 export const InvoiceTemplate = ({ data, elementId = "invoice-capture-area" }: { data: InvoiceDataProps, elementId?: string }) => {
   return (
-    <div className="bg-card text-foreground p-8 max-w-4xl mx-auto border border-border rounded-xl font-sans" id={elementId}>
+    <div className="bg-card text-foreground p-4 sm:p-8 max-w-4xl mx-auto border border-border rounded-xl font-sans" id={elementId}>
       {/* Header */}
-      <div className="flex justify-between items-start mb-8 border-b border-border pb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 sm:mb-8 border-b border-border pb-6">
         <div className="flex flex-col items-start">
           <img src={logoUrl} alt="Sharda Palace" className="h-12 w-auto object-contain mb-2" />
           <h2 className="text-foreground font-serif text-2xl font-normal tracking-tight">SHARDA PALACE</h2>
           <p className="text-muted-foreground text-[10px] uppercase tracking-widest font-mono mt-0.5">Comfort Near Faith · Deoghar</p>
         </div>
-        <div className="text-right flex flex-col items-end">
+        <div className="text-left sm:text-right flex flex-col items-start sm:items-end">
           <h1 className="text-3xl font-serif font-light text-primary tracking-tight mb-2">INVOICE</h1>
           <p className="font-semibold text-xs text-foreground">Hotel Sharda Palace</p>
           <p className="text-xs text-muted-foreground font-mono leading-relaxed mt-1">
@@ -64,7 +64,7 @@ export const InvoiceTemplate = ({ data, elementId = "invoice-capture-area" }: { 
       </div>
 
       {/* Info Section */}
-      <div className="flex justify-between mb-8">
+      <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6 sm:mb-8">
         <div>
           <h3 className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Billed To</h3>
           <p className="text-sm text-foreground leading-relaxed">
@@ -75,45 +75,47 @@ export const InvoiceTemplate = ({ data, elementId = "invoice-capture-area" }: { 
             {data.billedTo.idPrefix && <span className="font-mono text-xs text-muted-foreground block">Guest ID: {data.billedTo.idPrefix}</span>}
           </p>
         </div>
-        <div className="text-right">
-          <table className="text-xs text-foreground ml-auto font-mono">
+        <div className="text-left sm:text-right">
+          <table className="text-xs text-foreground sm:ml-auto font-mono">
             <tbody>
-              <tr><td className="text-muted-foreground pr-4 py-0.5 text-right">Invoice ID:</td><td className="text-right font-semibold text-primary">{data.invoiceId}</td></tr>
-              <tr><td className="text-muted-foreground pr-4 py-0.5 text-right">Date:</td><td className="text-right">{data.date}</td></tr>
-              {data.checkIn && <tr><td className="text-muted-foreground pr-4 py-0.5 text-right">Check-in:</td><td className="text-right">{data.checkIn}</td></tr>}
-              {data.checkOut && <tr><td className="text-muted-foreground pr-4 py-0.5 text-right">Check-out:</td><td className="text-right">{data.checkOut}</td></tr>}
-              {data.roomPlan && <tr><td className="text-muted-foreground pr-4 py-0.5 text-right">Room / Plan:</td><td className="text-right">{data.roomPlan}</td></tr>}
-              <tr><td className="text-muted-foreground pr-4 py-0.5 text-right">Status:</td><td className="text-right font-bold text-primary">{data.paymentStatus}</td></tr>
+              <tr><td className="text-muted-foreground pr-4 py-0.5 text-left sm:text-right">Invoice ID:</td><td className="text-left sm:text-right font-semibold text-primary">{data.invoiceId}</td></tr>
+              <tr><td className="text-muted-foreground pr-4 py-0.5 text-left sm:text-right">Date:</td><td className="text-left sm:text-right">{data.date}</td></tr>
+              {data.checkIn && <tr><td className="text-muted-foreground pr-4 py-0.5 text-left sm:text-right">Check-in:</td><td className="text-left sm:text-right">{data.checkIn}</td></tr>}
+              {data.checkOut && <tr><td className="text-muted-foreground pr-4 py-0.5 text-left sm:text-right">Check-out:</td><td className="text-left sm:text-right">{data.checkOut}</td></tr>}
+              {data.roomPlan && <tr><td className="text-muted-foreground pr-4 py-0.5 text-left sm:text-right">Room / Plan:</td><td className="text-left sm:text-right">{data.roomPlan}</td></tr>}
+              <tr><td className="text-muted-foreground pr-4 py-0.5 text-left sm:text-right">Status:</td><td className="text-left sm:text-right font-bold text-primary">{data.paymentStatus}</td></tr>
             </tbody>
           </table>
         </div>
       </div>
 
       {/* Table */}
-      <table className="w-full text-xs mb-6 border-collapse border border-border">
-        <thead className="bg-secondary/60 border-b border-border">
-          <tr className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-            <th className="py-2 px-3 text-left border-r border-border w-12">#</th>
-            <th className="py-2 px-3 text-left border-r border-border">Description</th>
-            <th className="py-2 px-3 text-right border-r border-border w-24">Unit Price</th>
-            <th className="py-2 px-3 text-right border-r border-border w-16">Qty</th>
-            <th className="py-2 px-3 text-right border-r border-border w-20">GST</th>
-            <th className="py-2 px-3 text-right w-28">Amount</th>
-          </tr>
-        </thead>
-        <tbody className="font-mono">
-          {data.items.map((item, i) => (
-            <tr key={i} className="border-b border-border text-foreground hover:bg-muted/30">
-              <td className="py-2 px-3 border-r border-border text-muted-foreground">{item.id}</td>
-              <td className="py-2 px-3 border-r border-border font-sans font-medium">{item.description}</td>
-              <td className="py-2 px-3 text-right border-r border-border">₹{item.unitPrice.toFixed(2)}</td>
-              <td className="py-2 px-3 text-right border-r border-border">{item.qty}</td>
-              <td className="py-2 px-3 text-right border-r border-border">{item.gstPct}%</td>
-              <td className="py-2 px-3 text-right font-medium">₹{item.amount.toFixed(2)}</td>
+      <div className="overflow-x-auto mb-6 -mx-4 sm:mx-0 px-4 sm:px-0">
+        <table className="w-full text-xs border-collapse border border-border min-w-[520px]">
+          <thead className="bg-secondary/60 border-b border-border">
+            <tr className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+              <th className="py-2 px-3 text-left border-r border-border w-12">#</th>
+              <th className="py-2 px-3 text-left border-r border-border">Description</th>
+              <th className="py-2 px-3 text-right border-r border-border w-24">Unit Price</th>
+              <th className="py-2 px-3 text-right border-r border-border w-16">Qty</th>
+              <th className="py-2 px-3 text-right border-r border-border w-20">GST</th>
+              <th className="py-2 px-3 text-right w-28">Amount</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="font-mono">
+            {data.items.map((item, i) => (
+              <tr key={i} className="border-b border-border text-foreground hover:bg-muted/30">
+                <td className="py-2 px-3 border-r border-border text-muted-foreground">{item.id}</td>
+                <td className="py-2 px-3 border-r border-border font-sans font-medium">{item.description}</td>
+                <td className="py-2 px-3 text-right border-r border-border">₹{item.unitPrice.toFixed(2)}</td>
+                <td className="py-2 px-3 text-right border-r border-border">{item.qty}</td>
+                <td className="py-2 px-3 text-right border-r border-border">{item.gstPct}%</td>
+                <td className="py-2 px-3 text-right font-medium">₹{item.amount.toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* Totals */}
       <div className="flex justify-end mb-8">
@@ -151,12 +153,12 @@ export const InvoiceTemplate = ({ data, elementId = "invoice-capture-area" }: { 
         <p>UPI ID: shardapalace@upi</p>
       </div>
 
-      <div className="text-[10px] font-mono text-muted-foreground mt-8 border-t border-border pt-4 flex justify-between">
+      <div className="text-[10px] font-mono text-muted-foreground mt-8 border-t border-border pt-4 flex flex-col sm:flex-row justify-between gap-2">
         <div>
           <p className="font-semibold text-foreground uppercase tracking-wider mb-0.5">Terms & Conditions</p>
           <p>All amounts are in Indian Rupees (INR). Computer generated folio, signature not required.</p>
         </div>
-        <div className="text-right">
+        <div className="text-left sm:text-right">
           <p>Page 1 of 1</p>
           <p className="mt-0.5 text-primary">Hotel Sharda Palace, Deoghar</p>
         </div>

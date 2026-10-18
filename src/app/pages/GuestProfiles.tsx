@@ -136,20 +136,20 @@ export function GuestProfiles() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Guest Profiles</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
             {guests.length} registered guests · {vipGuests.length} VIP · {repeatGuests.length} frequent visitors
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <button
             onClick={openAddForm}
-            className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors text-sm"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors text-xs sm:text-sm cursor-pointer whitespace-nowrap"
           >
             <Plus className="w-4 h-4" /> Add Guest
           </button>
-          <div className="flex items-center gap-2 bg-card border border-primary text-primary px-4 py-2 rounded-lg shadow-sm">
-            <span className="text-xs uppercase tracking-wider font-bold">Lifetime Value</span>
-            <span className="text-lg font-bold text-foreground">{formatCurrency(totalLTV)}</span>
+          <div className="flex-1 sm:flex-none flex items-center justify-between sm:justify-start gap-2 bg-card border border-primary text-primary px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg shadow-sm">
+            <span className="text-[10px] sm:text-xs uppercase tracking-wider font-bold">Lifetime Value</span>
+            <span className="text-base sm:text-lg font-bold text-foreground">{formatCurrency(totalLTV)}</span>
           </div>
           <button
             onClick={() => {
@@ -170,47 +170,47 @@ export function GuestProfiles() {
               exportToCsv('guests_export', exportData);
               addLog('File Download', 'Exported Guests list to CSV');
             }}
-            className="flex items-center justify-center gap-2 bg-secondary text-secondary-foreground border border-border px-4 py-2.5 rounded-lg font-medium hover:bg-muted transition-colors text-sm"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-secondary text-secondary-foreground border border-border px-3 sm:px-4 py-2 rounded-lg font-medium hover:bg-muted transition-colors text-xs sm:text-sm cursor-pointer whitespace-nowrap"
           >
-            <Download className="w-4 h-4" /> Export CSV
+            <Download className="w-3.5 h-3.5" /> Export CSV
           </button>
         </div>
       </div>
 
       {/* 4 Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-card p-5 rounded-lg border border-border flex items-center justify-between">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="bg-card p-4 sm:p-5 rounded-lg border border-border flex items-center justify-between">
           <div>
             <span className="text-[11px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">Total Guests</span>
-            <div className="text-3xl font-mono font-bold tracking-tight text-foreground mt-1">{guests.length}</div>
+            <div className="text-2xl sm:text-3xl font-mono font-bold tracking-tight text-foreground mt-1">{guests.length}</div>
           </div>
           <div className="w-10 h-10 rounded-full bg-secondary text-foreground border border-border flex items-center justify-center">
             <Users className="w-5 h-5 text-muted-foreground" />
           </div>
         </div>
-        <div className="bg-card p-5 rounded-lg border border-border flex items-center justify-between relative overflow-hidden">
+        <div className="bg-card p-4 sm:p-5 rounded-lg border border-border flex items-center justify-between relative overflow-hidden">
           <div className="absolute top-0 left-0 bottom-0 w-1 bg-primary"></div>
           <div>
             <span className="text-[11px] font-mono font-semibold text-primary uppercase tracking-wider">VIP Guests</span>
-            <div className="text-3xl font-mono font-bold tracking-tight text-primary mt-1">{vipGuests.length}</div>
+            <div className="text-2xl sm:text-3xl font-mono font-bold tracking-tight text-primary mt-1">{vipGuests.length}</div>
           </div>
           <div className="w-10 h-10 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center">
             <Crown className="w-5 h-5" />
           </div>
         </div>
-        <div className="bg-card p-5 rounded-lg border border-border flex items-center justify-between">
+        <div className="bg-card p-4 sm:p-5 rounded-lg border border-border flex items-center justify-between">
           <div>
             <span className="text-[11px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">Repeat Visitors</span>
-            <div className="text-3xl font-mono font-bold tracking-tight text-foreground mt-1">{repeatGuests.length}</div>
+            <div className="text-2xl sm:text-3xl font-mono font-bold tracking-tight text-foreground mt-1">{repeatGuests.length}</div>
           </div>
           <div className="w-10 h-10 rounded-full bg-secondary text-foreground border border-border flex items-center justify-center">
             <RotateCcw className="w-5 h-5 text-muted-foreground" />
           </div>
         </div>
-        <div className="bg-card p-5 rounded-lg border border-border flex items-center justify-between">
+        <div className="bg-card p-4 sm:p-5 rounded-lg border border-border flex items-center justify-between">
           <div>
             <span className="text-[11px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">Avg Stays/Guest</span>
-            <div className="text-3xl font-mono font-bold tracking-tight text-foreground mt-1">{avgStays}</div>
+            <div className="text-2xl sm:text-3xl font-mono font-bold tracking-tight text-foreground mt-1">{avgStays}</div>
           </div>
           <div className="w-10 h-10 rounded-full bg-secondary text-foreground border border-border flex items-center justify-center">
             <TrendingUp className="w-5 h-5 text-muted-foreground" />
@@ -219,7 +219,7 @@ export function GuestProfiles() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1.5 p-1 bg-card border border-border rounded-lg overflow-x-auto">
+      <div className="flex gap-1.5 p-1 bg-card border border-border rounded-lg overflow-x-auto -mx-1 sm:mx-0 px-1">
         {(['All', 'VIP', 'Repeat', 'New'] as const).map(tab => (
           <button
             key={tab}
@@ -234,25 +234,25 @@ export function GuestProfiles() {
       </div>
 
       {/* Toolbar */}
-      <div className="flex items-center justify-between bg-card p-4 rounded-t-xl border border-border border-b-0 shrink-0">
-        <div className="relative w-full max-w-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-card p-3 sm:p-4 rounded-t-xl border border-border border-b-0 shrink-0">
+        <div className="relative w-full sm:max-w-sm">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input 
             type="text" 
             placeholder="Search by name, ID, phone, city..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border border-border rounded-md text-sm focus:outline-none focus:border-primary"
+            className="w-full pl-9 pr-4 py-2 border border-border rounded-lg text-sm bg-background text-foreground focus:outline-none focus:border-primary"
           />
         </div>
-        <div className="text-sm text-muted-foreground">
+        <div className="text-xs sm:text-sm text-muted-foreground">
           Showing {filteredGuests.length} results
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-card border text-sm border-border rounded-b-xl overflow-x-auto flex-1 h-0">
-        <table className="w-full text-left whitespace-nowrap">
+      <div className="bg-card border text-sm border-border rounded-b-xl overflow-x-auto flex-1 min-h-[350px]">
+        <table className="w-full min-w-[720px] text-left whitespace-nowrap">
           <thead className="bg-secondary sticky top-0 z-10">
             <tr className="border-b border-border text-xs font-semibold text-foreground uppercase">
               <th className="px-4 py-3">Guest</th>
@@ -348,11 +348,11 @@ export function GuestProfiles() {
                   </div>
                   <p className="text-sm text-muted-foreground mb-3">{selectedGuest.id}</p>
                   
-                  <div className="grid grid-cols-2 gap-y-2 text-sm text-foreground/80">
-                    <div className="flex items-center gap-2"><Phone className="w-4 h-4 text-muted-foreground" /> {selectedGuest.phone}</div>
-                    <div className="flex items-center gap-2"><Mail className="w-4 h-4 text-muted-foreground" /> {selectedGuest.email !== '-' ? selectedGuest.email : 'No email'}</div>
-                    <div className="flex items-center gap-2"><MapPin className="w-4 h-4 text-muted-foreground" /> {selectedGuest.city}, {selectedGuest.state}</div>
-                    <div className="flex items-center gap-2"><CreditCard className="w-4 h-4 text-muted-foreground" /> {selectedGuest.idProofType} ({selectedGuest.idProofNumber})</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4 text-xs sm:text-sm text-foreground/80">
+                    <div className="flex items-center gap-2 truncate"><Phone className="w-4 h-4 text-muted-foreground shrink-0" /> <span className="truncate">{selectedGuest.phone}</span></div>
+                    <div className="flex items-center gap-2 truncate"><Mail className="w-4 h-4 text-muted-foreground shrink-0" /> <span className="truncate">{selectedGuest.email !== '-' ? selectedGuest.email : 'No email'}</span></div>
+                    <div className="flex items-center gap-2 truncate"><MapPin className="w-4 h-4 text-muted-foreground shrink-0" /> <span className="truncate">{selectedGuest.city}, {selectedGuest.state}</span></div>
+                    <div className="flex items-center gap-2 truncate"><CreditCard className="w-4 h-4 text-muted-foreground shrink-0" /> <span className="truncate">{selectedGuest.idProofType} ({selectedGuest.idProofNumber})</span></div>
                   </div>
                 </div>
               </div>

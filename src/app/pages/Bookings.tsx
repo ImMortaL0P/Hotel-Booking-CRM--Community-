@@ -211,11 +211,11 @@ export function Bookings() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Bookings</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
             {bookings.length} total bookings · Last updated: {new Date().toLocaleTimeString()}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <button
             onClick={() => {
               const exportData = filteredBookings.map(b => {
@@ -237,9 +237,9 @@ export function Bookings() {
               exportToCsv('bookings_export', exportData);
               addLog('File Download', 'Exported Bookings list to CSV');
             }}
-            className="flex items-center justify-center gap-2 bg-secondary text-secondary-foreground border border-border px-4 py-2 rounded-full font-medium hover:bg-muted transition-colors text-sm cursor-pointer"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-secondary text-secondary-foreground border border-border px-3 sm:px-4 py-2 rounded-full font-medium hover:bg-muted transition-colors text-xs sm:text-sm cursor-pointer whitespace-nowrap"
           >
-            <Download className="w-4 h-4" /> Export CSV
+            <Download className="w-3.5 h-3.5" /> Export CSV
           </button>
           <button
             onClick={() => {
@@ -247,21 +247,21 @@ export function Bookings() {
               navigator.clipboard.writeText(link);
               toast.success(`Guest Booking Link copied! Share this with customers: ${link}`);
             }}
-            className="flex items-center justify-center gap-2 bg-secondary text-secondary-foreground border border-border px-3.5 py-2 rounded-full font-medium hover:bg-muted transition-colors text-sm cursor-pointer font-mono"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-secondary text-secondary-foreground border border-border px-3 sm:px-3.5 py-2 rounded-full font-medium hover:bg-muted transition-colors text-xs sm:text-sm cursor-pointer font-mono whitespace-nowrap"
             title="Copy guest booking form link to clipboard"
           >
-            <Share2 className="w-3.5 h-3.5 text-primary" /> Guest Link (/book)
+            <Share2 className="w-3.5 h-3.5 text-primary" /> Guest Link
           </button>
           <button
             onClick={() => setIsRateSettingsOpen(true)}
-            className="flex items-center justify-center gap-1.5 bg-secondary text-secondary-foreground border border-border px-3.5 py-2 rounded-full font-medium hover:bg-muted transition-colors text-sm cursor-pointer font-mono"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-secondary text-secondary-foreground border border-border px-3 sm:px-3.5 py-2 rounded-full font-medium hover:bg-muted transition-colors text-xs sm:text-sm cursor-pointer font-mono whitespace-nowrap"
             title="Super Admin: Update room rates on the public booking page (/book)"
           >
-            <SlidersHorizontal className="w-3.5 h-3.5 text-primary" /> Public Rates
+            <SlidersHorizontal className="w-3.5 h-3.5 text-primary" /> Rates
           </button>
           <button
             onClick={() => setIsNewBookingOpen(true)}
-            className="flex items-center justify-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-full font-semibold hover:opacity-90 transition-opacity text-sm cursor-pointer"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-full font-semibold hover:opacity-90 transition-opacity text-xs sm:text-sm cursor-pointer whitespace-nowrap shadow-xs"
           >
             <Plus className="w-4 h-4" /> New Booking
           </button>
@@ -269,7 +269,7 @@ export function Bookings() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1.5 p-1 bg-card border border-border rounded-lg overflow-x-auto">
+      <div className="flex gap-1.5 p-1 bg-card border border-border rounded-lg overflow-x-auto -mx-1 sm:mx-0 px-1 sm:px-1">
         {tabs.map(tab => {
           const count = tab === 'All' ? bookings.length : (statusCounts[tab] || 0);
           return (
@@ -292,18 +292,18 @@ export function Bookings() {
       </div>
 
       {/* Toolbar */}
-      <div className="flex items-center justify-between bg-card p-4 rounded-t-xl border border-border border-b-0 shrink-0">
-        <div className="relative w-full max-w-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-card p-3 sm:p-4 rounded-t-xl border border-border border-b-0 shrink-0">
+        <div className="relative w-full sm:max-w-sm">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/80" />
           <input 
             type="text" 
             placeholder="Search by guest, ID, phone..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border border-border rounded-md text-sm focus:outline-none focus:border-primary"
+            className="w-full pl-9 pr-4 py-2 border border-border rounded-lg text-sm bg-background text-foreground focus:outline-none focus:border-primary"
           />
         </div>
-        <div className="text-sm text-muted-foreground">
+        <div className="text-xs sm:text-sm text-muted-foreground">
           Showing {filteredBookings.length} results
         </div>
       </div>
@@ -315,7 +315,7 @@ export function Bookings() {
         className="bg-card border text-sm border-border rounded-b-xl overflow-y-auto overflow-x-auto overscroll-contain flex-1 min-h-[350px] max-h-[calc(100vh-270px)]"
         style={{ overscrollBehavior: 'contain' }}
       >
-        <table className="w-full text-left whitespace-nowrap">
+        <table className="w-full min-w-[850px] text-left whitespace-nowrap">
           <thead className="bg-secondary sticky top-0 z-10">
             <tr className="border-b border-border text-xs font-semibold text-foreground">
               <th className="px-4 py-3"><input type="checkbox" className="rounded" /></th>

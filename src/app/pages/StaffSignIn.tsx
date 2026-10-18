@@ -46,25 +46,26 @@ export function StaffSignIn() {
     };
 
     try {
+      // 3.5 second network timeout so slow/sleeping cold servers don't lock up the login screen
       const result = await apiFetch('/api/auth/login', {
         method: 'POST',
         body: JSON.stringify({
           userId: userId.trim(),
           password
         })
-      });
+      }, { timeoutMs: 3500 });
 
       if (result.token && result.user) {
-        login(result.user, result.token);
+        await login(result.user, result.token);
       } else {
         throw new Error('Unexpected response from server.');
       }
     } catch (err: any) {
-      // Offline fallback: allow local sign-in if credentials match staff records
+      // Offline fallback: allow local sign-in instantly if credentials match staff records
       if (OFFLINE_CREDENTIALS[cleanId] && OFFLINE_CREDENTIALS[cleanId].pass === password) {
         const fallback = OFFLINE_CREDENTIALS[cleanId];
         const syntheticToken = `mock-token-${cleanId}-${Date.now()}`;
-        login(fallback.user, syntheticToken);
+        await login(fallback.user, syntheticToken);
         return;
       }
       setError(err.message || 'Invalid User ID or Password.');
@@ -124,8 +125,8 @@ export function StaffSignIn() {
       </div>
 
       {/* Right Panel: Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background">
-        <div className="w-full max-w-md bg-card p-8 md:p-10 rounded-xl border border-border shadow-none">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 bg-background">
+        <div className="w-full max-w-md bg-card p-5 sm:p-8 md:p-10 rounded-xl border border-border shadow-none">
           <div className="mb-8 text-center">
             <h2 className="text-2xl font-bold text-foreground tracking-tight mb-1.5">Staff Sign In</h2>
             <p className="text-sm text-muted-foreground">Sign in to access property management</p>

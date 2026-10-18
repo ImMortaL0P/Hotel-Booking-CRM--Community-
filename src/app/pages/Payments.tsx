@@ -56,7 +56,7 @@ export function Payments() {
 
   return (
     <div className="space-y-6 h-full flex flex-col relative print:m-0 print:p-0 print:block">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
         <div>
           <div className="flex flex-col">
             <h1 className="text-2xl font-bold text-foreground">Payments Ledger</h1>
@@ -83,7 +83,7 @@ export function Payments() {
               exportToCsv('payments_export', exportData);
               addLog('File Download', 'Exported Payments to CSV');
             }}
-            className="flex items-center justify-center gap-2 bg-secondary text-secondary-foreground border border-border px-4 py-2.5 rounded-lg font-medium hover:bg-muted/50 transition-colors text-sm"
+            className="flex items-center justify-center gap-2 bg-secondary text-secondary-foreground border border-border px-4 py-2.5 rounded-lg font-medium hover:bg-muted/50 transition-colors text-sm w-full sm:w-auto"
           >
             <Download className="w-4 h-4" /> Export CSV
           </button>
@@ -91,7 +91,7 @@ export function Payments() {
       </div>
 
       {/* 4 Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 shrink-0 print:hidden">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 shrink-0 print:hidden">
         <div className="bg-card p-5 rounded-lg border border-border border-l-4 border-l-green-600 flex flex-col justify-between">
           <div className="flex justify-between items-start mb-2">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Collections</span>
@@ -134,11 +134,11 @@ export function Payments() {
       </div>
 
       {/* Toolbar */}
-      <div className="flex items-center justify-between bg-card p-4 rounded-t-xl border border-border border-b-0 shrink-0 mt-4 print:hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card p-4 rounded-t-xl border border-border border-b-0 shrink-0 mt-4 print:hidden">
         <h2 className="font-bold text-primary flex items-center gap-2">
           <FileText className="w-5 h-5"/> Transaction History
         </h2>
-        <div className="relative w-64">
+        <div className="relative w-full sm:w-64">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input 
             type="text" 
@@ -151,8 +151,8 @@ export function Payments() {
       </div>
 
       {/* Table */}
-      <div className="bg-card border text-sm border-border rounded-b-xl overflow-x-auto flex-1 h-0 print:hidden">
-        <table className="w-full text-left whitespace-nowrap">
+      <div className="bg-card border text-sm border-border rounded-b-xl overflow-x-auto flex-1 min-h-0 print:hidden">
+        <table className="w-full text-left whitespace-nowrap min-w-[720px]">
           <thead className="bg-secondary sticky top-0 z-10 shadow-sm">
             <tr className="border-b border-border text-xs font-semibold text-foreground/80 uppercase">
               <th className="px-4 py-3">Receipt No.</th>
@@ -222,18 +222,18 @@ export function Payments() {
 
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 print:block print:relative print:bg-transparent print:p-0 print:inset-auto">
-            <div className="bg-card rounded-xl shadow-2xl max-w-2xl w-full flex flex-col max-h-full overflow-hidden animate-in zoom-in-95 duration-200 print:shadow-none print:max-w-none print:border-none print:overflow-visible">
+            <div className="bg-card rounded-xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200 print:shadow-none print:max-w-none print:border-none print:overflow-visible">
               {/* Actions Header */}
-              <div className="px-6 py-4 border-b border-border/50 flex justify-between items-center bg-muted/50 shrink-0 print:hidden">
-                <h3 className="font-bold text-foreground flex items-center gap-2">
-                  <FileText className="w-5 h-5"/> Payment Receipt
+              <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border/50 flex flex-wrap justify-between items-center gap-2 bg-muted/50 shrink-0 print:hidden">
+                <h3 className="font-bold text-foreground flex items-center gap-2 text-sm sm:text-base">
+                  <FileText className="w-4 sm:w-5 h-4 sm:h-5"/> Payment Receipt
                 </h3>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
                   <button onClick={() => {
                     window.print();
                     addLog('File Download', 'Printed Payment Receipt ' + selectedReceipt.id);
-                  }} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-foreground bg-card border border-border rounded hover:bg-muted/50">
-                    <Printer className="w-4 h-4"/> Print
+                  }} className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-semibold text-foreground bg-card border border-border rounded hover:bg-muted/50">
+                    <Printer className="w-3.5 sm:w-4 h-3.5 sm:h-4"/> Print
                   </button>
                   <button onClick={() => {
                     const printable = document.getElementById('printable-receipt');
@@ -257,32 +257,32 @@ export function Payments() {
                            addLog('File Download', 'Downloaded PDF Payment Receipt ' + selectedReceipt.id);
                        });
                     }
-                  }} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-primary bg-card border border-primary rounded hover:bg-red-50">
-                    <Download className="w-4 h-4"/> PDF
+                  }} className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-semibold text-primary bg-card border border-primary rounded hover:bg-red-50">
+                    <Download className="w-3.5 sm:w-4 h-3.5 sm:h-4"/> PDF
                   </button>
-                  <button onClick={() => setSelectedReceipt(null)} className="p-1.5 hover:bg-muted rounded-full ml-4">
+                  <button onClick={() => setSelectedReceipt(null)} className="p-1.5 hover:bg-muted rounded-full ml-1 sm:ml-4">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
               </div>
 
               {/* Printable Area */}
-              <div className="p-8 overflow-y-auto bg-card" id="printable-receipt">
+              <div className="p-4 sm:p-8 overflow-y-auto bg-card" id="printable-receipt">
                 <div className="text-center mb-6">
-                  <h1 className="text-3xl font-bold text-primary uppercase tracking-wider font-serif">Sharda Palace</h1>
-                  <p className="text-sm text-foreground/80 mt-1">Main Shivganga Road, Bam Bam Baba Path, near Matri Mandir<br/>Deoghar, Jharkhand 814112</p>
-                  <p className="text-sm text-foreground/80 font-medium mt-1">Ph: +91 79707 35251 | GSTIN: 20XXXXX1234X1ZX</p>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-primary uppercase tracking-wider font-serif">Sharda Palace</h1>
+                  <p className="text-xs sm:text-sm text-foreground/80 mt-1">Main Shivganga Road, Bam Bam Baba Path, near Matri Mandir<br/>Deoghar, Jharkhand 814112</p>
+                  <p className="text-xs sm:text-sm text-foreground/80 font-medium mt-1">Ph: +91 79707 35251 | GSTIN: 20XXXXX1234X1ZX</p>
                 </div>
 
-                <div className="flex justify-between items-end border-b-2 border-primary pb-4 mb-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b-2 border-primary pb-4 mb-6 gap-2">
                   <div>
-                    <h2 className="text-xl font-bold text-foreground tracking-wide uppercase">Payment Receipt</h2>
+                    <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-wide uppercase">Payment Receipt</h2>
                     <p className="text-muted-foreground font-medium mt-1 text-sm">Receipt No: <strong>{selectedReceipt.id}</strong></p>
                     <p className="text-muted-foreground font-medium text-sm">Date: {formatDate(selectedReceipt.date)} {new Date(selectedReceipt.date).toLocaleTimeString()}</p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-8 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 mb-8">
                   <div>
                     <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Billed To</h4>
                     <p className="font-bold text-foreground text-lg">{_guest?.name || 'Walk-in Guest'}</p>

@@ -191,20 +191,20 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto font-sans">
-      <div className="bg-card rounded-2xl border border-border shadow-2xl w-full max-w-2xl overflow-hidden my-8">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto font-sans">
+      <div className="bg-card rounded-2xl border border-border shadow-2xl w-full max-w-2xl overflow-hidden my-4 sm:my-8 animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="p-6 bg-card border-b border-border flex items-center justify-between">
+        <div className="p-4 sm:p-6 bg-card border-b border-border flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-foreground tracking-tight">New Booking</h2>
-            <p className="text-xs text-muted-foreground font-mono mt-0.5">Register walk-in or phone reservation at Sharda Palace</p>
+            <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">New Booking</h2>
+            <p className="text-[11px] sm:text-xs text-muted-foreground font-mono mt-0.5">Register walk-in or phone reservation at Sharda Palace</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-full bg-secondary hover:bg-muted text-foreground transition-colors cursor-pointer">
+          <button onClick={onClose} className="p-1.5 rounded-full bg-secondary hover:bg-muted text-foreground transition-colors cursor-pointer shrink-0">
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-5 sm:space-y-6 max-h-[82vh] overflow-y-auto">
           {/* 1. Guest Information */}
           <div>
             <h3 className="font-mono text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2 mb-3">
@@ -444,17 +444,17 @@ export function NewBookingModal({ isOpen, onClose, defaultRoomId, defaultDate, d
           </div>
 
           {/* Footer Actions */}
-          <div className="pt-4 border-t border-border flex justify-end items-center gap-3">
+          <div className="pt-4 border-t border-border flex flex-col-reverse sm:flex-row justify-end items-stretch sm:items-center gap-2 sm:gap-3">
             <button 
               type="button" 
               onClick={onClose}
-              className="chip py-2 px-4 cursor-pointer"
+              className="chip py-2 px-4 cursor-pointer justify-center text-center w-full sm:w-auto"
             >
               Cancel
             </button>
             <button 
               type="submit"
-              className="pill-vermilion text-xs cursor-pointer py-2.5 px-6"
+              className="pill-vermilion text-xs cursor-pointer py-2.5 px-6 justify-center text-center w-full sm:w-auto"
             >
               Confirm Booking
             </button>

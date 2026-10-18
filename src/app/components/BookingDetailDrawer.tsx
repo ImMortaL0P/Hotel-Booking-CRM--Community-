@@ -123,12 +123,20 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
   // Parse a stay datetime, treating a midnight (00:00) value as "no time given"
   // and applying house defaults: 12:00 PM check-in, 11:00 AM check-out.
   const formatStayDateTime = (dtStr: string, defaultHour: number) => {
+    if (!dtStr) return '—';
+    if (dtStr.endsWith('Z') || /[+-]\d{2}:?\d{2}$/.test(dtStr)) {
+      const d = new Date(dtStr);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleString('default', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+      }
+    }
     if (dtStr.includes('T')) {
       const [datePart, timePart] = dtStr.split('T');
-      const [h, min] = timePart.split(':');
-      const isMidnight = h === '00' && (min === '00' || !min);
+      const cleanTime = timePart.replace(/[^0-9:]/g, '');
+      const [h, min] = cleanTime.split(':');
+      const isMidnight = (h === '00' || !h) && (min === '00' || !min);
       const hour = isMidnight ? defaultHour : Number(h);
-      return new Date(`${datePart}T${String(hour).padStart(2, '0')}:${isMidnight ? '00' : min}:00`).toLocaleString('default', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+      return new Date(`${datePart}T${String(hour).padStart(2, '0')}:${isMidnight ? '00' : (min || '00')}:00`).toLocaleString('default', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
     }
     return formatDate(dtStr);
   };
@@ -137,17 +145,17 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
     <div className="fixed inset-0 z-[100] flex justify-end font-sans">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-xs" onClick={onClose}></div>
       <div className="relative w-full max-w-lg bg-background h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300 border-l border-border">
-        <div className="p-4 border-b border-border bg-card flex items-center justify-between shrink-0">
+        <div className="p-3.5 sm:p-4 border-b border-border bg-card flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
             <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Folio</span>
-            <h2 className="text-lg font-bold font-mono text-primary">{booking.id}</h2>
+            <h2 className="text-base sm:text-lg font-bold font-mono text-primary">{booking.id}</h2>
           </div>
           <button onClick={onClose} className="p-1.5 bg-secondary hover:bg-muted text-foreground rounded-full transition-colors cursor-pointer">
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
           <div className="flex items-center gap-4 p-4 bg-card rounded-xl shadow-sm border border-border">
             <div className="w-11 h-11 bg-foreground text-background rounded-full flex items-center justify-center text-lg font-bold font-mono">
               {guest?.avatarInitial || 'G'}

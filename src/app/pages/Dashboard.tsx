@@ -168,11 +168,24 @@ export function Dashboard() {
 
   const COLORS = ['#C2412D', '#6B7A85', '#D9822B', '#2D6A4F', '#17171A', '#8B5CF6', '#0284C7'];
 
-  // Upcoming Arrivals
-  const upcomingArrivals = useMemo(() => bookings
-    .filter(b => b.status === 'Confirmed' || b.status === 'Booked')
-    .sort((a, b) => (a.checkIn || '').localeCompare(b.checkIn || ''))
-    .slice(0, 4), [bookings]);
+  // Upcoming Arrivals (filter for today and future arrivals first, sorted soonest first)
+  const upcomingArrivals = useMemo(() => {
+    const eligible = bookings.filter(b => b.status === 'Confirmed' || b.status === 'Booked');
+
+    const futureOrToday = eligible
+      .filter(b => (b.checkIn || '').split('T')[0] >= today)
+      .sort((a, b) => (a.checkIn || '').localeCompare(b.checkIn || ''));
+
+    if (futureOrToday.length >= 4) {
+      return futureOrToday.slice(0, 4);
+    }
+
+    const past = eligible
+      .filter(b => (b.checkIn || '').split('T')[0] < today)
+      .sort((a, b) => (b.checkIn || '').localeCompare(a.checkIn || ''));
+
+    return [...futureOrToday, ...past].slice(0, 4);
+  }, [bookings, today]);
 
   const recentBookings = useMemo(() => [...bookings]
     .sort((a, b) => (b.checkIn || b.createdAt || '').localeCompare(a.checkIn || a.createdAt || ''))
@@ -181,30 +194,30 @@ export function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Top Header with Tactile Greeting & New Booking CTA */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-1">
-        <div className="flex items-center gap-4">
-          <div className="relative group">
-            <img src={logoUrl} alt="Sharda Palace" className="w-14 h-14 object-contain rounded-2xl p-1 bg-card border border-border/80 shadow-xs transition-transform group-hover:scale-105" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="relative group shrink-0">
+            <img src={logoUrl} alt="Sharda Palace" className="w-12 h-12 sm:w-14 sm:h-14 object-contain rounded-2xl p-1 bg-card border border-border/80 shadow-xs transition-transform group-hover:scale-105" />
             <span className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-background animate-pulse" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight text-card-foreground">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-card-foreground truncate">
                 {getGreeting()}, {user?.name.split(' ')[0]} 🙏
               </h1>
               <span className="hidden sm:inline-flex items-center gap-1 text-[10.5px] font-mono uppercase tracking-wider bg-primary/10 text-primary border border-primary/25 px-2 py-0.5 rounded-full font-semibold">
                 <Sparkles className="w-3 h-3" /> Live Desk
               </span>
             </div>
-            <p className="text-xs font-mono text-muted-foreground mt-0.5">
-              {format(getISTDate(), "EEEE, dd MMM yyyy")} · Hotel Sharda Palace, Deoghar
+            <p className="text-xs font-mono text-muted-foreground mt-0.5 truncate">
+              {format(getISTDate(), "EEEE, dd MMM yyyy")} · Hotel Sharda Palace
             </p>
           </div>
         </div>
 
         <button
           onClick={() => setIsModalOpen(true)}
-          className="group relative inline-flex items-center gap-2.5 bg-primary text-primary-foreground pl-4 pr-3.5 py-2.5 rounded-full font-semibold text-xs uppercase tracking-wider shadow-sm hover:shadow-md hover:bg-primary/95 transition-all tactile-btn cursor-pointer self-start md:self-auto"
+          className="group relative inline-flex items-center justify-center gap-2.5 bg-primary text-primary-foreground px-5 py-2.5 rounded-full font-semibold text-xs uppercase tracking-wider shadow-sm hover:shadow-md hover:bg-primary/95 transition-all tactile-btn cursor-pointer w-full sm:w-auto shrink-0"
         >
           <span>New Reservation</span>
           <span className="w-6 h-6 rounded-full bg-primary-foreground/20 flex items-center justify-center transition-transform group-hover:rotate-90">
@@ -214,7 +227,7 @@ export function Dashboard() {
       </div>
 
       {/* 4 Stat Cards with Double-Bezel Architecture & Staggered Animations */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
         {/* Card 1: Today's Check-ins */}
         <motion.div
           initial={{ opacity: 0, y: 14 }}
@@ -390,26 +403,26 @@ export function Dashboard() {
 
       {/* Channel Analytics */}
       <div className="bg-card/90 p-6 rounded-2xl border border-border/80 shadow-xs tactile-card">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
+          <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-base font-bold text-card-foreground tracking-tight">Channel Performance</h2>
             <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md bg-secondary text-muted-foreground border border-border font-semibold">
               Live Distribution
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <input
               type="date"
               value={channelStartDate}
               onChange={(e) => setChannelStartDate(e.target.value)}
-              className="px-3 py-1.5 text-xs font-mono border border-border/80 rounded-xl bg-background/80 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-xs"
+              className="px-2.5 py-1.5 text-xs font-mono border border-border/80 rounded-xl bg-background/80 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-xs"
             />
             <span className="text-muted-foreground text-xs font-mono">to</span>
             <input
               type="date"
               value={channelEndDate}
               onChange={(e) => setChannelEndDate(e.target.value)}
-              className="px-3 py-1.5 text-xs font-mono border border-border/80 rounded-xl bg-background/80 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-xs"
+              className="px-2.5 py-1.5 text-xs font-mono border border-border/80 rounded-xl bg-background/80 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-xs"
             />
           </div>
         </div>
@@ -440,15 +453,54 @@ export function Dashboard() {
             )}
           </div>
           <div className="lg:col-span-3">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
+            {/* Mobile Card View (< sm screens) */}
+            <div className="block sm:hidden space-y-2.5">
+              {Object.entries(channelStatsBySource)
+                .sort((a, b) => b[1].count - a[1].count)
+                .map(([source, stats], idx) => (
+                  <div key={source} className="p-3 rounded-xl bg-background/60 border border-border/80 flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full shadow-xs shrink-0" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></span>
+                        <span className="font-semibold text-sm text-foreground">{source}</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full bg-secondary text-foreground text-xs font-mono font-bold">
+                        {stats.count} {stats.count === 1 ? 'booking' : 'bookings'}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border/50 font-mono text-[11px]">
+                      <div>
+                        <span className="text-[10px] text-muted-foreground uppercase block">Gross</span>
+                        <span className="font-semibold text-foreground">{formatCurrency(stats.revenue)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-muted-foreground uppercase block">Commission</span>
+                        <span className="font-semibold text-destructive">{formatCurrency(stats.commission)}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] text-muted-foreground uppercase block">Net</span>
+                        <span className="font-bold text-primary">{formatCurrency(stats.netRevenue)}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              {Object.keys(channelStatsBySource).length === 0 && (
+                <div className="py-4 text-center text-muted-foreground font-sans text-sm">
+                  No channel data available for the selected dates.
+                </div>
+              )}
+            </div>
+
+            {/* Desktop Table (>= sm screens) */}
+            <div className="hidden sm:block overflow-x-auto -mx-2 sm:mx-0">
+              <table className="w-full min-w-[520px] text-left text-sm whitespace-nowrap">
                 <thead>
                   <tr className="border-b border-border/70 text-xs font-semibold text-muted-foreground uppercase font-mono">
-                    <th className="pb-3">Source Channel</th>
-                    <th className="pb-3 text-center">Bookings</th>
-                    <th className="pb-3 text-right">Gross Revenue</th>
-                    <th className="pb-3 text-right">Commission</th>
-                    <th className="pb-3 text-right">Net Revenue</th>
+                    <th className="pb-3 px-2 whitespace-nowrap">Source Channel</th>
+                    <th className="pb-3 px-2 text-center whitespace-nowrap">Bookings</th>
+                    <th className="pb-3 px-2 text-right whitespace-nowrap">Gross Revenue</th>
+                    <th className="pb-3 px-2 text-right whitespace-nowrap">Commission</th>
+                    <th className="pb-3 px-2 text-right whitespace-nowrap">Net Revenue</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/40 font-mono text-xs">
@@ -456,14 +508,14 @@ export function Dashboard() {
                     .sort((a, b) => b[1].count - a[1].count)
                     .map(([source, stats], idx) => (
                     <tr key={source} className="hover:bg-muted/40 transition-colors">
-                      <td className="py-3 font-medium text-foreground flex items-center gap-2 font-sans text-sm">
-                        <span className="w-2.5 h-2.5 rounded-full shadow-xs" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></span>
+                      <td className="py-3 px-2 font-medium text-foreground flex items-center gap-2 font-sans text-sm whitespace-nowrap">
+                        <span className="w-2.5 h-2.5 rounded-full shadow-xs shrink-0" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></span>
                         {source}
                       </td>
-                      <td className="py-3 text-center text-foreground font-semibold">{stats.count}</td>
-                      <td className="py-3 text-right font-medium text-foreground">{formatCurrency(stats.revenue)}</td>
-                      <td className="py-3 text-right text-destructive font-medium">{formatCurrency(stats.commission)}</td>
-                      <td className="py-3 text-right font-bold text-primary">{formatCurrency(stats.netRevenue)}</td>
+                      <td className="py-3 px-2 text-center text-foreground font-semibold whitespace-nowrap">{stats.count}</td>
+                      <td className="py-3 px-2 text-right font-medium text-foreground whitespace-nowrap">{formatCurrency(stats.revenue)}</td>
+                      <td className="py-3 px-2 text-right text-destructive font-medium whitespace-nowrap">{formatCurrency(stats.commission)}</td>
+                      <td className="py-3 px-2 text-right font-bold text-primary whitespace-nowrap">{formatCurrency(stats.netRevenue)}</td>
                     </tr>
                   ))}
                   {Object.keys(channelStatsBySource).length === 0 && (
@@ -497,16 +549,53 @@ export function Dashboard() {
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+          {/* Mobile Card View (< sm screens) */}
+          <div className="block sm:hidden space-y-3">
+            {recentBookings.map(b => {
+              const guest = guestById.get(b.guestId);
+              const room = roomById.get(b.roomId);
+              return (
+                <div key={b.id} className="p-3.5 rounded-xl bg-background/60 border border-border/80 flex flex-col gap-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-bold text-primary">{b.id}</span>
+                      <span className="text-xs text-muted-foreground font-mono">Room {room?.number}</span>
+                    </div>
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border font-semibold ${
+                      b.status === 'Checked-In' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25' :
+                      b.status === 'Confirmed' ? 'bg-secondary text-foreground border-border' :
+                      b.status === 'Booked' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25' :
+                      'bg-muted text-muted-foreground border-border'
+                    }`}>
+                      {b.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs pt-1 border-t border-border/50">
+                    <div>
+                      <p className="font-semibold text-foreground tracking-tight">{guest?.name}</p>
+                      <p className="text-[11px] font-mono text-muted-foreground">{guest?.phone || 'No phone'}</p>
+                    </div>
+                    <div className="text-right font-mono">
+                      <p className="font-bold text-foreground text-sm">{formatCurrency(b.total)}</p>
+                      <p className="text-[10px] text-muted-foreground">{formatDate(b.checkIn)}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Table View (>= sm screens) with guaranteed min-width to prevent any overlap */}
+          <div className="hidden sm:block overflow-x-auto -mx-2 sm:mx-0">
+            <table className="w-full min-w-[620px] text-left text-sm whitespace-nowrap">
               <thead>
                 <tr className="border-b border-border/70 text-xs font-semibold text-muted-foreground uppercase font-mono">
-                  <th className="pb-3">Booking ID</th>
-                  <th className="pb-3">Guest</th>
-                  <th className="pb-3">Room</th>
-                  <th className="pb-3">Check-in</th>
-                  <th className="pb-3">Amount</th>
-                  <th className="pb-3">Status</th>
+                  <th className="pb-3 px-2 whitespace-nowrap">Booking ID</th>
+                  <th className="pb-3 px-2 whitespace-nowrap">Guest</th>
+                  <th className="pb-3 px-2 whitespace-nowrap">Room</th>
+                  <th className="pb-3 px-2 whitespace-nowrap">Check-in</th>
+                  <th className="pb-3 px-2 whitespace-nowrap">Amount</th>
+                  <th className="pb-3 px-2 whitespace-nowrap">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
@@ -515,15 +604,15 @@ export function Dashboard() {
                   const room = roomById.get(b.roomId);
                   return (
                     <tr key={b.id} className="hover:bg-muted/40 transition-colors">
-                      <td className="py-3 font-mono text-xs font-bold text-primary">{b.id}</td>
-                      <td className="py-3">
+                      <td className="py-3 px-2 font-mono text-xs font-bold text-primary whitespace-nowrap">{b.id}</td>
+                      <td className="py-3 px-2 whitespace-nowrap">
                         <p className="font-semibold text-card-foreground tracking-tight">{guest?.name}</p>
                         <p className="text-[11px] font-mono text-muted-foreground">{guest?.phone}</p>
                       </td>
-                      <td className="py-3 text-foreground font-mono text-xs">Room {room?.number}</td>
-                      <td className="py-3 text-foreground font-mono text-xs">{formatDate(b.checkIn)}</td>
-                      <td className="py-3 font-bold font-mono text-card-foreground">{formatCurrency(b.total)}</td>
-                      <td className="py-3">
+                      <td className="py-3 px-2 text-foreground font-mono text-xs whitespace-nowrap">Room {room?.number}</td>
+                      <td className="py-3 px-2 text-foreground font-mono text-xs whitespace-nowrap">{formatDate(b.checkIn)}</td>
+                      <td className="py-3 px-2 font-bold font-mono text-card-foreground whitespace-nowrap">{formatCurrency(b.total)}</td>
+                      <td className="py-3 px-2 whitespace-nowrap">
                         <span className={`text-[10.5px] font-mono px-2.5 py-0.5 rounded-full border font-semibold ${
                           b.status === 'Checked-In' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25 shadow-xs' :
                           b.status === 'Confirmed' ? 'bg-secondary text-foreground border-border' :
@@ -647,15 +736,63 @@ export function Dashboard() {
            </button>
         </div>
 
-        <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm border border-border/80 rounded-xl overflow-hidden">
+        {/* Mobile Card View (< sm screens) */}
+        <div className="block sm:hidden space-y-3">
+          {docs.length === 0 ? (
+            <div className="p-6 text-center text-muted-foreground font-sans text-sm bg-background/60 rounded-xl border border-border/80">
+              No documents matched your search query.
+            </div>
+          ) : (
+            docs.map((d: any) => (
+              <div key={d.id || d.documentId} className="p-3.5 rounded-xl bg-background/60 border border-border/80 flex flex-col gap-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono font-bold text-xs text-foreground">{d.documentId}</span>
+                  <span className={`text-[9.5px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider border ${
+                    d.type === 'Invoice' ? 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/25' :
+                    d.type === 'Receipt' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25' :
+                    'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25'
+                  }`}>
+                    {d.type}
+                  </span>
+                </div>
+                <p className="font-sans font-semibold text-xs text-primary truncate" title={d.title}>
+                  {d.title}
+                </p>
+                <div className="text-[11px] font-mono text-muted-foreground">
+                  Saved: {new Date(d.createdAt).toLocaleString()}
+                </div>
+                <div className="flex items-center gap-2 pt-2 border-t border-border/50 flex-wrap">
+                  <a href={d.webViewLink} target="_blank" rel="noreferrer" className="flex-1 min-w-[70px] text-center tactile-btn text-xs font-bold bg-secondary border border-border/80 py-2 rounded-lg hover:bg-muted text-foreground transition-all shadow-xs">
+                    View
+                  </a>
+                  <a href={d.webContentLink} target="_blank" rel="noreferrer" className="flex-1 min-w-[110px] text-center tactile-btn text-xs font-bold bg-primary text-primary-foreground py-2 rounded-lg hover:opacity-90 transition-all shadow-xs">
+                    Download PDF
+                  </a>
+                  <button
+                    onClick={() => handleDeleteDoc(d._id || d.id || d.documentId, d.documentId)}
+                    disabled={deletingDocId === (d._id || d.id || d.documentId)}
+                    className="tactile-btn text-xs font-bold text-destructive bg-destructive/10 hover:bg-destructive hover:text-destructive-foreground border border-destructive/30 px-3 py-2 rounded-lg transition-all flex items-center justify-center gap-1 disabled:opacity-50 cursor-pointer shadow-xs"
+                    title="Delete file permanently"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>{deletingDocId === (d._id || d.id || d.documentId) ? 'Deleting...' : 'Delete'}</span>
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop Table (>= sm screens) */}
+        <div className="hidden sm:block overflow-x-auto -mx-2 sm:mx-0">
+            <table className="w-full min-w-[640px] text-left text-sm border border-border/80 rounded-xl overflow-hidden whitespace-nowrap">
                 <thead className="bg-secondary/60">
                    <tr className="text-xs font-semibold text-muted-foreground uppercase font-mono">
-                      <th className="px-4 py-3 border-b border-border/70">Doc ID</th>
-                      <th className="px-4 py-3 border-b border-border/70">Title</th>
-                      <th className="px-4 py-3 border-b border-border/70">Type</th>
-                      <th className="px-4 py-3 border-b border-border/70">Saved Date</th>
-                      <th className="px-4 py-3 border-b border-border/70">Actions</th>
+                      <th className="px-4 py-3 border-b border-border/70 whitespace-nowrap">Doc ID</th>
+                      <th className="px-4 py-3 border-b border-border/70 whitespace-nowrap">Title</th>
+                      <th className="px-4 py-3 border-b border-border/70 whitespace-nowrap">Type</th>
+                      <th className="px-4 py-3 border-b border-border/70 whitespace-nowrap">Saved Date</th>
+                      <th className="px-4 py-3 border-b border-border/70 whitespace-nowrap">Actions</th>
                    </tr>
                 </thead>
                 <tbody className="divide-y divide-border/40 font-mono text-xs">
@@ -668,9 +805,9 @@ export function Dashboard() {
                     ) : (
                         docs.map((d: any) => (
                            <tr key={d.id} className="hover:bg-muted/40 transition-colors">
-                              <td className="px-4 py-3 font-bold text-foreground">{d.documentId}</td>
-                              <td className="px-4 py-3 font-semibold text-primary max-w-[200px] truncate font-sans text-xs" title={d.title}>{d.title}</td>
-                              <td className="px-4 py-3">
+                              <td className="px-4 py-3 font-bold text-foreground whitespace-nowrap">{d.documentId}</td>
+                              <td className="px-4 py-3 font-semibold text-primary max-w-[200px] truncate font-sans text-xs whitespace-nowrap" title={d.title}>{d.title}</td>
+                              <td className="px-4 py-3 whitespace-nowrap">
                                   <span className={`text-[9.5px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider border ${
                                       d.type === 'Invoice' ? 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/25' :
                                       d.type === 'Receipt' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25' :
@@ -679,10 +816,10 @@ export function Dashboard() {
                                       {d.type}
                                   </span>
                               </td>
-                              <td className="px-4 py-3 text-muted-foreground">
+                              <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
                                   {new Date(d.createdAt).toLocaleString()}
                               </td>
-                              <td className="px-4 py-3">
+                              <td className="px-4 py-3 whitespace-nowrap">
                                  <div className="flex items-center gap-2">
                                      <a href={d.webViewLink} target="_blank" rel="noreferrer" className="tactile-btn text-xs font-bold bg-secondary border border-border/80 px-3 py-1.5 rounded-lg hover:bg-muted text-foreground transition-all shadow-xs">
                                         View

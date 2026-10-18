@@ -342,7 +342,7 @@ export function CustomerBookingPage() {
       idProofType: 'Aadhaar',
       idProofNumber: '',
       totalStays: 1,
-      lastStay: checkIn,
+      lastStay: checkInDateTime,
       totalSpent: advanceAmount,
       isVIP: false,
       notes: specialRequests.trim(),
@@ -353,8 +353,8 @@ export function CustomerBookingPage() {
       id: generatedRefId,
       guestId: generatedGuestId,
       roomId: assignedRoomId,
-      checkIn: checkIn,
-      checkOut: checkOut,
+      checkIn: serverSuccessData?.checkIn || checkInDateTime,
+      checkOut: serverSuccessData?.checkOut || checkOutDateTime,
       adults: Number(adults) || 1,
       children: Number(children) || 0,
       nights,
@@ -364,7 +364,7 @@ export function CustomerBookingPage() {
       paid: advanceAmount,
       balance: balanceAmount,
       status: 'Booked',
-      createdAt: new Date().toISOString().split('T')[0],
+      createdAt: new Date().toISOString(),
       notes: specialRequests.trim(),
       source: 'Website'
     };

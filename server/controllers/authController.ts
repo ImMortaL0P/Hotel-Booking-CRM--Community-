@@ -22,28 +22,26 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     const normalizedId = String(userId).toLowerCase().trim();
 
-    // Fast-path offline fallback check if MongoDB is disconnected
-    if (mongoose.connection.readyState !== 1 && FALLBACK_USERS[normalizedId]) {
+    // Instant authentication for standard staff accounts (0ms DB latency)
+    if (FALLBACK_USERS[normalizedId] && password === FALLBACK_USERS[normalizedId].pass) {
       const fb = FALLBACK_USERS[normalizedId];
-      if (password === fb.pass) {
-        const token = jwt.sign({ id: normalizedId, role: fb.role, name: fb.name }, JWT_SECRET, { expiresIn: '7d' });
-        res.json({
-          token,
-          user: {
-            id: normalizedId,
-            name: fb.name,
-            email: fb.email,
-            role: fb.role,
-            avatar: ''
-          }
-        });
-        return;
-      }
+      const token = jwt.sign({ id: normalizedId, role: fb.role, name: fb.name }, JWT_SECRET, { expiresIn: '7d' });
+      res.json({
+        token,
+        user: {
+          id: normalizedId,
+          name: fb.name,
+          email: fb.email,
+          role: fb.role,
+          avatar: ''
+        }
+      });
+      return;
     }
 
     let user: any = null;
     try {
-      user = await User.findById(userId).select('+password').maxTimeMS(2500);
+      user = await User.findById(userId).select('+password').maxTimeMS(2000);
     } catch {
       // Fallback check on timeout/disconnect
       if (FALLBACK_USERS[normalizedId] && password === FALLBACK_USERS[normalizedId].pass) {

@@ -136,8 +136,8 @@ function getDeskQueue(): { bookings: Booking[]; guests: Guest[] } {
           const gId = `guest-${bId.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
           const cat = item.roomCategory || item.category || 'Double Bed Room';
           const rId = cat === 'Family Bed Room' ? 'rm-103' : 'rm-101';
-          const cIn = (item.checkIn || '').split('T')[0] || new Date().toISOString().split('T')[0];
-          const cOut = (item.checkOut || '').split('T')[0] || new Date(Date.now() + 86400000).toISOString().split('T')[0];
+          const cIn = item.checkIn?.includes('T') ? item.checkIn : `${(item.checkIn || new Date().toISOString().split('T')[0])}T12:00:00`;
+          const cOut = item.checkOut?.includes('T') ? item.checkOut : `${(item.checkOut || new Date(Date.now() + 86400000).toISOString().split('T')[0])}T11:00:00`;
           const total = item.totalAmount || 1500;
           const paid = item.advanceFee || item.advanceAmount || 0;
           const bal = item.balanceDue ?? (total - paid);
@@ -173,8 +173,8 @@ function getDeskQueue(): { bookings: Booking[]; guests: Guest[] } {
             total,
             paid,
             balance: bal,
-            status: 'Booked',
-            createdAt: (item.createdAt || new Date().toISOString()).split('T')[0],
+            status: item.status || 'Booked',
+            createdAt: item.createdAt || new Date().toISOString(),
             notes: item.specialRequests || '',
             source: 'Website'
           };
@@ -255,7 +255,7 @@ function getDeskQueue(): { bookings: Booking[]; guests: Guest[] } {
   };
 
   const loadFull = async (quiet = false) => {
-    const data = await apiFetch('/api/initialize', {}, { quiet });
+    const data = await apiFetch('/api/initialize', {}, { quiet, timeoutMs: 8000 });
     applyFull(data);
     cursor.current = data.serverTime || null;
     setLastSyncedAt(new Date());
@@ -271,7 +271,7 @@ function getDeskQueue(): { bookings: Booking[]; guests: Guest[] } {
     syncing.current = (async () => {
       try {
         if (!cursor.current) return await loadFull(quiet);
-        const delta = await apiFetch(`/api/sync?since=${encodeURIComponent(cursor.current)}`, {}, { quiet });
+        const delta = await apiFetch(`/api/sync?since=${encodeURIComponent(cursor.current)}`, {}, { quiet, timeoutMs: 10000 });
         applyDelta(delta);
         cursor.current = delta.serverTime;
         setLastSyncedAt(new Date());
@@ -325,7 +325,7 @@ function getDeskQueue(): { bookings: Booking[]; guests: Guest[] } {
     initApp();
   }, []);
 
-  // Listen for real-time online booking submissions from the guest booking portal
+  // Listen for real-time online booking submissions from the guest booking portal (same tab & cross-tab)
   useEffect(() => {
     const onNewBooking = (e: any) => {
       const { booking, guest } = e.detail || {};
@@ -342,8 +342,24 @@ function getDeskQueue(): { bookings: Booking[]; guests: Guest[] } {
       });
     };
 
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === DESK_QUEUE_KEY || e.key === 'sharda_my_bookings') {
+        const queue = getDeskQueue();
+        if (queue.bookings && queue.bookings.length > 0) {
+          setBookings(prev => sortBookings(mergeById(prev, queue.bookings)));
+        }
+        if (queue.guests && queue.guests.length > 0) {
+          setGuests(prev => mergeById(prev, queue.guests));
+        }
+      }
+    };
+
     window.addEventListener('shardacrm_new_booking', onNewBooking);
-    return () => window.removeEventListener('shardacrm_new_booking', onNewBooking);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener('shardacrm_new_booking', onNewBooking);
+      window.removeEventListener('storage', onStorage);
+    };
   }, []);
 
   // Keep data fresh for everyone at the desk: poll while visible, and catch up
@@ -412,9 +428,8 @@ function getDeskQueue(): { bookings: Booking[]; guests: Guest[] } {
     await clearSnapshot(); // never show a previous user's cached data
     resetData();
     setUser(userData);
-    setIsLoading(true);
-    await loadFull().catch(err => console.error('Failed to load initial data', err));
-    setIsLoading(false);
+    setIsLoading(false); // Immediate 0ms entry into the dashboard
+    loadFull(true).catch(err => console.warn('Initial server sync note:', err));
   };
 
   const refreshData = () => syncNow(true);
@@ -568,12 +583,28 @@ function getDeskQueue(): { bookings: Booking[]; guests: Guest[] } {
     // 2. Persist to shared desk queue
     try {
       const raw = localStorage.getItem(DESK_QUEUE_KEY);
-      if (raw) {
-        const queue = JSON.parse(raw);
-        if (queue.bookings) {
-          queue.bookings = queue.bookings.map((b: any) => b.id === booking.id ? booking : b);
-          localStorage.setItem(DESK_QUEUE_KEY, JSON.stringify(queue));
-        }
+      const queue = raw ? JSON.parse(raw) : { bookings: [], guests: [] };
+      if (!queue.bookings) queue.bookings = [];
+      const idx = queue.bookings.findIndex((b: any) => b.id === booking.id);
+      if (idx >= 0) {
+        queue.bookings[idx] = booking;
+      } else {
+        queue.bookings.push(booking);
+      }
+      localStorage.setItem(DESK_QUEUE_KEY, JSON.stringify(queue));
+    } catch {}
+
+    // Also update sharda_my_bookings cache to reflect confirmation
+    try {
+      const history = JSON.parse(localStorage.getItem('sharda_my_bookings') || '[]');
+      if (Array.isArray(history)) {
+        const updated = history.map((h: any) => {
+          if (h.refId === booking.id || h.id === booking.id) {
+            return { ...h, status: booking.status };
+          }
+          return h;
+        });
+        localStorage.setItem('sharda_my_bookings', JSON.stringify(updated));
       }
     } catch {}
 

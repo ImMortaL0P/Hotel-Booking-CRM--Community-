@@ -15,14 +15,16 @@ export class ApiError extends Error {
 interface ApiFetchOptions {
   /** Background calls (sync polling): no "waking up" / error toasts */
   quiet?: boolean;
+  /** Request timeout in ms (default 30000) */
+  timeoutMs?: number;
 }
 
-export async function apiFetch(endpoint: string, options: RequestInit = {}, { quiet = false }: ApiFetchOptions = {}) {
+export async function apiFetch(endpoint: string, options: RequestInit = {}, { quiet = false, timeoutMs = 30000 }: ApiFetchOptions = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
 
-  // Standard timeout for network requests (30 seconds)
+  // Configurable timeout for network requests
   const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), 30000);
+  const id = setTimeout(() => controller.abort(), timeoutMs);
 
   const token = localStorage.getItem('token');
 
@@ -41,11 +43,14 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}, { qu
 
     if (!response.ok) {
       if (response.status === 401 && !endpoint.includes('/auth/login')) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        // Don't leave the last user's data cached in the browser
-        await clearSnapshot().catch(() => {});
-        window.location.href = '/';
+        // Do not force-redirect if running on local offline synthetic token
+        if (!token?.startsWith('mock-token-')) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          // Don't leave the last user's data cached in the browser
+          await clearSnapshot().catch(() => {});
+          window.location.href = '/';
+        }
       }
       // Prefer the server's explanation ("Expense validation failed: ...") over the bare status
       const body = await response.json().catch(() => null);

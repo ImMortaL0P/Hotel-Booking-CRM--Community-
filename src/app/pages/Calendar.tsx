@@ -14,6 +14,18 @@ export function Calendar() {
     const m = searchParams.get('date')?.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : new Date();
   });
+
+  // Sync date when URL query param changes
+  useEffect(() => {
+    const dateParam = searchParams.get('date');
+    if (dateParam) {
+      const m = dateParam.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (m) {
+        setCurrentDate(new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+      }
+    }
+  }, [searchParams]);
+
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [prefilledBooking, setPrefilledBooking] = useState<{roomId?: string, checkIn?: string, checkOut?: string}>({});
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -73,8 +85,19 @@ export function Calendar() {
   const bookingsByRoom = useMemo(() => {
     const map: Record<string, typeof bookings> = {};
     bookings.forEach(b => {
-      if (!map[b.roomId]) map[b.roomId] = [];
-      map[b.roomId].push(b);
+      if (!b.roomId) return;
+      const key = b.roomId;
+      if (!map[key]) map[key] = [];
+      map[key].push(b);
+      if (key.startsWith('rm-')) {
+        const numKey = key.replace('rm-', '');
+        if (!map[numKey]) map[numKey] = [];
+        map[numKey].push(b);
+      } else {
+        const rmKey = `rm-${key}`;
+        if (!map[rmKey]) map[rmKey] = [];
+        map[rmKey].push(b);
+      }
     });
     return map;
   }, [bookings]);
@@ -102,13 +125,13 @@ export function Calendar() {
   return (
     <div className="flex flex-col h-full bg-card rounded-xl border border-border overflow-hidden shadow-sm font-sans">
       {/* Header */}
-      <div className="p-4 border-b border-border flex items-center justify-between shrink-0 bg-card">
-        <div className="flex items-center gap-4">
-          <div className="w-80">
-            <h1 className="text-base font-bold text-foreground font-mono tracking-tight">{titleDate}</h1>
+      <div className="p-3 sm:p-4 border-b border-border flex flex-col lg:flex-row lg:items-center justify-between gap-3 shrink-0 bg-card">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="w-full sm:w-80">
+            <h1 className="text-sm sm:text-base font-bold text-foreground font-mono tracking-tight">{titleDate}</h1>
             <span className="text-[10px] font-mono uppercase text-muted-foreground tracking-wider">Hotel Operational Cycle · 11:00 AM Checkout</span>
           </div>
-          <div className="flex bg-background rounded-full border border-border overflow-hidden shadow-sm items-center p-0.5">
+          <div className="flex bg-background rounded-full border border-border overflow-hidden shadow-sm items-center p-0.5 self-start sm:self-auto max-w-full">
             <button onClick={prevDay} className="px-2.5 py-1 hover:bg-muted border-r border-border text-foreground transition-colors cursor-pointer"><ChevronLeft className="w-4 h-4"/></button>
             <input
               type="date"
@@ -119,13 +142,13 @@ export function Calendar() {
                   setCurrentDate(new Date(Number(y), Number(m) - 1, Number(d)));
                 }
               }}
-              className="px-2.5 py-1 text-xs font-mono bg-transparent border-r border-border focus:outline-none text-foreground cursor-pointer"
+              className="px-2 sm:px-2.5 py-1 text-xs font-mono bg-transparent border-r border-border focus:outline-none text-foreground cursor-pointer"
             />
-            <button onClick={goToToday} className="px-3.5 py-1 text-xs font-mono font-medium hover:bg-muted text-foreground border-r border-border transition-colors cursor-pointer">Today</button>
+            <button onClick={goToToday} className="px-2.5 sm:px-3.5 py-1 text-xs font-mono font-medium hover:bg-muted text-foreground border-r border-border transition-colors cursor-pointer">Today</button>
             <button onClick={nextDay} className="px-2.5 py-1 hover:bg-muted text-foreground transition-colors cursor-pointer"><ChevronRight className="w-4 h-4"/></button>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-xs font-mono">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-mono">
           <div className="chip gap-1.5"><div className="w-2 h-2 bg-green-500 rounded-full"></div> Checked-In</div>
           <div className="chip gap-1.5"><div className="w-2 h-2 bg-blue-500 rounded-full"></div> Confirmed</div>
           <div className="chip gap-1.5"><div className="w-2 h-2 bg-amber-500 rounded-full"></div> Booked</div>
@@ -209,8 +232,8 @@ export function Calendar() {
                   </div>
 
                   {catRooms.map((room) => {
-                    // Check bookings for this room
-                    const roomBookings = bookingsByRoom[room.id] || [];
+                    // Check bookings for this room (resilient to rm-101 or 101)
+                    const roomBookings = bookingsByRoom[room.id] || bookingsByRoom[room.number] || bookingsByRoom[`rm-${room.number}`] || [];
 
                     return (
                       <div key={room.id} className="flex relative hover:bg-muted/30 group transition-colors">
@@ -249,20 +272,31 @@ export function Calendar() {
                             const guestMatch = guestById.get(booking.guestId);
                             const guestName = guestMatch?.name || booking.guestId;
 
-                            const parseDateTime = (dtStr: string, defaultHour: number) => {
+                            const parseDateTime = (dtStr: string, defaultHour: number): number => {
+                              if (!dtStr) return 0;
+                              // 1. Timezone-explicit strings ('Z' or +05:30 / -05:00) parse directly with native Date
+                              if (dtStr.endsWith('Z') || /[+-]\d{2}:?\d{2}$/.test(dtStr)) {
+                                const parsed = new Date(dtStr).getTime();
+                                if (!isNaN(parsed)) return parsed;
+                              }
+                              // 2. ISO local string with time (YYYY-MM-DDTHH:mm:ss)
                               if (dtStr.includes('T')) {
                                 const [datePart, timePart] = dtStr.split('T');
                                 const [y, m, d] = datePart.split('-');
-                                const [h, min] = timePart.split(':');
-                                // 00:00 time means the date has no time (e.g. Excel date-only import)
-                                // → apply the default hour instead of midnight
-                                if (h === '00' && (min === '00' || !min)) {
+                                const cleanTime = timePart.replace(/[^0-9:]/g, '');
+                                const [h, min] = cleanTime.split(':');
+                                if ((h === '00' || !h) && (min === '00' || !min)) {
                                   return new Date(Number(y), Number(m) - 1, Number(d), defaultHour, 0, 0).getTime();
                                 }
-                                return new Date(Number(y), Number(m) - 1, Number(d), Number(h), Number(min || 0), 0).getTime();
+                                return new Date(Number(y), Number(m) - 1, Number(d), Number(h || defaultHour), Number(min || 0), 0).getTime();
                               }
-                              const [y, m, d] = dtStr.split('T')[0].split('-');
-                              return new Date(Number(y), Number(m) - 1, Number(d), defaultHour, 0, 0).getTime();
+                              // 3. Date-only string (YYYY-MM-DD)
+                              const parts = dtStr.split('-');
+                              if (parts.length >= 3) {
+                                return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]), defaultHour, 0, 0).getTime();
+                              }
+                              const parsed = new Date(dtStr).getTime();
+                              return isNaN(parsed) ? 0 : parsed;
                             };
 
                             // Check-in default 12:00 PM

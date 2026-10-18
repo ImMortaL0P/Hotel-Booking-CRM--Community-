@@ -149,7 +149,7 @@ export function Checkout() {
     import('sonner').then(({ toast }) => toast.info("Please select 'Save as PDF' from the destination dropdown natively for faster and better quality capture."));
     window.print();
     if (finalInvoiceData) {
-      addLog('File Download', `Downloaded PDF checkout invoice for ${finalInvoiceData.guest.name}`);
+      addLog('File Download', `Downloaded PDF checkout invoice for ${finalInvoiceData.billedTo.name}`);
     } else if (guest) {
       addLog('File Download', `Downloaded PDF checkout invoice for ${guest.name}`);
     }
@@ -157,21 +157,21 @@ export function Checkout() {
 
   return (
     <div className="max-w-5xl mx-auto flex flex-col h-full print:m-0 print:p-0 print:w-full print:max-w-none">
-      <div className="mb-8 print:hidden">
-        <h1 className="text-2xl font-bold text-foreground font-display tracking-tight flex items-center gap-3">
-          <Receipt className="text-primary w-7 h-7" />
+      <div className="mb-6 sm:mb-8 print:hidden">
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground font-display tracking-tight flex items-center gap-3">
+          <Receipt className="text-primary w-6 h-6 sm:w-7 sm:h-7" />
           Checkout & Bill Operations
         </h1>
-        <p className="text-muted-foreground text-sm mt-1">Generate final invoices and checkout guests</p>
+        <p className="text-muted-foreground text-xs sm:text-sm mt-1">Generate final invoices and checkout guests</p>
       </div>
 
       {!isGenerated ? (
-        <div className="bg-card p-6 rounded-xl shadow-none border border-border mb-8 print:hidden">
-          <h2 className="text-base font-bold text-foreground tracking-tight mb-4">Select Room to Checkout</h2>
-          <div className="flex gap-3 max-w-xl">
-             <div className="relative flex-1">
+        <div className="bg-card p-4 sm:p-6 rounded-xl shadow-none border border-border mb-6 sm:mb-8 print:hidden">
+          <h2 className="text-sm sm:text-base font-bold text-foreground tracking-tight mb-4">Select Room to Checkout</h2>
+          <div className="flex flex-col sm:flex-row gap-3 max-w-xl">
+             <div className="relative flex-1 w-full">
                <select
-                 className="w-full h-11 pl-4 pr-10 rounded-full border border-border bg-background text-foreground focus:border-primary focus:ring-1 focus:ring-primary appearance-none text-sm font-mono cursor-pointer"
+                 className="w-full h-11 pl-4 pr-10 rounded-full border border-border bg-background text-foreground focus:border-primary focus:ring-1 focus:ring-primary appearance-none text-xs sm:text-sm font-mono cursor-pointer"
                  value={selectedRoomId}
                  onChange={e => setSelectedRoomId(e.target.value)}
                >
@@ -182,28 +182,28 @@ export function Checkout() {
                  {activeRooms.length === 0 && !isLoading && <option disabled>No occupied rooms</option>}
                </select>
              </div>
-             <button disabled={!activeBooking} onClick={handleCheckout} className="h-11 px-6 bg-primary text-primary-foreground rounded-full font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm">
+             <button disabled={!activeBooking} onClick={handleCheckout} className="h-11 px-6 bg-primary text-primary-foreground rounded-full font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm w-full sm:w-auto shrink-0">
                Checkout & Save
              </button>
           </div>
         </div>
       ) : (
-        <div className="bg-emerald-500/10 p-6 rounded-xl border border-emerald-500/20 mb-8 print:hidden flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="bg-emerald-500/10 p-4 sm:p-6 rounded-xl border border-emerald-500/20 mb-6 sm:mb-8 print:hidden flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
            <div className="flex items-center gap-3 text-emerald-800 dark:text-emerald-300">
-             <CheckCircle className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
+             <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-emerald-600 dark:text-emerald-400 shrink-0" />
              <div>
-                <h3 className="font-bold text-base">Checkout Completed</h3>
+                <h3 className="font-bold text-sm sm:text-base">Checkout Completed</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">Room is set to cleaning. You can now download or print the invoice.</p>
              </div>
            </div>
-           <div className="flex gap-3 flex-wrap">
-              <button onClick={() => { setIsGenerated(false); setSelectedRoomId(''); setFinalInvoiceData(null); }} className="px-4 py-2 border border-border text-foreground font-semibold text-xs rounded-full hover:bg-muted transition-colors cursor-pointer">
+           <div className="flex gap-2 sm:gap-3 flex-wrap w-full sm:w-auto">
+              <button onClick={() => { setIsGenerated(false); setSelectedRoomId(''); setFinalInvoiceData(null); }} className="px-3.5 sm:px-4 py-2 border border-border text-foreground font-semibold text-xs rounded-full hover:bg-muted transition-colors cursor-pointer flex-1 sm:flex-none text-center">
                 New Checkout
               </button>
-              <button onClick={downloadPDF} className="px-4 py-2 bg-foreground text-background font-semibold text-xs rounded-full hover:opacity-90 flex gap-2 items-center cursor-pointer">
+              <button onClick={downloadPDF} className="px-3.5 sm:px-4 py-2 bg-foreground text-background font-semibold text-xs rounded-full hover:opacity-90 flex gap-2 items-center justify-center cursor-pointer flex-1 sm:flex-none">
                 <Download className="w-3.5 h-3.5" /> Save as PDF
               </button>
-              <button onClick={printInvoice} className="px-4 py-2 bg-primary text-primary-foreground font-semibold text-xs rounded-full hover:opacity-90 flex gap-2 items-center cursor-pointer">
+              <button onClick={printInvoice} className="px-3.5 sm:px-4 py-2 bg-primary text-primary-foreground font-semibold text-xs rounded-full hover:opacity-90 flex gap-2 items-center justify-center cursor-pointer flex-1 sm:flex-none">
                 <Printer className="w-3.5 h-3.5" /> Print
               </button>
            </div>

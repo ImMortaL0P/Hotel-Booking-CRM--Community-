@@ -4,8 +4,7 @@ import {
   LayoutDashboard, BookOpenText, Users, BedDouble, CalendarDays, 
   MessageSquare, CreditCard, LogOut, ChevronLeft, ChevronRight, 
   Building, FileText, Receipt, History, Moon, Sun, Bell, Search, 
-  WalletCards, Activity, Globe, Server, Database, Mail, ExternalLink,
-  Menu, X
+  WalletCards, Mail, ExternalLink, Menu, X
 } from 'lucide-react';
 import { useData } from '../data/DataContext';
 import { useTheme } from './ThemeProvider';
@@ -13,7 +12,6 @@ import { cn } from '../lib/utils';
 import { format } from 'date-fns';
 import logoUrl from '../../assets/logo.png';
 import { CommandPalette } from './CommandPalette';
-import { API_BASE_URL } from '../lib/api';
 import { motion, AnimatePresence } from 'motion/react';
 
 // Defined at module scope with tactile micro-interactions and active indicator bar
@@ -113,44 +111,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     };
   }, [mobileDrawerOpen]);
 
-  // Health Status
-  const [health, setHealth] = useState({
-    frontend: 'Online',
-    backend: 'Checking...',
-    database: 'Checking...',
-    pingMs: 0
-  });
 
-  const checkHealth = useCallback(async () => {
-    const start = Date.now();
-    try {
-      const r = await fetch(`${API_BASE_URL}/api/health`, { signal: AbortSignal.timeout(15000) });
-      const res = r.ok ? await r.json() : null;
-      if (res && res.status === 'ok') {
-        setHealth({
-          frontend: 'Online',
-          backend: 'Online',
-          database: res.dbStatus || 'Connected',
-          pingMs: Date.now() - start
-        });
-        return;
-      }
-    } catch {
-      // fall through
-    }
-    setHealth({ frontend: 'Online', backend: 'Offline', database: 'Offline', pingMs: 0 });
-  }, []);
-
-  useEffect(() => {
-    checkHealth();
-    const interval = setInterval(() => { if (!document.hidden) checkHealth(); }, 30000);
-    const onVisible = () => { if (!document.hidden) checkHealth(); };
-    document.addEventListener('visibilitychange', onVisible);
-    return () => {
-      clearInterval(interval);
-      document.removeEventListener('visibilitychange', onVisible);
-    };
-  }, [checkHealth]);
 
   // Calculate badges
   const getISTDate = () => {
@@ -436,61 +397,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        {/* System Health Monitor */}
-        {!collapsed && ['manager', 'owner', 'superadmin'].includes(user?.role || '') && (
-          <div className="mx-3 mb-3 p-3 bg-secondary/40 rounded-xl border border-border/60 shrink-0 backdrop-blur-xs">
-            <div className="flex items-center justify-between mb-2.5">
-              <h3 className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <Activity className="w-3 h-3 text-primary" /> Live Infrastructure
-              </h3>
-              <button
-                onClick={() => {
-                  setHealth(h => ({ ...h, backend: 'Checking...', database: 'Checking...' }));
-                  checkHealth();
-                }}
-                className="text-[9px] font-mono font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                title="Refresh Status"
-              >
-                Refresh
-              </button>
-            </div>
-            
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Globe className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span className="text-xs font-medium text-foreground">Client App</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]"></span>
-                  <span className="text-[10px] font-mono text-muted-foreground">{health.frontend}</span>
-                </div>
-              </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Server className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span className="text-xs font-medium text-foreground">Express API</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className={`w-1.5 h-1.5 rounded-full ${health.backend === 'Online' ? 'bg-emerald-500 shadow-[0_0_6px_#10b981]' : 'bg-amber-500 animate-pulse'}`}></span>
-                  <span className="text-[10px] font-mono text-muted-foreground">{health.backend} {health.pingMs > 0 ? `(${health.pingMs}ms)` : ''}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Database className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span className="text-xs font-medium text-foreground">MongoDB</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className={`w-1.5 h-1.5 rounded-full ${(health.database === 'Connected' || health.database === 'Online') ? 'bg-emerald-500 shadow-[0_0_6px_#10b981]' : 'bg-amber-500 animate-pulse'}`}></span>
-                  <span className="text-[10px] font-mono text-muted-foreground">{health.database}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* User Footer */}
         <div className="p-3 border-t border-border/70 shrink-0">
