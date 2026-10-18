@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router';
 import { useData } from '../data/DataContext';
 import { formatCurrency, formatDate, generateId } from '../lib/utils';
 import { BookingStatus, Booking } from '../data/types';
-import { Search, Plus, MoreHorizontal, FileText, CheckCircle2, ChevronRight, X, CreditCard, Download, Share2, SlidersHorizontal, RefreshCw } from 'lucide-react';
+import { Search, Plus, MoreHorizontal, FileText, CheckCircle2, ChevronRight, X, CreditCard, Download, Share2, SlidersHorizontal, RefreshCw, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { NewBookingModal } from '../components/NewBookingModal';
 import { BookingDetailDrawer } from '../components/BookingDetailDrawer';
@@ -14,7 +14,7 @@ import { exportToCsv } from '../lib/exportCsv';
 import { useProgressiveList } from '../lib/useProgressiveList';
 
 export function Bookings() {
-  const { bookings, guestById, roomById, updateBooking, addPayment, confirmChannelBooking, rejectChannelBooking, addLog, user, isSyncing } = useData();
+  const { bookings, guestById, roomById, updateBooking, deleteBooking, addPayment, confirmChannelBooking, rejectChannelBooking, addLog, user, isSyncing } = useData();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = (searchParams.get('status') as BookingStatus | 'All') || 'All';
   const urlSearch = searchParams.get('search') || '';
@@ -186,18 +186,39 @@ export function Bookings() {
           </div>
         </td>
         <td className="px-4 py-3 text-right">
-          <div className="relative inline-block text-left" onClick={e => e.stopPropagation()}>
-            <button className="p-1 text-muted-foreground/80 hover:text-primary">
-              <MoreHorizontal className="w-5 h-5" />
+          <div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.confirm(`Are you sure you want to delete reservation ${b.id}?`)) {
+                  deleteBooking(b.id);
+                  toast.success(`Booking ${b.id} deleted`);
+                }
+              }}
+              className="p-1.5 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors cursor-pointer"
+              title="Delete Booking"
+            >
+              <Trash2 className="w-4 h-4" />
             </button>
-            
-            {/* Simple hardcoded actions for demo, normally this would be a custom dropdown component */}
-            <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-md shadow-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible z-20 transition-all">
-              <div className="p-1">
-                 <button onClick={(e) => { e.stopPropagation(); setSelectedBooking(b); }} className="w-full text-left px-3 py-2 text-sm text-foreground/80 hover:bg-secondary rounded">View Details</button>
-                 {b.status === 'Confirmed' && <button onClick={(e) => { e.stopPropagation(); handleAction(b,'Check-in'); }} className="w-full text-left px-3 py-2 text-sm text-green-700 hover:bg-green-50 rounded">Check In</button>}
-                 {b.status === 'Checked-In' && <button onClick={(e) => { e.stopPropagation(); handleAction(b,'Check-out'); }} className="w-full text-left px-3 py-2 text-sm text-foreground/80 hover:bg-muted rounded">Check Out</button>}
-                 {b.balance > 0 && <button onClick={(e) => { e.stopPropagation(); handleAction(b,'Record Payment'); }} className="w-full text-left px-3 py-2 text-sm text-primary hover:bg-secondary rounded">Record Payment</button>}
+            <div className="relative inline-block text-left">
+              <button className="p-1 text-muted-foreground/80 hover:text-primary cursor-pointer">
+                <MoreHorizontal className="w-5 h-5" />
+              </button>
+              
+              <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible z-20 transition-all p-1">
+                <button onClick={(e) => { e.stopPropagation(); setSelectedBooking(b); }} className="w-full text-left px-3 py-2 text-sm text-foreground/80 hover:bg-secondary rounded-lg cursor-pointer">View Details</button>
+                {b.status === 'Confirmed' && <button onClick={(e) => { e.stopPropagation(); handleAction(b,'Check-in'); }} className="w-full text-left px-3 py-2 text-sm text-green-700 hover:bg-green-500/10 rounded-lg cursor-pointer">Check In</button>}
+                {b.status === 'Checked-In' && <button onClick={(e) => { e.stopPropagation(); handleAction(b,'Check-out'); }} className="w-full text-left px-3 py-2 text-sm text-foreground/80 hover:bg-muted rounded-lg cursor-pointer">Check Out</button>}
+                {b.balance > 0 && <button onClick={(e) => { e.stopPropagation(); handleAction(b,'Record Payment'); }} className="w-full text-left px-3 py-2 text-sm text-primary hover:bg-secondary rounded-lg cursor-pointer">Record Payment</button>}
+                <button onClick={(e) => {
+                  e.stopPropagation();
+                  if (window.confirm(`Are you sure you want to delete reservation ${b.id}?`)) {
+                    deleteBooking(b.id);
+                    toast.success(`Booking ${b.id} deleted`);
+                  }
+                }} className="w-full text-left px-3 py-2 text-sm text-destructive hover:bg-destructive/10 rounded-lg flex items-center gap-1.5 font-semibold cursor-pointer">
+                  <Trash2 className="w-3.5 h-3.5" /> Delete Booking
+                </button>
               </div>
             </div>
           </div>

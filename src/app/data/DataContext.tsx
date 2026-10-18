@@ -27,6 +27,7 @@ interface DataContextType {
   guests: Guest[];
   addGuest: (guest: Guest) => void;
   updateGuest: (guest: Guest) => void;
+  deleteGuest: (guestId: string) => void;
 
   bookings: Booking[];
   addBooking: (booking: Booking) => void;
@@ -38,6 +39,7 @@ interface DataContextType {
   payments: PaymentTransaction[];
   /** applyToBooking: false when the booking already includes this amount in `paid` */
   addPayment: (payment: PaymentTransaction, opts?: { applyToBooking?: boolean }) => void;
+  deletePayment: (paymentId: string) => void;
 
   comms: CommRecord[];
   addComm: (comm: CommRecord) => void;
@@ -718,6 +720,20 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     send(`/api/guests/${guest.id}`, 'PUT', patch).catch(err => console.warn('updateGuest server note:', err));
   };
 
+  const deleteGuest = (guestId: string) => {
+    optimisticRemove(setGuests, guestId, send(`/api/guests/${guestId}`, 'DELETE'));
+    try {
+      const raw = localStorage.getItem(DESK_QUEUE_KEY);
+      if (raw) {
+        const queue = JSON.parse(raw);
+        if (queue.guests) {
+          queue.guests = queue.guests.filter((g: any) => g.id !== guestId);
+          localStorage.setItem(DESK_QUEUE_KEY, JSON.stringify(queue));
+        }
+      }
+    } catch {}
+  };
+
   const addBooking = (booking: Booking) => {
     setBookings(prev => sortBookings([booking, ...prev.filter(b => b.id !== booking.id)]));
     try {
@@ -792,6 +808,23 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const deleteBooking = (bookingId: string) => {
     optimisticRemove(setBookings, bookingId, send(`/api/bookings/${bookingId}`, 'DELETE'));
+    try {
+      const raw = localStorage.getItem(DESK_QUEUE_KEY);
+      if (raw) {
+        const queue = JSON.parse(raw);
+        if (queue.bookings) {
+          queue.bookings = queue.bookings.filter((b: any) => b.id !== bookingId);
+          localStorage.setItem(DESK_QUEUE_KEY, JSON.stringify(queue));
+        }
+      }
+    } catch {}
+    try {
+      const history = JSON.parse(localStorage.getItem('sharda_my_bookings') || '[]');
+      if (Array.isArray(history)) {
+        const filtered = history.filter((h: any) => h.refId !== bookingId && h.id !== bookingId);
+        localStorage.setItem('sharda_my_bookings', JSON.stringify(filtered));
+      }
+    } catch {}
   };
 
   const confirmChannelBooking = (bookingId: string) => {
@@ -829,6 +862,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         console.error(err);
         setPayments(prev => prev.filter(p => p.id !== payment.id));
       });
+  };
+
+  const deletePayment = (paymentId: string) => {
+    optimisticRemove(setPayments, paymentId, send(`/api/payments/${paymentId}`, 'DELETE'));
   };
 
   const addInvoice = (invoice: StandaloneInvoice) => {
@@ -869,8 +906,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   // Action callbacks only touch setters, refs and `latest`, so one stable set is enough.
   const actions = useRef({
-    login, logout, refreshData, updateRoomStatus, markAllRoomsAvailable, addGuest, updateGuest, addBooking, updateBooking,
-    deleteBooking, confirmChannelBooking, rejectChannelBooking, addPayment, addComm,
+    login, logout, refreshData, updateRoomStatus, markAllRoomsAvailable, addGuest, updateGuest, deleteGuest, addBooking, updateBooking,
+    deleteBooking, confirmChannelBooking, rejectChannelBooking, addPayment, deletePayment, addComm,
     addLog, addInvoice, addStoredInvoice, addExpense, deleteExpense
   }).current;
 

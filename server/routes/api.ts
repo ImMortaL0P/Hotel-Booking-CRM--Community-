@@ -8,12 +8,14 @@ import {
   updateRoom,
   addGuest,
   updateGuest,
+  deleteGuest,
   addBooking,
   updateBooking,
   deleteBooking,
   confirmChannelBooking,
   rejectChannelBooking,
   addPayment,
+  deletePayment,
   addComm,
   addInvoice,
   addExpense,
@@ -50,6 +52,7 @@ router.put('/rooms/:id', updateRoom);
 // Guests
 router.post('/guests', addGuest);
 router.put('/guests/:id', updateGuest);
+router.delete('/guests/:id', deleteGuest);
 
 // Bookings
 router.post('/bookings', addBooking);
@@ -61,6 +64,7 @@ router.post('/bookings/:id/send-confirmation-email', sendConfirmationEmailHandle
 
 // Payments
 router.post('/payments', addPayment);
+router.delete('/payments/:id', deletePayment);
 
 // Comms
 router.post('/comms', addComm);

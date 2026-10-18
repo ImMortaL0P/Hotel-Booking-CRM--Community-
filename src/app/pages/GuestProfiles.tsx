@@ -3,11 +3,11 @@ import { useData } from '../data/DataContext';
 import { formatCurrency, formatDate, generateId } from '../lib/utils';
 import { Guest, IDProofType } from '../data/types';
 import { exportToCsv } from '../lib/exportCsv';
-import { Search, Crown, RotateCcw, TrendingUp, Users, MapPin, CreditCard, Clock, FileText, X, Phone, Mail, Download, Plus, Pencil } from 'lucide-react';
+import { Search, Crown, RotateCcw, TrendingUp, Users, MapPin, CreditCard, Clock, FileText, X, Phone, Mail, Download, Plus, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function GuestProfiles() {
-  const { addLog, guests, bookings, roomById, addGuest, updateGuest } = useData();
+  const { addLog, guests, bookings, roomById, addGuest, updateGuest, deleteGuest } = useData();
   const [activeTab, setActiveTab] = useState<'All' | 'VIP' | 'Repeat' | 'New'>('All');
   const [search, setSearch] = useState('');
   const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
@@ -96,6 +96,22 @@ export function GuestProfiles() {
       toast.success('Guest added successfully');
     }
     setIsFormOpen(false);
+  };
+
+  const handleDeleteGuest = (guest: Guest, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (window.confirm(`Are you sure you want to permanently delete profile for "${guest.name}" (${guest.id})? This will also remove their associated records.`)) {
+      deleteGuest(guest.id);
+      addLog(`Deleted guest profile: ${guest.name} (${guest.id})`, 'info');
+      toast.success(`Guest ${guest.name} deleted successfully`);
+      if (selectedGuest?.id === guest.id) {
+        setSelectedGuest(null);
+      }
+      if (editingGuest?.id === guest.id) {
+        setIsFormOpen(false);
+        setEditingGuest(null);
+      }
+    }
   };
 
   const vipGuests = guests.filter(g => g.isVIP);
@@ -262,6 +278,7 @@ export function GuestProfiles() {
               <th className="px-4 py-3 text-right">Stays</th>
               <th className="px-4 py-3">Last Stay</th>
               <th className="px-4 py-3 text-right">Total Spent</th>
+              <th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/50">
@@ -301,6 +318,24 @@ export function GuestProfiles() {
                 <td className="px-4 py-3 text-right font-semibold text-green-700">
                   {formatCurrency(g.totalSpent)}
                 </td>
+                <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center justify-end gap-1">
+                    <button
+                      onClick={() => openEditForm(g)}
+                      className="p-1.5 text-muted-foreground hover:text-primary hover:bg-muted rounded-md transition-colors"
+                      title="Edit Guest"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => handleDeleteGuest(g, e)}
+                      className="p-1.5 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-md transition-colors"
+                      title="Delete Guest Profile"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -334,6 +369,13 @@ export function GuestProfiles() {
                       title="Edit Guest"
                     >
                       <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteGuest(selectedGuest)}
+                      className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-950/50 dark:text-red-400 rounded-md transition-colors"
+                      title="Delete Guest Profile"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                     {selectedGuest.isVIP && (
                       <span className="bg-yellow-100 text-yellow-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase flex items-center gap-1">
@@ -396,6 +438,17 @@ export function GuestProfiles() {
                     <p className="text-sm text-muted-foreground italic">No stay records found.</p>
                   )}
                 </div>
+              </div>
+
+              {/* Delete Guest Action */}
+              <div className="pt-2 border-t border-border">
+                <button
+                  onClick={() => handleDeleteGuest(selectedGuest)}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-950/30 dark:hover:bg-red-950/50 rounded-lg transition-colors border border-red-200 dark:border-red-900/50"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete Guest Profile
+                </button>
               </div>
 
             </div>
@@ -505,20 +558,32 @@ export function GuestProfiles() {
                   />
                 </div>
               </div>
-              <div className="flex justify-end gap-3 pt-4 border-t border-border">
-                <button
-                  type="button"
-                  onClick={() => setIsFormOpen(false)}
-                  className="px-4 py-2 text-sm font-medium text-foreground bg-muted hover:bg-muted/80 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-lg transition-colors"
-                >
-                  {editingGuest ? 'Update Guest' : 'Add Guest'}
-                </button>
+              <div className="flex justify-between items-center gap-3 pt-4 border-t border-border">
+                {editingGuest ? (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteGuest(editingGuest)}
+                    className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-950/30 rounded-lg transition-colors border border-red-200 dark:border-red-900/50"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete Guest
+                  </button>
+                ) : <div />}
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsFormOpen(false)}
+                    className="px-4 py-2 text-sm font-medium text-foreground bg-muted hover:bg-muted/80 rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-lg transition-colors"
+                  >
+                    {editingGuest ? 'Update Guest' : 'Add Guest'}
+                  </button>
+                </div>
               </div>
             </form>
           </div>

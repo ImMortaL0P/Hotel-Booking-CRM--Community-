@@ -439,6 +439,40 @@ export const deleteBooking = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const deleteGuest = async (req: AuthRequest, res: Response) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.json({ success: true, id: req.params.id });
+    }
+
+    const guest = await Guest.findByIdAndDelete(req.params.id);
+    await recordDeletion('guests', String(req.params.id));
+    void logAction(req, 'Delete Guest', `Deleted guest ${guest?.name || req.params.id} (${req.params.id})`);
+
+    invalidateDataCache();
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error(error); res.status(400).json({ error: error.message });
+  }
+};
+
+export const deletePayment = async (req: AuthRequest, res: Response) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.json({ success: true, id: req.params.id });
+    }
+
+    const payment = await Payment.findByIdAndDelete(req.params.id);
+    await recordDeletion('payments', String(req.params.id));
+    void logAction(req, 'Delete Payment', `Deleted payment record ${req.params.id}`);
+
+    invalidateDataCache();
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error(error); res.status(400).json({ error: error.message });
+  }
+};
+
 export const confirmChannelBooking = async (req: AuthRequest, res: Response) => {
   try {
     const booking = await Booking.findById(req.params.id);

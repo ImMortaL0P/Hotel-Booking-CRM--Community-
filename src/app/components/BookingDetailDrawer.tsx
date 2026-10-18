@@ -1,4 +1,4 @@
-import { X, FileText, CreditCard, Globe, Mail, Send, CheckCircle2, MessageCircle, ExternalLink } from 'lucide-react';
+import { X, FileText, CreditCard, Globe, Mail, Send, CheckCircle2, MessageCircle, ExternalLink, Trash2 } from 'lucide-react';
 import { Booking } from '../data/types';
 import { useData } from '../data/DataContext';
 import { formatCurrency, formatDate, generateId } from '../lib/utils';
@@ -15,7 +15,7 @@ interface Props {
 }
 
 export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }: Props) {
-  const { guests, rooms, bookings, updateBooking, addPayment } = useData();
+  const { guests, rooms, bookings, updateBooking, addPayment, deleteBooking } = useData();
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   // Extra charge form state
@@ -386,6 +386,23 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
                 Record Payment
               </button>
             )}
+
+            <div className="pt-3 mt-4 border-t border-border">
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm(`Are you sure you want to permanently delete reservation ${booking.id} (${guest?.name || 'Guest'})? This will free Room ${room?.number || ''} and remove it completely.`)) {
+                    deleteBooking(booking.id);
+                    toast.success(`Booking ${booking.id} deleted successfully`);
+                    onClose();
+                  }
+                }}
+                className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold text-destructive bg-destructive/10 hover:bg-destructive hover:text-destructive-foreground border border-destructive/30 transition-all cursor-pointer shadow-xs"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete Reservation</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

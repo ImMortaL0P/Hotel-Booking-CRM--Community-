@@ -1,7 +1,8 @@
 import { useState, useMemo, useDeferredValue } from 'react';
 import { useData } from '../data/DataContext';
 import { formatCurrency, formatDate } from '../lib/utils';
-import { CreditCard, IndianRupee, FileText, Download, Wallet, AlertCircle, ArrowUpRight, Search, Printer, X } from 'lucide-react';
+import { CreditCard, IndianRupee, FileText, Download, Wallet, AlertCircle, ArrowUpRight, Search, Printer, X, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { PaymentTransaction } from '../data/types';
 import { exportToCsv } from '../lib/exportCsv';
 import { useProgressiveList } from '../lib/useProgressiveList';
@@ -9,9 +10,21 @@ import { apiFetch } from '../lib/api';
 import { buildPrintableHtml } from '../lib/printableHtml';
 // @ts-ignore
 export function Payments() {
-  const { addLog, payments, bookings, bookingById, guestById } = useData();
+  const { addLog, payments, bookings, bookingById, guestById, deletePayment } = useData();
   const [search, setSearch] = useState('');
   const [selectedReceipt, setSelectedReceipt] = useState<PaymentTransaction | null>(null);
+
+  const handleDeletePayment = (payment: PaymentTransaction, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (window.confirm(`Are you sure you want to permanently delete transaction "${payment.id}" (Amount: ${formatCurrency(payment.amount)})?`)) {
+      deletePayment(payment.id);
+      addLog(`Deleted payment transaction: ${payment.id} (${formatCurrency(payment.amount)})`, 'info');
+      toast.success(`Payment ${payment.id} deleted successfully`);
+      if (selectedReceipt?.id === payment.id) {
+        setSelectedReceipt(null);
+      }
+    }
+  };
 
   // Stats
   const todayStr = new Date().toDateString();
@@ -193,12 +206,20 @@ export function Payments() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <button 
-                      onClick={() => setSelectedReceipt(p)}
-                      className="p-1.5 text-primary hover:bg-red-50 rounded" title="View Full Receipt"
-                    >
-                      <FileText className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center justify-end gap-1">
+                      <button 
+                        onClick={() => setSelectedReceipt(p)}
+                        className="p-1.5 text-primary hover:bg-muted rounded transition-colors" title="View Full Receipt"
+                      >
+                        <FileText className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={(e) => handleDeletePayment(p, e)}
+                        className="p-1.5 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded transition-colors" title="Delete Payment Transaction"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               )
@@ -259,6 +280,13 @@ export function Payments() {
                     }
                   }} className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-semibold text-primary bg-card border border-primary rounded hover:bg-red-50">
                     <Download className="w-3.5 sm:w-4 h-3.5 sm:h-4"/> PDF
+                  </button>
+                  <button
+                    onClick={() => handleDeletePayment(selectedReceipt)}
+                    className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 dark:bg-red-950/30 dark:border-red-900/50 rounded transition-colors"
+                    title="Delete Payment Transaction"
+                  >
+                    <Trash2 className="w-3.5 sm:w-4 h-3.5 sm:h-4"/> Delete
                   </button>
                   <button onClick={() => setSelectedReceipt(null)} className="p-1.5 hover:bg-muted rounded-full ml-1 sm:ml-4">
                     <X className="w-5 h-5" />
