@@ -1,10 +1,11 @@
 import { toast } from 'sonner';
 import { clearSnapshot } from './dataCache';
 
-// Connect directly to local Express backend on port 5001 in dev, and production Render in prod
-export const API_BASE_URL = import.meta.env?.DEV
-  ? (typeof window !== 'undefined' && window.location.port === '5001' ? '' : 'http://localhost:5001')
-  : (import.meta.env?.VITE_API_BASE_URL || 'https://sharda-crm.onrender.com');
+// In development, use relative '' so requests route through Vite's proxy to the cloud backend (https://sharda-crm.onrender.com)
+// In production, connect directly to VITE_API_BASE_URL or production Render
+export const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL ?? (
+  import.meta.env?.DEV ? '' : 'https://sharda-crm.onrender.com'
+);
 
 export class ApiError extends Error {
   constructor(message: string, readonly status: number) {
