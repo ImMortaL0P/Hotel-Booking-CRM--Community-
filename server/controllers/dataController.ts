@@ -396,8 +396,23 @@ export const updateBooking = async (req: AuthRequest, res: Response) => {
       return res.json({ id: req.params.id, ...updateData });
     }
 
-    // Only the dates are needed from the pre-update doc (for the availability push)
-    const oldBooking = await Booking.findById(req.params.id).select('checkIn checkOut').lean();
+    const oldBooking = await Booking.findById(req.params.id).lean();
+    if (!oldBooking) return res.status(404).json({ error: 'Not found' });
+
+    // Stamping logic: first check-in stamps check-in date/time, check-out stamps check-out date/time
+    const now = new Date().toISOString();
+    if (updateData.status === 'Checked-In') {
+      if (!oldBooking.checkInTime && !updateData.checkInTime) {
+        updateData.checkInTime = now;
+        updateData.actualCheckIn = now;
+      }
+    } else if (updateData.status === 'Checked-Out') {
+      if (!oldBooking.checkOutTime && !updateData.checkOutTime) {
+        updateData.checkOutTime = now;
+        updateData.actualCheckOut = now;
+      }
+    }
+
     const updated = await Booking.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
     if (!updated) return res.status(404).json({ error: 'Not found' });
 

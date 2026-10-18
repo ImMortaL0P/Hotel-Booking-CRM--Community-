@@ -80,6 +80,10 @@ export interface Booking {
     reason: string;
     date: string;
   }[];
+  checkInTime?: string;
+  checkOutTime?: string;
+  actualCheckIn?: string;
+  actualCheckOut?: string;
 }
 
 export type PaymentMode = 'Cash' | 'UPI' | 'Card' | 'Bank Transfer';

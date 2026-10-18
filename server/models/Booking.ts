@@ -32,7 +32,11 @@ const bookingSchema = new mongoose.Schema({
     amount: { type: Number, required: true },
     reason: { type: String, required: true },
     date: { type: String, required: true }
-  }]
+  }],
+  checkInTime: { type: String, default: null },
+  checkOutTime: { type: String, default: null },
+  actualCheckIn: { type: String, default: null },
+  actualCheckOut: { type: String, default: null }
 }, {
   timestamps: true,
   toJSON: {

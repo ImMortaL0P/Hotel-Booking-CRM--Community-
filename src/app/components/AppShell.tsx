@@ -10,7 +10,7 @@ import { useData } from '../data/DataContext';
 import { useTheme } from './ThemeProvider';
 import { cn } from '../lib/utils';
 import { format } from 'date-fns';
-import logoUrl from '../../assets/logo.png';
+import monogramUrl from '../../assets/logo-monogram.png';
 import { CommandPalette } from './CommandPalette';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -180,7 +180,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
-            <img src={logoUrl} alt="Logo" className="w-7 h-7 rounded-lg object-cover border border-border shadow-2xs" />
+            <img src={monogramUrl} alt="Logo" className="w-8 h-8 rounded-lg object-contain p-0.5 border border-border shadow-2xs bg-card" />
             <span className="font-bold text-sm text-foreground tracking-tight">Sharda Palace</span>
           </div>
         </div>
@@ -248,7 +248,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               {/* Header */}
               <div className="p-4 border-b border-border/70 flex items-center justify-between shrink-0 h-16">
                 <div className="flex items-center gap-3">
-                  <img src={logoUrl} alt="Logo" className="w-9 h-9 rounded-xl object-cover border border-border shadow-xs" />
+                  <img src={monogramUrl} alt="Logo" className="w-10 h-10 rounded-xl object-contain p-1 border border-border shadow-xs bg-card" />
                   <div>
                     <h2 className="font-bold text-foreground text-sm leading-tight">Sharda Palace</h2>
                     <p className="text-[10px] font-mono text-muted-foreground">Deoghar · Ground Floor</p>
@@ -347,7 +347,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           {!collapsed ? (
             <div className="flex items-center gap-3 overflow-hidden">
               <div className="relative group">
-                <img src={logoUrl} alt="Logo" className="w-10 h-10 rounded-xl shrink-0 object-cover border border-border shadow-xs transition-transform group-hover:scale-105" />
+                <img src={monogramUrl} alt="Logo" className="w-10 h-10 rounded-xl shrink-0 object-contain p-1 border border-border shadow-xs transition-transform group-hover:scale-105 bg-card" />
                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-card" />
               </div>
               <div className="truncate">
@@ -357,7 +357,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
           ) : (
             <div className="mx-auto relative">
-              <img src={logoUrl} alt="Logo" className="w-10 h-10 rounded-xl shrink-0 object-cover border border-border shadow-xs" />
+              <img src={monogramUrl} alt="Logo" className="w-10 h-10 rounded-xl shrink-0 object-contain p-1 border border-border shadow-xs bg-card" />
               <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-card" />
             </div>
           )}

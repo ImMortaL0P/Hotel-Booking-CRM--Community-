@@ -63,6 +63,14 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
 
   const handleStatusChange = (newStatus: Booking['status']) => {
     let updates = { ...booking, status: newStatus };
+    const now = new Date().toISOString();
+    if (newStatus === 'Checked-In' && !booking.checkInTime) {
+      updates.checkInTime = now;
+      updates.actualCheckIn = now;
+    } else if (newStatus === 'Checked-Out' && !booking.checkOutTime) {
+      updates.checkOutTime = now;
+      updates.actualCheckOut = now;
+    }
     if (newStatus === 'Checked-Out') {
       updates.paid = updates.total;
       updates.balance = 0;
@@ -191,12 +199,22 @@ export function BookingDetailDrawer({ booking: initialBooking, isOpen, onClose }
 
               <div className="text-muted-foreground">Check-in</div>
               <div className="text-right font-medium text-foreground">
-                {formatStayDateTime(booking.checkIn, 12)}
+                <div>{formatStayDateTime(booking.checkIn, 12)}</div>
+                {booking.checkInTime && (
+                  <div className="text-[10.5px] text-emerald-600 dark:text-emerald-400 font-sans font-medium mt-0.5">
+                    Stamped In: {new Date(booking.checkInTime).toLocaleString('default', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                  </div>
+                )}
               </div>
 
               <div className="text-muted-foreground">Check-out</div>
               <div className="text-right font-medium text-foreground">
-                {formatStayDateTime(booking.checkOut, 11)}
+                <div>{formatStayDateTime(booking.checkOut, 11)}</div>
+                {booking.checkOutTime && (
+                  <div className="text-[10.5px] text-amber-600 dark:text-amber-400 font-sans font-medium mt-0.5">
+                    Stamped Out: {new Date(booking.checkOutTime).toLocaleString('default', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                  </div>
+                )}
               </div>
 
               <div className="text-muted-foreground">Occupancy</div>

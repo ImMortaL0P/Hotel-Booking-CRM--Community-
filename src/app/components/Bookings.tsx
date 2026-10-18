@@ -75,9 +75,19 @@ export function Bookings() {
   };
 
   const updateBookingStatus = (bookingId: string, newStatus: Booking['status']) => {
-    setBookings(bookings.map(b => 
-      b.id === bookingId ? { ...b, status: newStatus } : b
-    ));
+    const now = new Date().toISOString();
+    setBookings(bookings.map(b => {
+      if (b.id !== bookingId) return b;
+      const updated = { ...b, status: newStatus };
+      if (newStatus === 'Checked-In' && !b.checkInTime) {
+        updated.checkInTime = now;
+        updated.actualCheckIn = now;
+      } else if (newStatus === 'Checked-Out' && !b.checkOutTime) {
+        updated.checkOutTime = now;
+        updated.actualCheckOut = now;
+      }
+      return updated;
+    }));
   };
 
   return (

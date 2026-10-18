@@ -109,7 +109,7 @@ function diffFields<T extends object>(current: T | undefined, next: T): Partial<
   return patch;
 }
 
-const SYNC_INTERVAL_MS = 60_000;
+const SYNC_INTERVAL_MS = 5 * 60_000; // Refresh frequency set to every 5 minutes
 const DESK_QUEUE_KEY = 'shardacrm_desk_queue';
 const LOCAL_STORAGE_CACHE_KEY = 'shardacrm_cached_dataset';
 
@@ -766,19 +766,37 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateBooking = (booking: Booking) => {
+    const existing = bookings.find(b => b.id === booking.id) || latest.current.bookings.find(b => b.id === booking.id);
+    const now = new Date().toISOString();
+    let effectiveBooking = { ...booking };
+
+    // Automatic stamping on status change:
+    // First check-in stamps check-in date and time
+    if (effectiveBooking.status === 'Checked-In') {
+      if (!effectiveBooking.checkInTime && !existing?.checkInTime) {
+        effectiveBooking.checkInTime = now;
+        effectiveBooking.actualCheckIn = now;
+      }
+    } else if (effectiveBooking.status === 'Checked-Out') {
+      if (!effectiveBooking.checkOutTime && !existing?.checkOutTime) {
+        effectiveBooking.checkOutTime = now;
+        effectiveBooking.actualCheckOut = now;
+      }
+    }
+
     // 1. Instantly update CRM local state
-    setBookings(prev => prev.map(b => (b.id === booking.id ? booking : b)));
+    setBookings(prev => prev.map(b => (b.id === effectiveBooking.id ? effectiveBooking : b)));
 
     // 2. Persist to shared desk queue
     try {
       const raw = localStorage.getItem(DESK_QUEUE_KEY);
       const queue = raw ? JSON.parse(raw) : { bookings: [], guests: [] };
       if (!queue.bookings) queue.bookings = [];
-      const idx = queue.bookings.findIndex((b: any) => b.id === booking.id);
+      const idx = queue.bookings.findIndex((b: any) => b.id === effectiveBooking.id);
       if (idx >= 0) {
-        queue.bookings[idx] = booking;
+        queue.bookings[idx] = effectiveBooking;
       } else {
-        queue.bookings.push(booking);
+        queue.bookings.push(effectiveBooking);
       }
       localStorage.setItem(DESK_QUEUE_KEY, JSON.stringify(queue));
     } catch {}
@@ -788,8 +806,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       const history = JSON.parse(localStorage.getItem('sharda_my_bookings') || '[]');
       if (Array.isArray(history)) {
         const updated = history.map((h: any) => {
-          if (h.refId === booking.id || h.id === booking.id) {
-            return { ...h, status: booking.status };
+          if (h.refId === effectiveBooking.id || h.id === effectiveBooking.id) {
+            return { ...h, status: effectiveBooking.status };
           }
           return h;
         });
@@ -798,10 +816,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     } catch {}
 
     // 3. Dispatch to server if connected
-    const previous = latest.current.bookings.find(b => b.id === booking.id);
-    const patch = diffFields(previous, booking);
+    const previous = latest.current.bookings.find(b => b.id === effectiveBooking.id);
+    const patch = diffFields(previous, effectiveBooking);
     if (!Object.keys(patch).length) return;
-    send(`/api/bookings/${booking.id}`, 'PUT', patch).catch(err => {
+    send(`/api/bookings/${effectiveBooking.id}`, 'PUT', patch).catch(err => {
       console.warn('Backend update booking note:', err);
     });
   };

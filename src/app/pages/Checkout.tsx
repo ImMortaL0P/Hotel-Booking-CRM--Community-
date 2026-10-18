@@ -96,8 +96,14 @@ export function Checkout() {
       if (!authorized) return;
     }
 
-    // 1. Update Booking
-    updateBooking({ ...activeBooking, status: 'Checked-Out' });
+    // 1. Update Booking with check-out timestamp
+    const now = new Date().toISOString();
+    updateBooking({
+      ...activeBooking,
+      status: 'Checked-Out',
+      checkOutTime: activeBooking.checkOutTime || now,
+      actualCheckOut: activeBooking.actualCheckOut || now
+    });
 
     // 2. Update Room Status
     updateRoomStatus(room.id, 'Cleaning');

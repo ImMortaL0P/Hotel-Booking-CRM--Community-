@@ -154,6 +154,16 @@ export function Bookings() {
         <td className="px-4 py-3">
           <p className="text-foreground">{formatDate(b.checkIn)}</p>
           <p className="text-xs text-muted-foreground">to {formatDate(b.checkOut)} ({b.nights}N)</p>
+          {b.checkInTime && (
+            <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono mt-0.5" title={`Checked in at ${new Date(b.checkInTime).toLocaleString()}`}>
+              In: {new Date(b.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </p>
+          )}
+          {b.checkOutTime && (
+            <p className="text-[10px] text-amber-600 dark:text-amber-400 font-mono" title={`Checked out at ${new Date(b.checkOutTime).toLocaleString()}`}>
+              Out: {new Date(b.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </p>
+          )}
         </td>
         <td className="px-4 py-3 text-right font-medium text-foreground">
           {formatCurrency(b.total)}
